@@ -1,0 +1,9 @@
+# Bu dosya proje kökü içindir. backend/ ve mobile/ kendi .gitignore dosyalarına sahiptir.
+node_modules/
+.DS_Store
+Thumbs.db
+.vs/
+
+# geliştirme günlükleri ve geçici çıktılar
+*.log
+.expo/
