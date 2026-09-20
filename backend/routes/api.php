@@ -34,6 +34,7 @@ Route::middleware('throttle:10,1')->controller(AuthController::class)->group(fun
     Route::post('/register', 'register');
     Route::post('/login', 'login');
 });
+Route::post('/auth/google', [\App\Http\Controllers\Api\GoogleAuthController::class, 'login'])->middleware('throttle:10,1');
 Route::post('/forgot-password', [\App\Http\Controllers\Api\PasswordResetController::class, 'forgot'])->middleware('throttle:5,1');
 Route::post('/reset-password', [\App\Http\Controllers\Api\PasswordResetController::class, 'reset'])->middleware('throttle:10,1');
 

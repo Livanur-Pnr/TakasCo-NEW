@@ -23,6 +23,7 @@ Ayrıntılar: [`TAKASCO_ARCHITECTURE.md`](./TAKASCO_ARCHITECTURE.md) · Gelişti
 - Şifremi unuttum (e-posta ile sıfırlama), sitemap.xml/robots.txt, ürün structured data
 - İlan görüntülenme sayısı, arama önerileri ve son aramalar
 - Değerlendirmeler (tamamlanan takas sonrası) ve gerçek verilerden güven rozetleri
+- Google ile giriş (web)
 - Gerçek zamanlı mesajlaşma (Reverb WebSocket, polling yedekli)
 - Aynı teklifte çoklu ürün (en fazla 4), e-posta doğrulama ve "E-posta Doğrulandı" rozeti
 - Takasta para farkı ve karşı teklif
@@ -80,7 +81,7 @@ Gizli anahtarlar depoya girmez: `.env`, SQLite dosyası ve yüklenen görseller 
 ## Test
 
 ```bash
-cd backend && php artisan test        # 149 test (takas güvenliği, yetkilendirme, bildirim, mesajlaşma, admin, görsel, auth…)
+cd backend && php artisan test        # 156 test (takas güvenliği, yetkilendirme, bildirim, mesajlaşma, admin, görsel, auth…)
 cd mobile  && npx tsc --noEmit        # tip kontrolü
 ```
 
@@ -92,6 +93,7 @@ cd mobile  && npx tsc --noEmit        # tip kontrolü
 - [ ] CORS: `config/cors.php` yayınlanıp yalnızca kendi web origin'lerinize izin verilmeli (şu an Laravel varsayılanı: tüm origin'ler)
 - [ ] PHP `upload_max_filesize` / `post_max_size` en az `8 × 5MB` görsel yüklemeye yetecek şekilde ayarlanmalı
 - [ ] Web build: `EXPO_PUBLIC_API_URL=… npx expo export --platform web`
+- [ ] Google girişi: Google Cloud > Google Auth Platform > Clients'ta "Web application" istemcisi; **Authorized JavaScript origins** alanına yayın alan adını (`https://...`) ekleyin, `GOOGLE_CLIENT_ID` (backend) ve `EXPO_PUBLIC_GOOGLE_CLIENT_ID` (mobil) değerlerini yazın; uygulamayı "In production" yayınlayın (Testing modunda yalnızca test kullanıcıları girebilir)
 - [ ] `.env`: `FRONTEND_URL` (sitemap/robots/şifre sıfırlama bağlantıları ön yüzün herkese açık adresine göre üretilir)
 - [ ] İlk yönetici hesabı veritabanında elle oluşturulur (`is_admin=1`); kayıt üzerinden admin olunamaz
 

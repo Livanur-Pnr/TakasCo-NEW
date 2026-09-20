@@ -9,6 +9,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { api } from '@/utils/api';
 import { Alert } from '@/utils/alert';
+import { GoogleSignIn } from '@/components/google-sign-in';
 import { usePageTitle } from '@/utils/use-page-title';
 
 export default function LoginScreen() {
@@ -104,6 +105,8 @@ export default function LoginScreen() {
             <ThemedText style={styles.buttonText}>Giriş Yap</ThemedText>
           )}
         </TouchableOpacity>
+
+        <GoogleSignIn />
 
         <TouchableOpacity onPress={() => router.push('/(auth)/forgot-password')} accessibilityRole="link" style={{ alignSelf: 'center', padding: Spacing.two }}>
           <ThemedText style={{ color: Brand.accent, fontWeight: '600' }}>Şifremi unuttum</ThemedText>

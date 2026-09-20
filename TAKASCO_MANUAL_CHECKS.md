@@ -47,6 +47,8 @@ Hazırlık: `cd backend && php artisan serve`, `cd mobile && npx expo start --we
 
 - [ ] **Gerçek zamanlı mesaj:** iki tarayıcıda iki kullanıcıyla sohbet aç (Reverb çalışırken); bir taraf yazınca diğerinde ≤ 1-2 sn'de görünüyor, header rozeti ve sohbet listesi anında güncelleniyor. Reverb penceresini kapatınca mesajlar yine ≤ 5 sn'de geliyor (polling yedeği). Başka bir kullanıcının konuşma kanalına abone olunamıyor (DevTools > Network'te `broadcasting/auth` 403).
 
+- [ ] **Google girişi (web):** giriş ve kayıt ekranında "Google ile devam et" düğmesi görünüyor; test kullanıcısı olarak eklenen hesapla giriş yapılıyor; ilk girişte onboarding açılıyor, sonrakinde ana sayfa; aynı e-postayla önceden açılmış hesap varsa o hesaba bağlanıyor.
+
 ## Üretime çıkmadan
 - [ ] `.env`: `APP_ENV=production`, `APP_DEBUG=false`, gerçek `APP_URL`, SMTP, `EXPO_PUBLIC_API_URL`.
 - [ ] İlk admin hesabı veritabanında elle `is_admin=1` yapılır.

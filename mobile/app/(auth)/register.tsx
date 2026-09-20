@@ -9,6 +9,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { api } from '@/utils/api';
 import { Alert } from '@/utils/alert';
+import { GoogleSignIn } from '@/components/google-sign-in';
 import { usePageTitle } from '@/utils/use-page-title';
 
 export default function RegisterScreen() {
@@ -151,6 +152,7 @@ export default function RegisterScreen() {
             <ThemedText style={styles.buttonText}>Kayıt Ol</ThemedText>
           )}
         </TouchableOpacity>
+        <GoogleSignIn />
       </ThemedView>
     </ScrollView>
   );

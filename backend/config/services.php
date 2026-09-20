@@ -14,6 +14,11 @@ return [
     |
     */
 
+    // Google ile giriş (web): yalnızca genel istemci kimliği gerekir, istemci sırrı kullanılmaz
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

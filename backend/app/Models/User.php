@@ -12,7 +12,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 #[Fillable(['name', 'phone_number', 'email', 'password', 'profile_photo_path', 'address_title', 'city', 'district'])]
-#[Hidden(['password', 'remember_token'])]
+#[Hidden(['password', 'remember_token', 'google_id'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
     //hasApiTokens=API üzerinden güvenli bir şekilde kullanıcı girişi yapmasını sağlayan token üretme

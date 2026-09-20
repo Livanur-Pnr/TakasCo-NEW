@@ -84,3 +84,4 @@ Bilinçli olarak yapılmayacaklar: Cüzdan/para çekme (gerçek ödeme altyapıs
 - [x] L2. E-posta doğrulama (Laravel doğrulama bağlantısı, `email_verified_at`) + "E-posta Doğrulandı" rozeti.
 Hâlâ yapılmayanlar: WebSocket/Reverb ve Google-Apple girişi (üçüncü taraf paket kurulumu kullanıcıya bırakıldı), cüzdan (gerçek ödeme altyapısı yok), kimlik ve telefon doğrulama (belge/SMS süreci yok).
 - [x] L3. Gerçek zamanlı mesajlaşma (Laravel Reverb / WebSocket): `MessageSent` olayı, `conversation.{id}` ve kişisel kanallar, Bearer token ile kanal yetkisi (`/api/broadcasting/auth`), istemcide Echo. Reverb kapalıysa ya da anahtar tanımsızsa polling aynen çalışır.
+- [x] L4. Google ile giriş/kayıt (yalnızca web: Google Identity Services + backend'de yerel ID token doğrulaması, ek paket yok). Native (Expo Go/iOS/Android) Google girişi ve Apple girişi yapılmadı.
