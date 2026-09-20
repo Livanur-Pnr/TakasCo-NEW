@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\ReviewController;
 use App\Http\Middleware\NotSuspended;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/categories', [CategoryController::class, 'index']);
@@ -36,6 +37,9 @@ Route::middleware('throttle:10,1')->controller(AuthController::class)->group(fun
 Route::post('/forgot-password', [\App\Http\Controllers\Api\PasswordResetController::class, 'forgot'])->middleware('throttle:5,1');
 Route::post('/reset-password', [\App\Http\Controllers\Api\PasswordResetController::class, 'reset'])->middleware('throttle:10,1');
 
+
+// WebSocket özel kanal yetkisi (Bearer token ile): POST /api/broadcasting/auth
+Broadcast::routes(['middleware' => ['auth:sanctum', NotSuspended::class]]);
 
 Route::middleware(['auth:sanctum', NotSuspended::class])->group(function () {
     Route::post('/user/profile', [AuthController::class, 'updateProfile']);

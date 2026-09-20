@@ -45,6 +45,8 @@ Hazırlık: `cd backend && php artisan serve`, `cd mobile && npx expo start --we
 - [ ] **Çoklu ürün teklifi:** teklif ekranında birden fazla kendi ilanını seç (en fazla 4, beşincide uyarı), gönder; alıcı Tekliflerim'de "(+N)" ve "Ayrıca teklife dahil: ..." görüyor; kabul edilince tüm ürünler takaslandı oluyor.
 - [ ] **E-posta doğrulama:** yeni kayıtta log'da doğrulama bağlantısı var; bağlantı açılınca `/email-verified` sayfası çıkıyor ve Ayarlar'da "doğrulandı", profilde rozet görünüyor; profilde e-posta değiştirince doğrulama sıfırlanıyor; Ayarlar > "Bağlantı Gönder" çalışıyor.
 
+- [ ] **Gerçek zamanlı mesaj:** iki tarayıcıda iki kullanıcıyla sohbet aç (Reverb çalışırken); bir taraf yazınca diğerinde ≤ 1-2 sn'de görünüyor, header rozeti ve sohbet listesi anında güncelleniyor. Reverb penceresini kapatınca mesajlar yine ≤ 5 sn'de geliyor (polling yedeği). Başka bir kullanıcının konuşma kanalına abone olunamıyor (DevTools > Network'te `broadcasting/auth` 403).
+
 ## Üretime çıkmadan
 - [ ] `.env`: `APP_ENV=production`, `APP_DEBUG=false`, gerçek `APP_URL`, SMTP, `EXPO_PUBLIC_API_URL`.
 - [ ] İlk admin hesabı veritabanında elle `is_admin=1` yapılır.

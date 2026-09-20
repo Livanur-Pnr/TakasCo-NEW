@@ -23,6 +23,7 @@ Ayrıntılar: [`TAKASCO_ARCHITECTURE.md`](./TAKASCO_ARCHITECTURE.md) · Gelişti
 - Şifremi unuttum (e-posta ile sıfırlama), sitemap.xml/robots.txt, ürün structured data
 - İlan görüntülenme sayısı, arama önerileri ve son aramalar
 - Değerlendirmeler (tamamlanan takas sonrası) ve gerçek verilerden güven rozetleri
+- Gerçek zamanlı mesajlaşma (Reverb WebSocket, polling yedekli)
 - Aynı teklifte çoklu ürün (en fazla 4), e-posta doğrulama ve "E-posta Doğrulandı" rozeti
 - Takasta para farkı ve karşı teklif
 - İlan türü (satılık / takasa açık / ikisi), fiyat, marka, teslimat; fiyat/tür filtresi ve fiyat sıralaması
@@ -79,7 +80,7 @@ Gizli anahtarlar depoya girmez: `.env`, SQLite dosyası ve yüklenen görseller 
 ## Test
 
 ```bash
-cd backend && php artisan test        # 146 test (takas güvenliği, yetkilendirme, bildirim, mesajlaşma, admin, görsel, auth…)
+cd backend && php artisan test        # 149 test (takas güvenliği, yetkilendirme, bildirim, mesajlaşma, admin, görsel, auth…)
 cd mobile  && npx tsc --noEmit        # tip kontrolü
 ```
 

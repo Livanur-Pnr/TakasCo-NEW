@@ -11,6 +11,7 @@ import { api, getImageUrl } from '@/utils/api';
 import { SiteFooter } from '@/components/web-storefront';
 import { useIsDesktopWeb } from '@/hooks/use-is-desktop-web';
 import { usePageTitle } from '@/utils/use-page-title';
+import { disconnectRealtime } from '@/utils/realtime';
 
 interface User {
   id: number;
@@ -79,6 +80,7 @@ export default function ProfileScreen() {
 
   const handleLogout = async () => {
     await SecureStore.deleteItemAsync('auth_token');
+    disconnectRealtime();
     router.replace('/(auth)/welcome');
   };
 

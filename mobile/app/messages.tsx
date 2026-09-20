@@ -9,6 +9,7 @@ import { ReportModal } from '@/components/report-modal';
 import { Brand, Radius, Spacing } from '@/constants/theme';
 import { useIsDesktopWeb } from '@/hooks/use-is-desktop-web';
 import { usePolling } from '@/hooks/use-polling';
+import { useRealtimeEvent } from '@/utils/realtime';
 import { useTheme } from '@/hooks/use-theme';
 import { api, getImageUrl } from '@/utils/api';
 import { Alert } from '@/utils/alert';
@@ -87,7 +88,9 @@ function ChatPane({ conversationId, me, onBack }: { conversationId: number; me: 
     setMessages([]);
   }, [conversationId]);
 
-  usePolling(load, 5000, true, conversationId);
+  // Reverb bağlıyken yeni mesaj olayı gelince yalnızca yeni mesajlar çekilir; polling seyrek bir güvence olarak kalır
+  const realtime = useRealtimeEvent(`conversation.${conversationId}`, '.message.sent', () => { load(); });
+  usePolling(load, realtime ? 30000 : 5000, true, conversationId);
 
   const sendingRef = useRef(false);
 
@@ -258,7 +261,8 @@ export default function MessagesScreen() {
     }
   }, []);
 
-  usePolling(loadList, 15000);
+  const listRealtime = useRealtimeEvent(me ? `App.Models.User.${me}` : null, '.message.sent', () => { loadList(); });
+  usePolling(loadList, listRealtime ? 60000 : 15000);
 
   const open = (id: number) => router.setParams({ c: String(id) });
   const closeChat = useCallback(() => router.setParams({ c: '' }), [router]);

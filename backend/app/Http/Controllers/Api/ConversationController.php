@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Events\MessageSent;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\Product;
@@ -129,6 +130,13 @@ class ConversationController extends Controller
             'body' => trim($data['body']),
         ]);
         $conversation->update(['last_message_at' => $message->created_at]);
+
+        // gerçek zamanlı yayın: Reverb kapalı/erişilemezse mesaj yine de gönderilmiş sayılır (istemci polling ile yakalar)
+        try {
+            event(new MessageSent($message, (int) $conversation->otherUser($meId)->id));
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         return response()->json([
             'id' => $message->id, 'sender_id' => $message->sender_id, 'body' => $message->body,
