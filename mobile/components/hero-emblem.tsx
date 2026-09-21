@@ -66,7 +66,7 @@ function Satellite({ icon, tint, bg, left, top, rotate, motion }: { icon: 'tshir
   );
 }
 
-// Büyük kompozisyon: tanıtım slaytının sağ tarafı (ve fotoğrafı olmayan ilan slaytı için yedek)
+// Tanıtım slaytının sağ tarafı (fotoğrafı olmayan ilan slaytında yedek olarak da kullanılır)
 export function ExchangeEmblem() {
   return (
     <View style={styles.stage}>
@@ -87,16 +87,6 @@ export function ExchangeEmblem() {
       <Satellite icon="book.fill" tint="#b45309" bg="#fef3c7" left={296} top={34} rotate="5deg" motion="b" />
       <Satellite icon="desktopcomputer" tint="#0369a1" bg="#e0f2fe" left={276} top={210} rotate="-4deg" motion="c" />
       <Satellite icon="sportscourt.fill" tint="#be123c" bg="#ffe4e6" left={28} top={214} rotate="4deg" motion="a" />
-    </View>
-  );
-}
-
-// Küçük rozet: ilan slaytlarında fotoğraf kartının köşesinde
-export function ExchangeBadge({ style }: { style?: object }) {
-  return (
-    <View style={[{ position: 'absolute' }, style]}>
-      <View style={[styles.ripple, { width: 66, height: 66, borderRadius: 33, left: 0, top: 0 }]} {...data('scene', 'ripple')} pointerEvents="none" />
-      <SpinCircle size={66} />
     </View>
   );
 }

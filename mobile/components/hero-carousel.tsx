@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, AppState, Image, PanResponder, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { BrandBackdrop } from '@/components/auth/brand-scene';
-import { ExchangeBadge, ExchangeEmblem } from '@/components/hero-emblem';
+import { ExchangeEmblem } from '@/components/hero-emblem';
 import { FeatureChips } from '@/components/auth/feature-chips';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -169,7 +169,6 @@ function SlideView({ slide, active, hovered, height, compact }: { slide: Slide; 
                     </View>
                   )}
                 </Animated.View>
-                <ExchangeBadge style={{ right: -22, top: -22 }} />
               </View>
             ) : (
               <ExchangeEmblem />
