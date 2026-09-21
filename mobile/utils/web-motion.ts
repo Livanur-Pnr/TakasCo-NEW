@@ -60,6 +60,26 @@ export function installWebMotionStyles() {
     [data-ambient="b"] { animation: tk-float-b 16s ease-in-out infinite; will-change: transform; }
     [data-ambient="c"] { animation: tk-drift 22s ease-in-out infinite; will-change: transform; }
     @media (prefers-reduced-motion: reduce) { [data-ambient] { animation: none !important; } }
+    /* marka paneli sahnesi: 12 sn'lik tek döngü (bildirim → mesaj → teklif → tamamlandı). Yalnızca opacity/transform. */
+    @keyframes tk-toast { 0%, 6% { opacity: 0; transform: translateY(-10px); } 13%, 30% { opacity: 1; transform: translateY(0); } 36%, 100% { opacity: 0; transform: translateY(-6px); } }
+    @keyframes tk-msg { 0%, 37% { opacity: 0; transform: translateY(10px); } 44%, 88% { opacity: 1; transform: translateY(0); } 94%, 100% { opacity: 0; transform: translateY(6px); } }
+    @keyframes tk-offer { 0%, 49% { opacity: 0; transform: translateX(-14px); } 56%, 92% { opacity: 1; transform: translateX(0); } 97%, 100% { opacity: 0; transform: translateX(-8px); } }
+    @keyframes tk-accept { 0%, 66% { opacity: 1; } 70%, 100% { opacity: 0; } }
+    @keyframes tk-done { 0%, 67% { opacity: 0; transform: scale(0.96); } 72%, 92% { opacity: 1; transform: scale(1); } 97%, 100% { opacity: 0; } }
+    @keyframes tk-heart { 0%, 38%, 50%, 100% { transform: scale(1); } 44% { transform: scale(1.18); } }
+    @keyframes tk-orbit { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes tk-twinkle { 0%, 100% { opacity: 0.15; } 50% { opacity: 0.6; } }
+    [data-scene="toast"] { animation: tk-toast 12s ease-in-out infinite both; }
+    [data-scene="msg"] { animation: tk-msg 12s ease-in-out infinite both; }
+    [data-scene="offer"] { animation: tk-offer 12s ease-in-out infinite both; }
+    [data-scene="accept"] { animation: tk-accept 12s ease-in-out infinite both; }
+    [data-scene="done"] { animation: tk-done 12s ease-in-out infinite both; }
+    [data-scene="heart"] { animation: tk-heart 12s ease-in-out infinite; }
+    [data-scene="orbit"] { animation: tk-orbit 90s linear infinite; }
+    [data-scene="twinkle"] { animation: tk-twinkle 7s ease-in-out infinite; }
+    [data-scene] { will-change: transform, opacity; }
+    @media (prefers-reduced-motion: reduce) { [data-scene] { animation: none !important; } }
+
 
     /* metin bağlantıları (alt bilgi vb.): renk + alt çizgi */
     [data-textlink="true"]:hover { text-decoration: underline; color: ${Brand.accent} !important; }

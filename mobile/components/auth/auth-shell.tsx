@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Image, Platform, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BrandBackdrop, BrandScene } from '@/components/auth/brand-scene';
 import { FeatureChips } from '@/components/auth/feature-chips';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -57,46 +58,19 @@ function LogoTile({ size }: { size: number }) {
   );
 }
 
-function MockCard({ icon }: { icon: 'tshirt.fill' | 'book.fill' | 'desktopcomputer' }) {
-  return (
-    <View style={[styles.mock, webOnly({ backdropFilter: 'blur(8px)' })]}>
-      <View style={styles.mockImage}>
-        <IconSymbol name={icon} size={28} color="rgba(255, 255, 255, 0.92)" />
-      </View>
-      <View style={[styles.mockLine, { width: '72%' }]} />
-      <View style={[styles.mockLine, { width: '44%', opacity: 0.6 }]} />
-    </View>
-  );
-}
-
-// Masaüstü sol panel: koyu yeşil zemin üzerinde soyut "takas akışı" kompozisyonu (ürün kartları + değişim düğümü + halkalar).
-// Süs öğeleri düşük opaklıklı ve tıklanamaz; yalnızca transform ile çok yavaş salınır (hareket azaltmada durur).
+// Masaüstü sol panel: koyu yeşil zemin, ince ızgara ve ışık lekeleri üzerinde TakasCo uygulamasını anlatan animasyonlu sahne (brand-scene.tsx).
 function BrandPanel() {
   return (
     <View style={[styles.panel, webOnly({ backgroundImage: Gradient.brandPanel })]}>
+      <BrandBackdrop />
       <FadeInUp distance={0} duration={Duration.slow} delay={80} style={styles.panelTop}>
         <LogoTile size={40} />
         <ThemedText style={styles.panelName}>TakasCo</ThemedText>
       </FadeInUp>
 
-      <View style={styles.stage} pointerEvents="none" importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
-        <View style={[styles.glow, webOnly({ backgroundImage: Gradient.brandGlow })]} />
-        <View style={[styles.ring, { width: 440, height: 440, borderRadius: 220, right: -110, top: -30 }]} />
-        <View style={[styles.ring, { width: 260, height: 260, borderRadius: 130, left: -60, bottom: -20, opacity: 0.7 }]} />
-
-        <View style={{ position: 'absolute', left: '4%', top: '6%', transform: [{ rotate: '-4deg' }] }}>
-          <View {...({ dataSet: { ambient: 'a' } } as any)}><MockCard icon="tshirt.fill" /></View>
-        </View>
-        <View style={{ position: 'absolute', right: '4%', bottom: '4%', transform: [{ rotate: '3deg' }] }}>
-          <View {...({ dataSet: { ambient: 'b' } } as any)}><MockCard icon="desktopcomputer" /></View>
-        </View>
-        <View style={{ position: 'absolute', left: '16%', bottom: '-2%', transform: [{ rotate: '2deg' }], opacity: 0.75 }}>
-          <View {...({ dataSet: { ambient: 'c' } } as any)}><MockCard icon="book.fill" /></View>
-        </View>
-        <View style={styles.node}>
-          <IconSymbol name="arrow.left.arrow.right" size={24} color={Brand.accent} />
-        </View>
-      </View>
+      <FadeInUp distance={0} duration={Duration.slow} delay={220} style={styles.stage}>
+        <BrandScene />
+      </FadeInUp>
 
       <FadeInUp distance={6} duration={Duration.slow} delay={160} style={{ gap: Spacing.five }}>
         <ThemedText style={styles.panelSlogan}>{AUTH_SLOGAN}</ThemedText>
@@ -211,14 +185,8 @@ const styles = StyleSheet.create({
   panel: { flex: 1, maxWidth: 640, minWidth: 460, backgroundColor: '#14532D', padding: 48, justifyContent: 'space-between', overflow: 'hidden' },
   panelTop: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
   panelName: { color: '#ffffff', fontSize: 26, fontWeight: '800', letterSpacing: -0.3 },
+  stage: { flex: 1, minHeight: 300, marginVertical: Spacing.four },
   panelSlogan: { color: '#ffffff', fontSize: 26, lineHeight: 36, fontWeight: '700', letterSpacing: -0.3, maxWidth: 460 },
-  stage: { flex: 1, minHeight: 260, marginVertical: Spacing.six },
-  glow: { position: 'absolute', width: 420, height: 420, right: '10%', top: '18%' },
-  ring: { position: 'absolute', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.10)' },
-  node: { position: 'absolute', left: '50%', top: '50%', marginLeft: -28, marginTop: -28, width: 56, height: 56, borderRadius: 28, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center', ...(web ? ({ boxShadow: '0 8px 24px rgba(0, 0, 0, 0.18)' } as any) : { elevation: 4 }) },
-  mock: { width: 176, padding: 12, gap: 10, borderRadius: Radius.lg, backgroundColor: 'rgba(255, 255, 255, 0.10)', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.20)' },
-  mockImage: { height: 68, borderRadius: Radius.md, backgroundColor: 'rgba(255, 255, 255, 0.14)', alignItems: 'center', justifyContent: 'center' },
-  mockLine: { height: 8, borderRadius: 4, backgroundColor: 'rgba(255, 255, 255, 0.30)' },
 
   heroBlock: { alignItems: 'center', gap: Spacing.three },
   heroLogo: { width: 88, height: 88 },
