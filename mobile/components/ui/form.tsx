@@ -1,11 +1,10 @@
-import { ReactNode, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, StyleProp, TextInputProps, View, ViewStyle } from 'react-native';
-import { TextInput } from '@/components/ui/text-input';
+import { ReactNode, useEffect, useRef } from 'react';
+import { ActivityIndicator, Animated, Platform, StyleProp, View, ViewStyle } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useReducedMotion } from '@/components/ui/motion';
 import { TouchableOpacity } from '@/components/ui/touchable';
-import { Brand, Radius, Spacing } from '@/constants/theme';
+import { Brand, Gradient, Radius, Spacing } from '@/constants/theme';
 import { Distance, Duration, Ease } from '@/constants/motion';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -42,56 +41,44 @@ export function FormError({ message }: { message?: string | null }) {
 
 export type ActionStatus = 'idle' | 'loading' | 'success';
 
-// Ana eylem düğmesi: boşta → yükleniyor (iğne ucu boyutu değişmez) → başarılı (kısa onay işareti). Devre dışıyken hover/basma hareketi yoktur.
-// Düğmenin yüksekliği/genişliği içerik değişse de sabit kalır (layout kayması olmaz).
-export function ActionButton({ label, status = 'idle', onPress, disabled, variant = 'primary', style, icon }: { label: string; status?: ActionStatus; onPress: () => void; disabled?: boolean; variant?: 'primary' | 'secondary' | 'danger'; style?: StyleProp<ViewStyle>; icon?: ReactNode }) {
+// Ana eylem düğmesi: boşta → yükleniyor (boyut değişmez) → başarılı (kısa onay işareti). Devre dışıyken hover/basma hareketi yoktur.
+// Varyantlar: primary (marka gradyanı, hover'da gölge + 1px yükselme), secondary, danger, outline (ikincil CTA: çerçeveli).
+// `arrow`: sağda küçük ok; hover'da 3px sağa kayar. `loadingLabel`: yüklenirken iğnenin yanında gösterilen metin.
+export function ActionButton({ label, status = 'idle', onPress, disabled, variant = 'primary', style, icon, arrow, loadingLabel }: { label: string; status?: ActionStatus; onPress: () => void; disabled?: boolean; variant?: 'primary' | 'secondary' | 'danger' | 'outline'; style?: StyleProp<ViewStyle>; icon?: ReactNode; arrow?: boolean; loadingLabel?: string }) {
   const theme = useTheme();
   const busy = status === 'loading';
-  const bg = variant === 'primary' ? Brand.accent : variant === 'danger' ? Brand.danger : theme.backgroundSelected;
-  const fg = variant === 'secondary' ? theme.text : '#fff';
+  const done = status === 'success';
+  const outline = variant === 'outline';
+  const bg = outline ? '#ffffff' : variant === 'primary' ? Brand.accent : variant === 'danger' ? Brand.danger : theme.backgroundSelected;
+  const fg = outline ? Brand.wordmark : variant === 'secondary' ? theme.text : '#fff';
+  const gradient = Platform.OS === 'web' && variant === 'primary' && !done ? ({ backgroundImage: Gradient.cta } as any) : null;
 
   return (
     <TouchableOpacity
+      motionKind="button"
+      {...({ dataSet: { cta: variant } } as any)}
       accessibilityRole="button"
       accessibilityState={{ disabled: disabled || busy, busy }}
-      disabled={disabled || busy || status === 'success'}
+      disabled={disabled || busy || done}
       onPress={onPress}
-      style={[{ backgroundColor: status === 'success' ? Brand.success : bg, minHeight: 52, paddingHorizontal: Spacing.five, borderRadius: Radius.sm, alignItems: 'center', justifyContent: 'center', opacity: disabled ? 0.5 : 1 }, style]}
+      style={[
+        { backgroundColor: done ? Brand.success : bg, minHeight: 52, paddingHorizontal: Spacing.five, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center', opacity: disabled ? 0.5 : 1 },
+        outline ? { borderWidth: 1, borderColor: 'rgba(27, 122, 67, 0.28)' } : null,
+        gradient,
+        style,
+      ]}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.two }}>
-        {busy ? <ActivityIndicator color={fg} /> : status === 'success' ? <IconSymbol name="checkmark.circle.fill" size={20} color="#fff" /> : icon}
-        {!busy && <ThemedText style={{ color: fg, fontWeight: 'bold', fontSize: 16 }}>{status === 'success' ? 'Tamamlandı' : label}</ThemedText>}
+        {busy ? <ActivityIndicator color={fg} /> : done ? <IconSymbol name="checkmark.circle.fill" size={20} color="#fff" /> : icon}
+        {(!busy || !!loadingLabel) && (
+          <ThemedText style={{ color: fg, fontWeight: '700', fontSize: 16, letterSpacing: 0.1 }}>{done ? 'Tamamlandı' : busy ? loadingLabel : label}</ThemedText>
+        )}
+        {arrow && !busy && !done && (
+          <View {...({ dataSet: { ctaarrow: 'true' } } as any)}>
+            <IconSymbol name="chevron.right" size={18} color={fg} />
+          </View>
+        )}
       </View>
     </TouchableOpacity>
-  );
-}
-
-// Şifre alanı: göster/gizle düğmeli metin girişi (ikon geçişi anlık; düğme klavye ile de erişilebilir)
-export function PasswordInput({ value, onChangeText, placeholder, error, style, ...rest }: Omit<TextInputProps, 'secureTextEntry'> & { error?: boolean }) {
-  const theme = useTheme();
-  const [visible, setVisible] = useState(false);
-  return (
-    <View style={{ justifyContent: 'center' }}>
-      <TextInput
-        {...rest}
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        placeholderTextColor={theme.textSecondary}
-        secureTextEntry={!visible}
-        autoCapitalize="none"
-        error={error}
-        style={[style, { paddingRight: 48 }]}
-      />
-      <TouchableOpacity
-        onPress={() => setVisible((v) => !v)}
-        accessibilityRole="button"
-        accessibilityLabel={visible ? 'Şifreyi gizle' : 'Şifreyi göster'}
-        hitSlop={8}
-        style={{ position: 'absolute', right: Spacing.three, padding: 4 }}
-      >
-        <IconSymbol name={visible ? 'eye.slash.fill' : 'eye.fill'} size={20} color={theme.textSecondary} />
-      </TouchableOpacity>
-    </View>
   );
 }

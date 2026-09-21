@@ -1,5 +1,5 @@
 import { Platform } from 'react-native';
-import { Brand } from '@/constants/theme';
+import { Brand, Gradient } from '@/constants/theme';
 import { Duration } from '@/constants/motion';
 
 // Web'e özgü ortak hareket kuralları (CSS): renk geçişleri, input hover/odak, navigasyon alt çizgisi, kart görseli yakınlaşması.
@@ -31,6 +31,35 @@ export function installWebMotionStyles() {
       transition: transform ${Duration.normal}ms cubic-bezier(0.2, 0, 0, 1);
     }
     [data-nav="link"]:hover::after, [data-nav="link"][data-active="true"]::after { transform: scaleX(1); }
+
+    /* ── kimlik doğrulama ekranları ── */
+    [data-field] { transition: border-color ${fast} ease, box-shadow ${fast} ease, background-color ${fast} ease; }
+    [data-fieldicon] > * { transition: color ${fast} ease; }
+    [data-iconbtn] { transition: background-color ${fast} ease; }
+    [data-chip] { transition: transform ${fast} ease, background-color ${fast} ease, border-color ${fast} ease, box-shadow ${fast} ease; cursor: default; }
+    [data-chipicon], [data-ctaarrow] { transition: transform ${fast} ease; }
+
+    /* hover yalnızca fareli cihazlarda; dokunmatikte basma durumu kullanılır */
+    @media (hover: hover) and (pointer: fine) {
+      [data-chip]:hover { transform: translateY(-1px); }
+      [data-chip="dark"]:hover { background-color: rgba(255, 255, 255, 0.18) !important; border-color: rgba(255, 255, 255, 0.4) !important; }
+      [data-chip="light"]:hover { background-color: #e6f6ed !important; border-color: rgba(27, 122, 67, 0.45) !important; box-shadow: 0 2px 8px rgba(20, 70, 45, 0.08); }
+      [data-chip]:hover [data-chipicon] { transform: scale(1.14); }
+      [data-field][data-state="idle"]:hover { border-color: rgba(27, 122, 67, 0.5) !important; }
+      [data-iconbtn]:hover { background-color: rgba(27, 122, 67, 0.09) !important; }
+      [data-cta="primary"]:hover { background-image: ${Gradient.ctaHover} !important; }
+      [data-cta="outline"]:hover { background-color: #eef8f2 !important; border-color: rgba(27, 122, 67, 0.5) !important; }
+      [data-cta]:hover [data-ctaarrow] { transform: translateX(3px); }
+    }
+
+    /* arka plandaki çok yavaş, düşük opaklıklı ortam hareketi (yalnızca transform) */
+    @keyframes tk-float-a { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    @keyframes tk-float-b { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(7px); } }
+    @keyframes tk-drift { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(14px, -10px); } }
+    [data-ambient="a"] { animation: tk-float-a 13s ease-in-out infinite; will-change: transform; }
+    [data-ambient="b"] { animation: tk-float-b 16s ease-in-out infinite; will-change: transform; }
+    [data-ambient="c"] { animation: tk-drift 22s ease-in-out infinite; will-change: transform; }
+    @media (prefers-reduced-motion: reduce) { [data-ambient] { animation: none !important; } }
 
     /* metin bağlantıları (alt bilgi vb.): renk + alt çizgi */
     [data-textlink="true"]:hover { text-decoration: underline; color: ${Brand.accent} !important; }

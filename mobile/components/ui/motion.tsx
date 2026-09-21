@@ -14,7 +14,7 @@ export function useReducedMotion(): boolean {
 }
 
 // Aşağıdan yukarı yumuşak giriş (opaklık + kısa kayma). `delay` ile küçük sıralı (stagger) giriş yapılabilir.
-export function FadeInUp({ children, delay = 0, distance = Distance.md, duration = Duration.normal, style }: { children: ReactNode; delay?: number; distance?: number; duration?: number; style?: StyleProp<ViewStyle> }) {
+export function FadeInUp({ children, delay = 0, distance = Distance.md, duration = Duration.normal, scaleFrom, style }: { children: ReactNode; delay?: number; distance?: number; duration?: number; scaleFrom?: number; style?: StyleProp<ViewStyle> }) {
   const reduced = useReducedMotion();
   const value = useRef(new Animated.Value(0)).current;
 
@@ -27,7 +27,7 @@ export function FadeInUp({ children, delay = 0, distance = Distance.md, duration
   }, [reduced, delay, duration, value]);
 
   return (
-    <Animated.View style={[style, { opacity: value, transform: [{ translateY: value.interpolate({ inputRange: [0, 1], outputRange: [distance, 0] }) }] }]}>
+    <Animated.View style={[style, { opacity: value, transform: [{ translateY: value.interpolate({ inputRange: [0, 1], outputRange: [distance, 0] }) }, ...(scaleFrom ? [{ scale: value.interpolate({ inputRange: [0, 1], outputRange: [scaleFrom, 1] }) }] : [])] }]}>
       {children}
     </Animated.View>
   );

@@ -1,29 +1,27 @@
-import { FadeInUp } from '@/components/ui/motion';
-import { useState } from 'react';
-import { ActivityIndicator, StyleSheet } from 'react-native';
-import { TouchableOpacity } from '@/components/ui/touchable';
-import { PasswordInput } from '@/components/ui/form';
+import { useRef, useState } from 'react';
+import { TextInput as RNTextInput, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ThemedView } from '@/components/themed-view';
-import { ThemedText } from '@/components/themed-text';
-import { Brand, Radius, Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { Spacing } from '@/constants/theme';
 import { api } from '@/utils/api';
 import { Alert } from '@/utils/alert';
 import { usePageTitle } from '@/utils/use-page-title';
+import { AuthHeading, AuthItem, AuthShell } from '@/components/auth/auth-shell';
+import { AuthField } from '@/components/auth/auth-field';
+import { ActionButton } from '@/components/ui/form';
 
 // E-postadaki bağlantı buraya gelir: /reset-password?token=...&email=...
 export default function ResetPasswordScreen() {
   const router = useRouter();
-  const theme = useTheme();
   const { token, email } = useLocalSearchParams<{ token?: string; email?: string }>();
   usePageTitle('Yeni Şifre Belirle');
 
+  const confirmRef = useRef<RNTextInput>(null);
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
 
   const submit = async () => {
+    if (loading) return;
     if (!token || !email) {
       Alert.alert('Hata', 'Bağlantı geçersiz. Yeni bir şifre sıfırlama bağlantısı iste.');
       return;
@@ -50,36 +48,44 @@ export default function ResetPasswordScreen() {
   };
 
   return (
-    <ThemedView style={{ flex: 1 }}>
-      <FadeInUp style={styles.container}>
-      <ThemedText type="title" style={{ color: Brand.wordmark }}>Yeni Şifre Belirle</ThemedText>
-      <ThemedText style={{ color: theme.textSecondary }}>{email ? `${email} hesabı için yeni bir şifre seç.` : 'Yeni bir şifre seç.'}</ThemedText>
-      <PasswordInput
-        style={[styles.input, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }]}
-        placeholder="Yeni şifre (en az 8 karakter)"
-        value={password}
-        onChangeText={setPassword}
-        accessibilityLabel="Yeni şifre"
-      />
-      <PasswordInput
-        style={[styles.input, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }]}
-        placeholder="Yeni şifre (tekrar)"
-        value={confirm}
-        onChangeText={setConfirm}
-        onSubmitEditing={submit}
-        accessibilityLabel="Yeni şifre tekrar"
-      />
-      <TouchableOpacity onPress={submit} disabled={loading} accessibilityRole="button" style={[styles.button, { backgroundColor: loading ? theme.backgroundSelected : Brand.accent }]}>
-        {loading ? <ActivityIndicator color="#fff" /> : <ThemedText style={styles.buttonText}>Şifreyi Güncelle</ThemedText>}
-      </TouchableOpacity>
-      </FadeInUp>
-    </ThemedView>
+    <AuthShell>
+      <AuthItem i={0}>
+        <AuthHeading title="Yeni Şifre Belirle" subtitle={email ? `${email} hesabı için yeni bir şifre seç.` : 'Yeni bir şifre seç.'} />
+      </AuthItem>
+      <AuthItem i={1}>
+        <View style={{ gap: Spacing.four }}>
+          <AuthField
+            label="Yeni şifre"
+            icon="lock.fill"
+            placeholder="En az 8 karakter"
+            secure
+            autoCapitalize="none"
+            autoComplete="new-password"
+            textContentType="newPassword"
+            returnKeyType="next"
+            value={password}
+            onChangeText={setPassword}
+            onSubmitEditing={() => confirmRef.current?.focus()}
+          />
+          <AuthField
+            ref={confirmRef}
+            label="Yeni şifre (tekrar)"
+            icon="lock.fill"
+            placeholder="Şifreyi tekrar girin"
+            secure
+            autoCapitalize="none"
+            autoComplete="new-password"
+            textContentType="newPassword"
+            returnKeyType="go"
+            value={confirm}
+            onChangeText={setConfirm}
+            onSubmitEditing={submit}
+          />
+        </View>
+      </AuthItem>
+      <AuthItem i={2}>
+        <ActionButton label="Şifreyi Güncelle" loadingLabel="Güncelleniyor…" status={loading ? 'loading' : 'idle'} onPress={submit} arrow />
+      </AuthItem>
+    </AuthShell>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: Spacing.six, paddingTop: Spacing.eight, gap: Spacing.four },
-  input: { borderWidth: 1, padding: Spacing.three, borderRadius: Radius.sm, fontSize: 16 },
-  button: { padding: Spacing.four, borderRadius: Radius.sm, alignItems: 'center' },
-  buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
-});

@@ -30,9 +30,10 @@ function classify(w: number, h: number): Kind {
   return 'button';
 }
 
-type Props = TouchableOpacityProps & { hoverLift?: boolean; onHoverIn?: () => void; onHoverOut?: () => void };
+// motionKind: ölçüye göre seçilen hareketi zorlar (ör. geniş ama tek başına duran ana CTA → 'button')
+type Props = TouchableOpacityProps & { hoverLift?: boolean; motionKind?: Kind; onHoverIn?: () => void; onHoverOut?: () => void };
 
-export function TouchableOpacity({ style, activeOpacity = 0.7, disabled, hoverLift, onPressIn, onPressOut, onLayout, onHoverIn, onHoverOut, children, ...rest }: Props) {
+export function TouchableOpacity({ style, activeOpacity = 0.7, disabled, hoverLift, motionKind, onPressIn, onPressOut, onLayout, onHoverIn, onHoverOut, children, ...rest }: Props) {
   const kind = useRef<Kind>('button');
   const scale = useRef(new Animated.Value(1)).current;
   const lift = useRef(new Animated.Value(0)).current;
@@ -71,7 +72,7 @@ export function TouchableOpacity({ style, activeOpacity = 0.7, disabled, hoverLi
       {...({ dataSet: { ...((rest as any).dataSet ?? {}), animated: 'true' } } as any)}
       disabled={disabled}
       onLayout={(e: LayoutChangeEvent) => {
-        kind.current = classify(e.nativeEvent.layout.width, e.nativeEvent.layout.height);
+        kind.current = motionKind ?? classify(e.nativeEvent.layout.width, e.nativeEvent.layout.height);
         onLayout?.(e);
       }}
       onHoverIn={() => {

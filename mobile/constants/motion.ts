@@ -38,6 +38,9 @@ export const Shadow = {
   button: '0 6px 14px rgba(20, 70, 45, 0.16)',
   card: '0 12px 26px rgba(15, 60, 35, 0.13)',
   ring: '0 0 0 3px rgba(28, 120, 72, 0.18)',   // odak halkası (input)
+  ringDanger: '0 0 0 3px rgba(220, 38, 38, 0.14)',
+  authCard: '0 1px 2px rgba(16, 40, 28, 0.05), 0 18px 44px rgba(15, 60, 35, 0.10)',  // giriş kartı: ince katman + yumuşak derinlik
+  cta: '0 8px 20px rgba(20, 90, 50, 0.24)',
 } as const;
 
 // Stagger: ilk birkaç öğe için küçük gecikme; uzun listelerde kuyruk oluşmaz

@@ -37,6 +37,18 @@ export const Colors = {
 
 
 
+// ── Gradients (web) ──
+// Kimlik doğrulama ekranlarının arka plan/CTA gradyanları. Native'de kullanılmaz (düz renge düşülür).
+export const Gradient = {
+  authBackdrop: 'linear-gradient(160deg, #f7fcff 0%, #eef8f2 55%, #e2f3e9 100%)',
+  brandPanel: 'linear-gradient(150deg, #0d3b20 0%, #14532D 45%, #1B7A43 100%)',
+  brandGlow: 'radial-gradient(closest-side, rgba(110, 231, 183, 0.28), rgba(110, 231, 183, 0))',
+  blobMint: 'radial-gradient(closest-side, rgba(110, 231, 183, 0.32), rgba(110, 231, 183, 0))',
+  blobGreen: 'radial-gradient(closest-side, rgba(27, 122, 67, 0.14), rgba(27, 122, 67, 0))',
+  cta: 'linear-gradient(180deg, #219052 0%, #1B7A43 100%)',
+  ctaHover: 'linear-gradient(180deg, #27a460 0%, #1f8a4d 100%)',
+} as const;
+
 // ── Fonts ──
 // Adjust per platform/framework as needed
 export const Fonts = {

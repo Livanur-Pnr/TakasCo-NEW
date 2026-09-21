@@ -73,3 +73,12 @@ Hazırlık: `cd backend && php artisan serve`, `cd mobile && npx expo start --we
 - [ ] Modallar (rapor, değerlendirme, karşı teklif, zil, profil fotoğrafı): açılış/kapanış animasyonu, dışarı tıklayınca ve Esc ile kapanma.
 - [ ] Menü bağlantıları hover'da alttan çizgi; ürün kartında hover'da görsel hafif büyür.
 - [ ] İşletim sisteminde "hareketi azalt" açıkken animasyonlar atlanır.
+
+## Giriş ekranı yeniden tasarımı (N4)
+- [ ] Masaüstü (≥1000px): solda koyu yeşil marka paneli (logo, yüzen kartlar, değişim düğümü, slogan, çipler), sağda giriş kartı. Kartlar çok yavaş süzülür; "hareketi azalt" açıkken durur.
+- [ ] Tablet (640–999px): ortalanmış kart + üstte kompakt logo. Telefon (<640px): kartsız form, 44px+ dokunma alanları, klavye açılınca kaydırılabilir.
+- [ ] Giriş: e-posta → Enter → şifre; şifrede Enter ile giriş; göz simgesi şifreyi gösterir/gizler ve yerleşim kaymaz; boş gönderimde ilgili alanlar kırmızı olur, yazınca kırmızılık kalkar.
+- [ ] Yanlış şifre: sakin hata mesajı + iki alan kırmızı; başarılı girişte düğme yeşil "Tamamlandı" olur, ~0.35 sn sonra yönlenir. Yükleniyor sırasında çift tıklama ikinci istek göndermez.
+- [ ] Giriş ↔ Kayıt Ol geçişleri (alttaki düğmeler), "Şifremi unuttum", "Geri" (doğrudan /login açıldıysa karşılamaya döner).
+- [ ] Tab tuşuyla gezinme sırası: Geri → E-posta → Şifre → göz → Şifremi unuttum → Giriş Yap → (Google) → Kayıt Ol; her birinde görünür odak.
+- [ ] Hover: çipler (1px yükselme + ikon), alan kenarlığı, Giriş Yap (gradyan/gölge/ok 3px), Kayıt Ol (çerçeve/zemin). Telefonda hover yok, basma geri bildirimi var.

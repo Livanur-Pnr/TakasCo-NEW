@@ -1,24 +1,23 @@
-import { StyleSheet, ScrollView } from 'react-native';
-import { TextInput } from '@/components/ui/text-input';
-import { TouchableOpacity } from '@/components/ui/touchable';
-import { useState } from 'react';
+import { TextInput as RNTextInput, View } from 'react-native';
+import { useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 import * as SecureStore from '@/utils/storage';
-import { ThemedView } from '@/components/themed-view';
-import { ThemedText } from '@/components/themed-text';
-import { Brand, Spacing, Radius } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { Spacing } from '@/constants/theme';
 import { api } from '@/utils/api';
 import { GoogleSignIn } from '@/components/google-sign-in';
 import { usePageTitle } from '@/utils/use-page-title';
-import { FadeInUp } from '@/components/ui/motion';
-import { ActionButton, ActionStatus, FormError, PasswordInput } from '@/components/ui/form';
+import { AuthDivider, AuthHeading, AuthItem, AuthShell } from '@/components/auth/auth-shell';
+import { AuthField } from '@/components/auth/auth-field';
+import { ActionButton, ActionStatus, FormError } from '@/components/ui/form';
 
 export default function RegisterScreen() {
   const router = useRouter();
-  const theme = useTheme();
   usePageTitle('Kayıt Ol');
+
+  const emailRef = useRef<RNTextInput>(null);
+  const phoneRef = useRef<RNTextInput>(null);
+  const passwordRef = useRef<RNTextInput>(null);
+  const confirmRef = useRef<RNTextInput>(null);
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -27,19 +26,32 @@ export default function RegisterScreen() {
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [status, setStatus] = useState<ActionStatus>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [invalid, setInvalid] = useState<string[]>([]);
+
+  const clear = (field: string) => {
+    setErrorMsg(null);
+    setInvalid((prev) => prev.filter((f) => f !== field));
+  };
 
   const handleRegister = async () => {
+    if (status !== 'idle') return;
     if (!name || !email || !phoneNumber || !password || !passwordConfirmation) {
       setErrorMsg('Lütfen tüm alanları doldurun.');
+      setInvalid([
+        !name ? 'name' : '', !email ? 'email' : '', !phoneNumber ? 'phone_number' : '',
+        !password ? 'password' : '', !passwordConfirmation ? 'confirm' : '',
+      ].filter(Boolean));
       return;
     }
 
     if (password !== passwordConfirmation) {
       setErrorMsg('Şifreler eşleşmiyor.');
+      setInvalid(['password', 'confirm']);
       return;
     }
 
     setErrorMsg(null);
+    setInvalid([]);
     setStatus('loading');
     try {
       const response = await api.post('/register', {
@@ -50,13 +62,13 @@ export default function RegisterScreen() {
         password_confirmation: passwordConfirmation
       });
 
-      const { access_token, user } = response.data; 
+      const { access_token, user } = response.data;
 
       await SecureStore.setItemAsync('auth_token', access_token);
-      await SecureStore.setItemAsync('user', JSON.stringify(user)); 
+      await SecureStore.setItemAsync('user', JSON.stringify(user));
 
       setStatus('success');
-      setTimeout(() => router.replace('/onboarding'), 450); // yeni üyeye tek seferlik ilgi alanı/şehir sorusu (atlanabilir)
+      setTimeout(() => router.replace('/onboarding'), 350); // yeni üyeye tek seferlik ilgi alanı/şehir sorusu (atlanabilir)
     } catch (error: any) {
       console.error(error.response?.data);
       let errorMessage = 'Kayıt başarısız.';
@@ -65,8 +77,10 @@ export default function RegisterScreen() {
         const data = error.response.data;
         if (typeof data === 'object' && !data.message) {
             errorMessage = Object.values(data).flat().join('\n');
+            setInvalid(Object.keys(data));
         } else if (data.message) {
             errorMessage = data.message;
+            if (data.errors && typeof data.errors === 'object') setInvalid(Object.keys(data.errors));
         }
       }
       setErrorMsg(errorMessage);
@@ -75,96 +89,110 @@ export default function RegisterScreen() {
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: theme.background }} contentContainerStyle={{ padding: Spacing.six }}>
-      <TouchableOpacity onPress={() => router.back()} style={styles.backButton} accessibilityRole="button" accessibilityLabel="Geri">
-        <IconSymbol name="chevron.right" size={24} color={theme.text} style={{ transform: [{ rotate: '180deg' }] }} />
-      </TouchableOpacity>
+    <AuthShell onBack={() => (router.canGoBack() ? router.back() : router.replace('/(auth)/welcome'))}>
+      <AuthItem i={0}>
+        <AuthHeading title="Hesabınızı oluşturun" subtitle="Takas topluluğuna katılın, eşyalarınıza yeni bir hayat verin" />
+      </AuthItem>
 
-      <FadeInUp>
-      <ThemedView style={styles.header}>
-        <ThemedText type="title" style={{ color: Brand.wordmark }}>Kayıt Ol</ThemedText>
-        <ThemedText style={styles.subtitle}>Yeni bir hesap oluşturun</ThemedText>
-      </ThemedView>
-      </FadeInUp>
-
-      <FadeInUp delay={90}>
-      <ThemedView style={styles.form}>
-        <ThemedView style={styles.inputContainer}>
-          <ThemedText style={styles.label}>Ad Soyad</ThemedText>
-          <TextInput 
-            style={[styles.input, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }]} 
-            placeholder="Adınız Soyadınız" 
-            placeholderTextColor={theme.textSecondary}
+      <AuthItem i={1}>
+        <View style={{ gap: Spacing.four }}>
+          <AuthField
+            label="Ad Soyad"
+            icon="person.fill"
+            placeholder="Adınız Soyadınız"
+            autoComplete="name"
+            textContentType="name"
+            returnKeyType="next"
             value={name}
-            onChangeText={setName}
+            onChangeText={(v) => { setName(v); clear('name'); }}
+            onSubmitEditing={() => emailRef.current?.focus()}
+            invalid={invalid.includes('name')}
           />
-        </ThemedView>
-
-        <ThemedView style={styles.inputContainer}>
-          <ThemedText style={styles.label}>E-posta</ThemedText>
-          <TextInput 
-            style={[styles.input, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }]} 
-            placeholder="E-posta adresiniz" 
-            placeholderTextColor={theme.textSecondary}
+          <AuthField
+            ref={emailRef}
+            label="E-posta"
+            icon="envelope.fill"
+            placeholder="E-posta adresiniz"
             autoCapitalize="none"
+            autoCorrect={false}
             keyboardType="email-address"
+            autoComplete="email"
+            textContentType="emailAddress"
+            returnKeyType="next"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(v) => { setEmail(v); clear('email'); }}
+            onSubmitEditing={() => phoneRef.current?.focus()}
+            invalid={invalid.includes('email')}
           />
-        </ThemedView>
-        
-        <ThemedView style={styles.inputContainer}>
-          <ThemedText style={styles.label}>Telefon Numarası</ThemedText>
-          <TextInput 
-            style={[styles.input, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }]} 
-            placeholder="5XX XXX XX XX" 
-            placeholderTextColor={theme.textSecondary}
+          <AuthField
+            ref={phoneRef}
+            label="Telefon Numarası"
+            icon="phone.fill"
+            placeholder="5XX XXX XX XX"
             keyboardType="phone-pad"
+            autoComplete="tel"
+            textContentType="telephoneNumber"
+            returnKeyType="next"
             value={phoneNumber}
-            onChangeText={setPhoneNumber}
+            onChangeText={(v) => { setPhoneNumber(v); clear('phone_number'); }}
+            onSubmitEditing={() => passwordRef.current?.focus()}
+            invalid={invalid.includes('phone_number')}
           />
-        </ThemedView>
+        </View>
+      </AuthItem>
 
-        <ThemedView style={styles.inputContainer}>
-          <ThemedText style={styles.label}>Şifre</ThemedText>
-          <PasswordInput
-            style={[styles.input, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }]}
+      <AuthItem i={2}>
+        <View style={{ gap: Spacing.four }}>
+          <AuthField
+            ref={passwordRef}
+            label="Şifre"
+            icon="lock.fill"
             placeholder="Şifreniz"
+            secure
+            autoCapitalize="none"
+            autoComplete="new-password"
+            textContentType="newPassword"
+            returnKeyType="next"
             value={password}
-            onChangeText={(v) => { setPassword(v); setErrorMsg(null); }}
-            error={!!errorMsg}
+            onChangeText={(v) => { setPassword(v); clear('password'); }}
+            onSubmitEditing={() => confirmRef.current?.focus()}
+            invalid={invalid.includes('password')}
           />
-        </ThemedView>
-
-        <ThemedView style={styles.inputContainer}>
-          <ThemedText style={styles.label}>Şifre (Tekrar)</ThemedText>
-          <PasswordInput
-            style={[styles.input, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }]}
+          <AuthField
+            ref={confirmRef}
+            label="Şifre (Tekrar)"
+            icon="lock.fill"
             placeholder="Şifrenizi tekrar girin"
+            secure
+            autoCapitalize="none"
+            autoComplete="new-password"
+            textContentType="newPassword"
+            returnKeyType="go"
             value={passwordConfirmation}
-            onChangeText={(v) => { setPasswordConfirmation(v); setErrorMsg(null); }}
-            error={!!errorMsg}
+            onChangeText={(v) => { setPasswordConfirmation(v); clear('confirm'); }}
+            onSubmitEditing={handleRegister}
+            invalid={invalid.includes('confirm')}
           />
-        </ThemedView>
+        </View>
+      </AuthItem>
 
-        <FormError message={errorMsg} />
+      <AuthItem i={3}>
+        <View style={{ gap: Spacing.three }}>
+          <FormError message={errorMsg} />
+          <ActionButton label="Kayıt Ol" loadingLabel="Hesap oluşturuluyor…" status={status} onPress={handleRegister} arrow />
+        </View>
+      </AuthItem>
 
-        <ActionButton label="Kayıt Ol" status={status} onPress={handleRegister} />
+      <AuthItem i={4}>
         <GoogleSignIn />
-      </ThemedView>
-      </FadeInUp>
-    </ScrollView>
+      </AuthItem>
+
+      <AuthItem i={5}>
+        <View style={{ gap: Spacing.three }}>
+          <AuthDivider label="Zaten hesabınız var mı?" />
+          <ActionButton label="Giriş Yap" variant="outline" onPress={() => router.replace('/(auth)/login')} />
+        </View>
+      </AuthItem>
+    </AuthShell>
   );
 }
-
-const styles = StyleSheet.create({
-  backButton: { marginTop: Spacing.four, marginBottom: Spacing.six },
-  header: { marginBottom: Spacing.six, backgroundColor: 'transparent' },
-  subtitle: { opacity: 0.7, marginTop: Spacing.one },
-  form: { gap: Spacing.four, backgroundColor: 'transparent', paddingBottom: 40 },
-  inputContainer: { gap: Spacing.one, backgroundColor: 'transparent' },
-  label: { fontSize: 14, fontWeight: '600' },
-  input: { borderWidth: 1, padding: Spacing.three, borderRadius: Radius.sm, fontSize: 16 },
-  button: { padding: Spacing.four, borderRadius: Radius.sm, alignItems: 'center', marginTop: Spacing.two },
-  buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
-});

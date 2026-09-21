@@ -1,37 +1,43 @@
-import { StyleSheet, Image } from 'react-native';
-import { TextInput } from '@/components/ui/text-input';
+import { StyleSheet, TextInput as RNTextInput, View } from 'react-native';
 import { TouchableOpacity } from '@/components/ui/touchable';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 import * as SecureStore from '@/utils/storage';
-import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
-import { Brand, Spacing, Radius } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { Brand, Spacing } from '@/constants/theme';
 import { api } from '@/utils/api';
 import { GoogleSignIn } from '@/components/google-sign-in';
 import { usePageTitle } from '@/utils/use-page-title';
-import { FadeInUp } from '@/components/ui/motion';
-import { ActionButton, ActionStatus, FormError, PasswordInput } from '@/components/ui/form';
+import { AuthDivider, AuthHeading, AuthItem, AuthShell } from '@/components/auth/auth-shell';
+import { AuthField } from '@/components/auth/auth-field';
+import { ActionButton, ActionStatus, FormError } from '@/components/ui/form';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const theme = useTheme();
   usePageTitle('Giriş Yap');
 
+  const passwordRef = useRef<RNTextInput>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState<ActionStatus>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [invalid, setInvalid] = useState<string[]>([]);
+
+  const clear = (field: string) => {
+    setErrorMsg(null);
+    setInvalid((prev) => prev.filter((f) => f !== field));
+  };
 
   const handleLogin = async () => {
+    if (status !== 'idle') return;
     if (!email || !password) {
       setErrorMsg('Lütfen e-posta ve şifrenizi girin.');
+      setInvalid([!email ? 'email' : '', !password ? 'password' : ''].filter(Boolean));
       return;
     }
 
     setErrorMsg(null);
+    setInvalid([]);
     setStatus('loading');
     try {
       const response = await api.post('/login', {
@@ -40,94 +46,93 @@ export default function LoginScreen() {
       });
 
       // Backend'den hem token hem de user verisinin geldiğini varsayıyoruz
-      const { access_token, user } = response.data; 
+      const { access_token, user } = response.data;
 
       // 1. Token'ı sakla
       await SecureStore.setItemAsync('auth_token', access_token);
-      
+
       // 2. Kullanıcı nesnesini string'e çevirip 'user' adıyla sakla
-      await SecureStore.setItemAsync('user', JSON.stringify(user)); 
+      await SecureStore.setItemAsync('user', JSON.stringify(user));
 
       setStatus('success');
-      setTimeout(() => router.replace('/(tabs)'), 450);
+      setTimeout(() => router.replace('/(tabs)'), 350);
     } catch (error: any) {
       // Backend'den dönen hataları göster
       setErrorMsg(error.response?.data?.message || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.');
+      setInvalid(['email', 'password']);
       setStatus('idle');
     }
   };
 
   return (
-    <ThemedView style={styles.container}>
-      <TouchableOpacity onPress={() => router.back()} style={styles.backButton} accessibilityRole="button" accessibilityLabel="Geri">
-        <IconSymbol name="chevron.right" size={24} color={theme.text} style={{ transform: [{ rotate: '180deg' }] }} />
-      </TouchableOpacity>
+    <AuthShell onBack={() => (router.canGoBack() ? router.back() : router.replace('/(auth)/welcome'))}>
+      <AuthItem i={0}>
+        <AuthHeading title="Tekrar hoş geldiniz" subtitle="Devam etmek için hesabınıza giriş yapın" />
+      </AuthItem>
 
-      <FadeInUp>
-      <ThemedView style={styles.header}>
-        <ThemedView style={styles.brandRow}>
-          <Image source={require('@/assets/images/takasco-logo.png')} style={styles.logo} />
-          <ThemedText type="title" style={{ color: Brand.wordmark, fontSize: 28 }}>TakasCo</ThemedText>
-        </ThemedView>
-        <ThemedText type="title" style={{ color: Brand.wordmark }}>Giriş Yap</ThemedText>
-        <ThemedText style={styles.subtitle}>Devam etmek için hesabınıza giriş yapın</ThemedText>
-      </ThemedView>
-      </FadeInUp>
+      <AuthItem i={1}>
+        <AuthField
+          label="E-posta"
+          icon="envelope.fill"
+          placeholder="E-posta adresiniz"
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="email-address"
+          autoComplete="email"
+          textContentType="emailAddress"
+          returnKeyType="next"
+          value={email}
+          onChangeText={(v) => { setEmail(v); clear('email'); }}
+          onSubmitEditing={() => passwordRef.current?.focus()}
+          invalid={invalid.includes('email')}
+        />
+      </AuthItem>
 
-      <FadeInUp delay={90}>
-      <ThemedView style={styles.form}>
-        <ThemedView style={styles.inputContainer}>
-          <ThemedText style={styles.label}>E-posta</ThemedText>
-          <TextInput 
-            style={[styles.input, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }]} 
-            placeholder="E-posta adresiniz" 
-            placeholderTextColor={theme.textSecondary}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={(v) => { setEmail(v); setErrorMsg(null); }}
-            error={!!errorMsg}
-          />
-        </ThemedView>
-
-        <ThemedView style={styles.inputContainer}>
-          <ThemedText style={styles.label}>Şifre</ThemedText>
-          <PasswordInput
-            style={[styles.input, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }]}
+      <AuthItem i={2}>
+        <View style={{ gap: Spacing.two }}>
+          <AuthField
+            ref={passwordRef}
+            label="Şifre"
+            icon="lock.fill"
             placeholder="Şifreniz"
+            secure
+            autoCapitalize="none"
+            autoComplete="current-password"
+            textContentType="password"
+            returnKeyType="go"
             value={password}
-            onChangeText={(v) => { setPassword(v); setErrorMsg(null); }}
-            error={!!errorMsg}
+            onChangeText={(v) => { setPassword(v); clear('password'); }}
             onSubmitEditing={handleLogin}
+            invalid={invalid.includes('password')}
           />
-        </ThemedView>
+          <TouchableOpacity onPress={() => router.push('/(auth)/forgot-password')} accessibilityRole="link" style={styles.forgot}>
+            <ThemedText style={styles.forgotText} {...({ dataSet: { textlink: 'true' } } as any)}>Şifremi unuttum</ThemedText>
+          </TouchableOpacity>
+        </View>
+      </AuthItem>
 
-        <FormError message={errorMsg} />
+      <AuthItem i={3}>
+        <View style={{ gap: Spacing.three }}>
+          <FormError message={errorMsg} />
+          <ActionButton label="Giriş Yap" loadingLabel="Giriş yapılıyor…" status={status} onPress={handleLogin} arrow />
+        </View>
+      </AuthItem>
 
-        <ActionButton label="Giriş Yap" status={status} onPress={handleLogin} />
-
+      <AuthItem i={4}>
         <GoogleSignIn />
+      </AuthItem>
 
-        <TouchableOpacity onPress={() => router.push('/(auth)/forgot-password')} accessibilityRole="link" style={{ alignSelf: 'center', padding: Spacing.two }}>
-          <ThemedText style={{ color: Brand.accent, fontWeight: '600' }}>Şifremi unuttum</ThemedText>
-        </TouchableOpacity>
-      </ThemedView>
-      </FadeInUp>
-    </ThemedView>
+      <AuthItem i={5}>
+        <View style={{ gap: Spacing.three }}>
+          <AuthDivider label="Hesabınız yok mu?" />
+          <ActionButton label="Kayıt Ol" variant="outline" onPress={() => router.replace('/(auth)/register')} />
+        </View>
+      </AuthItem>
+    </AuthShell>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: Spacing.six },
-  backButton: { marginTop: Spacing.four, marginBottom: Spacing.six },
-  header: { marginBottom: Spacing.six, backgroundColor: 'transparent' },
-  brandRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, marginBottom: Spacing.six, backgroundColor: 'transparent' },
-  logo: { width: 40, height: 40 },
-  subtitle: { opacity: 0.7, marginTop: Spacing.one },
-  form: { gap: Spacing.four, backgroundColor: 'transparent' },
-  inputContainer: { gap: Spacing.one, backgroundColor: 'transparent' },
-  label: { fontSize: 14, fontWeight: '600' },
-  input: { borderWidth: 1, padding: Spacing.three, borderRadius: Radius.sm, fontSize: 16 },
-  button: { padding: Spacing.four, borderRadius: Radius.sm, alignItems: 'center', marginTop: Spacing.two },
-  buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+  forgot: { alignSelf: 'flex-end', paddingVertical: 4, paddingLeft: Spacing.two, minHeight: 32, justifyContent: 'center' },
+  forgotText: { color: Brand.accent, fontWeight: '600', fontSize: 14 },
 });

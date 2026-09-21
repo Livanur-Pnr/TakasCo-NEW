@@ -7,16 +7,18 @@ import { Shadow } from '@/constants/motion';
 // Durumlar: normal → hover (web, kenarlık tonu; bkz. utils/web-motion.ts) → odak (marka renkli kenarlık + yumuşak halka) →
 // hata (`error`, kırmızı kenarlık) → başarılı (`success`, yeşil kenarlık). Kenarlık/halka geçişleri web'de CSS ile yumuşatılır.
 // Odak göstergesi bu bileşenin kendisindedir; bu yüzden tarayıcının varsayılan odak çerçevesi gizlenir.
-type Props = TextInputProps & { error?: boolean; success?: boolean };
+// bare: kenarlık/halka durumunu sarmalayıcı yönetiyorsa (AuthField) girişin kendi odak stili uygulanmaz
+type Props = TextInputProps & { error?: boolean; success?: boolean; bare?: boolean };
 
-export const TextInput = forwardRef<RNTextInput, Props>(function TextInput({ style, onFocus, onBlur, error, success, ...rest }, ref) {
+export const TextInput = forwardRef<RNTextInput, Props>(function TextInput({ style, onFocus, onBlur, error, success, bare, ...rest }, ref) {
   const [focused, setFocused] = useState(false);
   const web = Platform.OS === 'web';
 
   const state: any[] = [];
-  if (success && !error) state.push({ borderColor: Brand.success });
-  if (focused) state.push({ borderColor: Brand.accent }, web ? { boxShadow: Shadow.ring } : null);
-  if (error) state.push({ borderColor: Brand.danger }, focused && web ? { boxShadow: '0 0 0 3px rgba(220, 38, 38, 0.16)' } : null);
+  const stateful = !bare;
+  if (stateful && success && !error) state.push({ borderColor: Brand.success });
+  if (stateful && focused) state.push({ borderColor: Brand.accent }, web ? { boxShadow: Shadow.ring } : null);
+  if (stateful && error) state.push({ borderColor: Brand.danger }, focused && web ? { boxShadow: '0 0 0 3px rgba(220, 38, 38, 0.16)' } : null);
 
   return (
     <RNTextInput
