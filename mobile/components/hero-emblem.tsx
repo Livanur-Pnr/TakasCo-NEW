@@ -21,7 +21,7 @@ const GAP = 40; // iki okun dikey yer değiştirme mesafesi
 const EASE = 'cubic-bezier(0.3, 0, 0, 1)';
 
 // hareketli öğeyi kendi katmanına alır: dönme/ölçek sırasında yeniden çizim (takılma/bulanıklık) olmaz
-const layer = { willChange: 'transform', backfaceVisibility: 'hidden' } as const;
+const layer = { willChange: 'transform' } as const;
 const move = (ms: number) => ({ ...layer, transitionProperty: 'transform', transitionDuration: `${ms}ms`, transitionTimingFunction: EASE });
 
 type SatIcon = 'tshirt.fill' | 'book.fill' | 'desktopcomputer' | 'sportscourt.fill';

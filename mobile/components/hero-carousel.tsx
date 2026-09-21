@@ -18,7 +18,7 @@ import { formatPrice } from '@/utils/listing';
 // Ana sayfa vitrini (carousel). İçerik tamamen gerçek: ilk slayt TakasCo tanıtımı (koyu yeşil, animasyonlu uygulama sahnesi),
 // sonrakiler en çok favorilenen ilanlar (ilanın kendi fotoğrafından bulanık zemin + çerçeveli, süzülen fotoğraf kartı).
 // İlan yoksa yalnızca tanıtım slaytı görünür (uydurma reklam/içerik yoktur).
-// Geçiş: çıkan slayt solar ve hafif büyür, gelen slayt belirir ve yerine oturur; metin, düğme ve görsel sırayla belirir.
+// Geçiş: gelen slayt eskisinin üstünde belirir (çapraz solma, arkadaki zemin görünmez); metin, düğme ve görsel sırayla belirir.
 // Otomatik oynatma 6 sn, fareyle durur, ilerleme çubuğu süreyi gösterir. "Hareketi azalt" açıkken otomatik oynatma ve CSS hareketleri kapalıdır.
 
 const SLIDE_MS = 6000;
@@ -44,7 +44,8 @@ function SlideView({ slide, active, hovered, height, compact }: { slide: Slide; 
 
   useEffect(() => {
     const d = reduced ? 0 : Duration.ad;
-    Animated.timing(fade, { toValue: active ? 1 : 0, duration: d, easing: Ease.emphasized, useNativeDriver: true }).start();
+    // gelen slayt üstte belirir; giden slayt, gelen tamamen görününceye kadar opak kalıp sonra söner (arkadaki koyu zemin hiç görünmez)
+    Animated.timing(fade, { toValue: active ? 1 : 0, duration: d, delay: active ? 0 : d, easing: Ease.emphasized, useNativeDriver: true }).start();
     if (active) {
       text.setValue(reduced ? 1 : 0);
       cta.setValue(reduced ? 1 : 0);
@@ -61,7 +62,6 @@ function SlideView({ slide, active, hovered, height, compact }: { slide: Slide; 
     Animated.timing(zoom, { toValue: hovered && active && !reduced ? 1 : 0, duration: Duration.slow, easing: Ease.standard, useNativeDriver: true }).start();
   }, [hovered, active, reduced, zoom]);
 
-  const enter = fade.interpolate({ inputRange: [0, 1], outputRange: [1.02, 1] }); // çıkarken 1 → 1.02, girerken 1.02 → 1
   const textStyle = { opacity: text, transform: [{ translateY: text.interpolate({ inputRange: [0, 1], outputRange: [Distance.sm + 2, 0] }) }] };
   const ctaStyle = { opacity: cta, transform: [{ translateY: cta.interpolate({ inputRange: [0, 1], outputRange: [Distance.sm, 0] }) }] };
   const mediaStyle = { opacity: media, transform: [{ translateX: media.interpolate({ inputRange: [0, 1], outputRange: [Distance.lg + 10, 0] }) }] };
@@ -81,7 +81,7 @@ function SlideView({ slide, active, hovered, height, compact }: { slide: Slide; 
     <Animated.View
       pointerEvents={active ? 'auto' : 'none'}
       {...({ 'aria-hidden': !active } as any)}
-      style={[StyleSheet.absoluteFill, { opacity: fade, transform: [{ scale: enter }] }, css({ willChange: 'opacity, transform' })]}
+      style={[StyleSheet.absoluteFill, { opacity: fade, zIndex: active ? 2 : 1 }, css({ willChange: 'opacity' })]}
     >
       <View style={[styles.slide, compact && styles.slideCompact, { height, backgroundColor: brand ? '#14532D' : theme.backgroundSelected }, css(brand ? { backgroundImage: Gradient.brandPanel } : {})]}>
         {/* ---- zemin katmanları ---- */}

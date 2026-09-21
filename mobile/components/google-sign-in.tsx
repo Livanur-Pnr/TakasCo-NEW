@@ -32,6 +32,8 @@ export function GoogleSignIn() {
   const router = useRouter();
   const theme = useTheme();
   const holder = useRef<any>(null);
+  const routerRef = useRef(router);
+  routerRef.current = router;
   const [failed, setFailed] = useState(false);
   const enabled = Platform.OS === 'web' && !!CLIENT_ID;
 
@@ -51,7 +53,7 @@ export function GoogleSignIn() {
               const res = await api.post('/auth/google', { credential: response.credential });
               await SecureStore.setItemAsync('auth_token', res.data.access_token);
               await SecureStore.setItemAsync('user', JSON.stringify(res.data.user));
-              router.replace(res.data.is_new ? '/onboarding' : '/(tabs)');
+              routerRef.current.replace(res.data.is_new ? '/onboarding' : '/(tabs)');
             } catch (e: any) {
               Alert.alert('Hata', e.response?.data?.message || 'Google ile giriş yapılamadı.');
             }
@@ -62,7 +64,7 @@ export function GoogleSignIn() {
       .catch(() => !cancelled && setFailed(true));
 
     return () => { cancelled = true; };
-  }, [enabled, router]);
+  }, [enabled]);
 
   if (!enabled || failed) return null;
 

@@ -174,7 +174,7 @@ export default function HomeScreen() {
             </>
           }
           renderItem={({ item, index }) => (
-            <FadeInUp delay={(index % 6) * 45} distance={8} style={{ flex: 1 }}>
+            <FadeInUp once={`p${item.id}`} delay={(index % 6) * 45} distance={8} style={{ flex: 1 }}>
               <ProductCard item={item} isFavorite={isFavorite(item.id)} onToggleFavorite={() => toggleFavorite(item.id)} />
             </FadeInUp>
           )}

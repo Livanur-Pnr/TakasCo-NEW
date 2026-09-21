@@ -333,7 +333,7 @@ export default function MessagesScreen() {
       ) : (
         <ScrollView>
           {conversations.map((c, index) => (
-            <Stagger key={c.id} index={index}>
+            <Stagger key={c.id} id={`cv${c.id}`} index={index}>
             <TouchableOpacity
               onPress={() => open(c.id)}
               accessibilityRole="button"

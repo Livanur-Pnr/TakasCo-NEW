@@ -14,17 +14,28 @@ export function useReducedMotion(): boolean {
 }
 
 // Aşağıdan yukarı yumuşak giriş (opaklık + kısa kayma). `delay` ile küçük sıralı (stagger) giriş yapılabilir.
-export function FadeInUp({ children, delay = 0, distance = Distance.md, duration = Duration.normal, scaleFrom, style }: { children: ReactNode; delay?: number; distance?: number; duration?: number; scaleFrom?: number; style?: StyleProp<ViewStyle> }) {
+// `once`: verilirse aynı anahtar için giriş animasyonu oturum boyunca yalnızca bir kez oynar (sanallaştırılmış listelerde kart
+// ekrandan çıkıp yeniden bağlanınca tekrar solup gelmez).
+const PLAYED = new Set<string | number>();
+
+export function FadeInUp({ children, delay = 0, distance = Distance.md, duration = Duration.normal, scaleFrom, once, style }: { children: ReactNode; delay?: number; distance?: number; duration?: number; scaleFrom?: number; once?: string | number; style?: StyleProp<ViewStyle> }) {
   const reduced = useReducedMotion();
-  const value = useRef(new Animated.Value(0)).current;
+  const value = useRef(new Animated.Value(once !== undefined && PLAYED.has(once) ? 1 : 0)).current;
 
   useEffect(() => {
     if (reduced) {
       value.setValue(1);
       return;
     }
+    if (once !== undefined) {
+      if (PLAYED.has(once)) {
+        value.setValue(1);
+        return;
+      }
+      PLAYED.add(once);
+    }
     Animated.timing(value, { toValue: 1, duration, delay, easing: Ease.decelerate, useNativeDriver: true }).start();
-  }, [reduced, delay, duration, value]);
+  }, [reduced, delay, duration, value, once]);
 
   return (
     <Animated.View style={[style, { opacity: value, transform: [{ translateY: value.interpolate({ inputRange: [0, 1], outputRange: [distance, 0] }) }, ...(scaleFrom ? [{ scale: value.interpolate({ inputRange: [0, 1], outputRange: [scaleFrom, 1] }) }] : [])] }]}>
@@ -91,6 +102,6 @@ export function FadeImage({ style, onLoad, ...rest }: ComponentProps<typeof Anim
 }
 
 // Liste öğeleri için sıralı giriş: ilk 6 öğe 45 ms arayla belirir, sonrakiler gecikmesiz (uzun listelerde bekleme olmaz).
-export function Stagger({ index, children, style }: { index: number; children: ReactNode; style?: StyleProp<ViewStyle> }) {
-  return <FadeInUp delay={Math.min(index, 5) * 45} distance={8} style={style}>{children}</FadeInUp>;
+export function Stagger({ index, id, children, style }: { index: number; id?: string | number; children: ReactNode; style?: StyleProp<ViewStyle> }) {
+  return <FadeInUp delay={Math.min(index, 5) * 45} distance={8} once={id} style={style}>{children}</FadeInUp>;
 }

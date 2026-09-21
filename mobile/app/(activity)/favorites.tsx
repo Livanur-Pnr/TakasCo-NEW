@@ -146,7 +146,7 @@ export default function FavoritesScreen() {
           </View>
         ) : (
           favorites.map((item, index) => (
-            <Stagger key={item.id} index={index}>
+            <Stagger key={item.id} id={`fav${item.id}`} index={index}>
             <TouchableOpacity 
               key={item.id} 
               style={[styles.productCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}

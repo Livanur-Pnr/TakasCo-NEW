@@ -194,7 +194,7 @@ export default function MyTradesScreen() {
             </ThemedText>
           </View>
         ) : (
-          completedTrades.map((trade, index) => <Stagger key={trade.id} index={index}>{renderTradeCard(trade)}</Stagger>)
+          completedTrades.map((trade, index) => <Stagger key={trade.id} id={`mt${trade.id}`} index={index}>{renderTradeCard(trade)}</Stagger>)
         )}
       </ScrollView></FadeInUp>
       {reviewFor && (

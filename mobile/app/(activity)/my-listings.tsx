@@ -201,7 +201,7 @@ export default function MyListingsScreen() {
           </View>
         ) : (
           products.map((item, index) => (
-            <Stagger key={item.id} index={index}>
+            <Stagger key={item.id} id={`ml${item.id}`} index={index}>
             <TouchableOpacity 
               key={item.id} 
               style={[styles.productCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}

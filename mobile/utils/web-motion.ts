@@ -105,7 +105,6 @@ export function installWebMotionStyles() {
     [data-scene="ripple"] { animation: tk-ripple 4.6s ease-out infinite; }
     [data-scene="orbit"] { animation: tk-orbit 90s linear infinite; }
     [data-scene="twinkle"] { animation: tk-twinkle 7s ease-in-out infinite; }
-    [data-scene] { will-change: transform, opacity; }
     @media (prefers-reduced-motion: reduce) { [data-scene] { animation: none !important; } }
 
     /* görünmeyen slaytta ya da ekran dışına kaydırılmış vitrinde sürekli animasyonlar durur (boşuna çizim yapılmaz) */

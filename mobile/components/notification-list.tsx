@@ -15,7 +15,7 @@ export function NotificationList({ items, onPressItem, limit }: { items: AppNoti
   return (
     <View>
       {shown.map((n, index) => (
-        <Stagger key={n.id} index={index}>
+        <Stagger key={n.id} id={`nt${n.id}`} index={index}>
         <TouchableOpacity
           onPress={() => onPressItem(n)}
           accessibilityRole="button"
