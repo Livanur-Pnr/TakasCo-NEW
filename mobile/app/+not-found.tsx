@@ -1,3 +1,4 @@
+import { FadeInUp } from '@/components/ui/motion';
 import { StyleSheet, View } from 'react-native';
 import { TouchableOpacity } from '@/components/ui/touchable';
 import { useRouter } from 'expo-router';
@@ -17,7 +18,8 @@ export default function NotFoundScreen() {
   const isDesktopWeb = useIsDesktopWeb();
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={{ flex: 1 }}>
+      <FadeInUp style={styles.container}>
       {isDesktopWeb && <StorefrontHeader />}
       <View style={styles.content}>
         <IconSymbol name="magnifyingglass" size={64} color={theme.textSecondary} />
@@ -35,6 +37,7 @@ export default function NotFoundScreen() {
           </TouchableOpacity>
         </View>
       </View>
+      </FadeInUp>
     </ThemedView>
   );
 }

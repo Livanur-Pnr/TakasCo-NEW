@@ -1,4 +1,4 @@
-import { FadeImage } from '@/components/ui/motion';
+import { FadeImage, FadeInUp } from '@/components/ui/motion';
 import { StyleSheet, View, ScrollView, ActivityIndicator, Image, Dimensions, Modal, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import { TouchableOpacity } from '@/components/ui/touchable';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -267,7 +267,7 @@ export default function ProductDetailScreen() {
 
     return (
       <ThemedView style={styles.container}>
-        <ScrollView contentContainerStyle={desktopStyles.page}>
+        <FadeInUp style={{ flex: 1 }}><ScrollView contentContainerStyle={desktopStyles.page}>
           <View style={desktopStyles.breadcrumb} accessibilityLabel="Sayfa yolu">
             <TouchableOpacity onPress={() => router.push('/(tabs)')} accessibilityRole="link">
               <ThemedText style={{ color: theme.textSecondary, fontSize: 13 }}>Ana Sayfa</ThemedText>
@@ -464,7 +464,7 @@ export default function ProductDetailScreen() {
           {renderListingSection('Satıcının Diğer İlanları', product.seller_products)}
           {renderListingSection('Benzer İlanlar', product.similar_products)}
         <SiteFooter />
-        </ScrollView>
+        </ScrollView></FadeInUp>
 
         {imageModal}
         <ReportModal visible={reportOpen} onClose={() => setReportOpen(false)} targetType="product" targetId={product.id} title={product.title} />
@@ -474,7 +474,7 @@ export default function ProductDetailScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <ScrollView>
+<FadeInUp style={{ flex: 1 }}>      <ScrollView>
         <View style={[styles.imagePlaceholder, { backgroundColor: theme.backgroundSelected }]}>
           <TouchableOpacity
             onPress={() => {
@@ -637,7 +637,7 @@ export default function ProductDetailScreen() {
             </TouchableOpacity>
           )}
         </View>
-      </ScrollView>
+      </ScrollView></FadeInUp>
 
       {!isOwner && (
         <View style={[styles.footer, { backgroundColor: theme.backgroundElement, borderTopColor: theme.border }]}>

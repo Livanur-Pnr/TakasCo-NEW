@@ -1,3 +1,4 @@
+import { FadeInUp } from '@/components/ui/motion';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, StyleSheet, View } from 'react-native';
 import { TextInput } from '@/components/ui/text-input';
@@ -49,7 +50,8 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={{ flex: 1 }}>
+      <FadeInUp style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.brandRow}>
           <Image source={require('@/assets/images/takasco-logo.png')} style={{ width: 36, height: 36 }} />
@@ -107,6 +109,7 @@ export default function OnboardingScreen() {
           <ThemedText style={{ color: theme.textSecondary, fontWeight: '600' }}>Şimdi değil</ThemedText>
         </TouchableOpacity>
       </ScrollView>
+      </FadeInUp>
     </ThemedView>
   );
 }

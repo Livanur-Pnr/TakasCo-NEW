@@ -1,3 +1,4 @@
+import { FadeInUp } from '@/components/ui/motion';
 import { useState } from 'react';
 import { ActivityIndicator, StyleSheet } from 'react-native';
 import { TextInput } from '@/components/ui/text-input';
@@ -39,7 +40,8 @@ export default function ForgotPasswordScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={{ flex: 1 }}>
+      <FadeInUp style={styles.container}>
       <TouchableOpacity onPress={() => router.back()} style={styles.back} accessibilityRole="button" accessibilityLabel="Geri">
         <IconSymbol name="chevron.right" size={24} color={theme.text} style={{ transform: [{ rotate: '180deg' }] }} />
       </TouchableOpacity>
@@ -74,6 +76,7 @@ export default function ForgotPasswordScreen() {
           </TouchableOpacity>
         </>
       )}
+      </FadeInUp>
     </ThemedView>
   );
 }

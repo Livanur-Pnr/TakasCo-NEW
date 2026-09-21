@@ -1,4 +1,5 @@
 import { StyleSheet, View } from 'react-native';
+import { Stagger } from '@/components/ui/motion';
 import { TouchableOpacity } from '@/components/ui/touchable';
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Radius, Spacing } from '@/constants/theme';
@@ -13,9 +14,9 @@ export function NotificationList({ items, onPressItem, limit }: { items: AppNoti
 
   return (
     <View>
-      {shown.map((n) => (
+      {shown.map((n, index) => (
+        <Stagger key={n.id} index={index}>
         <TouchableOpacity
-          key={n.id}
           onPress={() => onPressItem(n)}
           accessibilityRole="button"
           accessibilityLabel={`${n.read_at ? '' : 'Okunmamış. '}${n.title}. ${n.body}`}
@@ -28,6 +29,7 @@ export function NotificationList({ items, onPressItem, limit }: { items: AppNoti
             <ThemedText style={{ color: theme.textSecondary, fontSize: 11, marginTop: 2 }}>{timeAgo(n.created_at)}</ThemedText>
           </View>
         </TouchableOpacity>
+        </Stagger>
       ))}
     </View>
   );

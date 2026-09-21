@@ -1,3 +1,4 @@
+import { FadeInUp } from '@/components/ui/motion';
 import { StyleSheet } from 'react-native';
 import { TouchableOpacity } from '@/components/ui/touchable';
 import { useRouter } from 'expo-router';
@@ -14,13 +15,15 @@ export default function EmailVerifiedScreen() {
   usePageTitle('E-posta Doğrulandı');
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={{ flex: 1 }}>
+      <FadeInUp style={styles.container}>
       <ThemedText style={{ fontSize: 48 }}>✓</ThemedText>
       <ThemedText type="title" style={{ color: Brand.wordmark, textAlign: 'center' }}>E-posta adresin doğrulandı</ThemedText>
       <ThemedText style={{ color: theme.textSecondary, textAlign: 'center' }}>Profilinde E-posta Doğrulandı rozeti görünecek.</ThemedText>
       <TouchableOpacity onPress={() => router.replace('/(tabs)')} accessibilityRole="button" style={[styles.button, { backgroundColor: Brand.accent }]}>
         <ThemedText style={styles.buttonText}>Ana Sayfaya Git</ThemedText>
       </TouchableOpacity>
+      </FadeInUp>
     </ThemedView>
   );
 }

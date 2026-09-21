@@ -1,5 +1,6 @@
+import { FadeInUp } from '@/components/ui/motion';
 import { useEffect, useState } from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import { TouchableOpacity } from '@/components/ui/touchable';
 import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
@@ -29,7 +30,7 @@ export function CookieBanner() {
   };
 
   return (
-    <View style={[styles.bar, { backgroundColor: theme.backgroundElement, borderColor: theme.border }]} accessibilityRole="alert">
+    <FadeInUp delay={500} style={[styles.bar, { backgroundColor: theme.backgroundElement, borderColor: theme.border }]}>
       <ThemedText style={{ flex: 1, fontSize: 13, lineHeight: 19 }}>
         TakasCo, oturumunu açık tutmak ve tercihlerini hatırlamak için yalnızca zorunlu tarayıcı depolamasını kullanır; reklam veya izleme çerezi kullanmaz.{' '}
         <ThemedText style={{ color: Brand.accent, fontWeight: '700', fontSize: 13 }} onPress={() => router.push('/kvkk')} accessibilityRole="link">
@@ -39,7 +40,7 @@ export function CookieBanner() {
       <TouchableOpacity onPress={dismiss} accessibilityRole="button" style={[styles.btn, { backgroundColor: Brand.accent }]}>
         <ThemedText style={{ color: '#fff', fontWeight: '700', fontSize: 13 }}>Anladım</ThemedText>
       </TouchableOpacity>
-    </View>
+    </FadeInUp>
   );
 }
 

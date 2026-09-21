@@ -1,3 +1,4 @@
+import { FadeInUp } from '@/components/ui/motion';
 import type { ReactNode } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { TouchableOpacity } from '@/components/ui/touchable';
@@ -46,7 +47,7 @@ export function SubPage({ title, children, footer, overlay, gap = Spacing.six, w
             <ThemedText style={{ color: theme.textSecondary, fontSize: 14 }}>Geri dön</ThemedText>
           </TouchableOpacity>
           <ThemedText type="title" style={{ fontSize: 24, color: Brand.wordmark }}>{title}</ThemedText>
-          <View style={{ gap }}>{children}</View>
+          <FadeInUp><View style={{ gap }}>{children}</View></FadeInUp>
           {footer}
           <SiteFooter />
         </ScrollView>
@@ -65,7 +66,9 @@ export function SubPage({ title, children, footer, overlay, gap = Spacing.six, w
         <View style={{ width: 24 }} />
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: Spacing.four, gap }}>{children}</ScrollView>
+      <FadeInUp style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={{ padding: Spacing.four, gap }}>{children}</ScrollView>
+      </FadeInUp>
 
       {!!footer && (
         <View style={[styles.footer, { backgroundColor: theme.backgroundElement, borderTopColor: theme.border }]}>{footer}</View>

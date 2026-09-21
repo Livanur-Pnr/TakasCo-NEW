@@ -1,3 +1,4 @@
+import { FadeInUp, Stagger } from '@/components/ui/motion';
 import { StyleSheet, View, ScrollView, ActivityIndicator, Image } from 'react-native';
 import { TouchableOpacity } from '@/components/ui/touchable';
 import { useRouter } from 'expo-router';
@@ -125,7 +126,7 @@ export default function MyTradesScreen() {
     return (
       <ThemedView style={styles.container}>
         <StorefrontHeader />
-        <ScrollView contentContainerStyle={desktopActivityStyles.page}>
+        <FadeInUp style={{ flex: 1 }}><ScrollView contentContainerStyle={desktopActivityStyles.page}>
           <View style={desktopActivityStyles.titleRow}>
             <ThemedText type="title" style={{ fontSize: 24, color: Brand.wordmark }}>Gerçekleşen Takaslarım</ThemedText>
             {!loading && !error && (
@@ -154,7 +155,7 @@ export default function MyTradesScreen() {
             </View>
           )}
         <SiteFooter />
-        </ScrollView>
+        </ScrollView></FadeInUp>
       {reviewFor && (
         <ReviewModal
           tradeId={reviewFor.id}
@@ -180,7 +181,7 @@ export default function MyTradesScreen() {
         <View style={{ width: 24 }} />
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: Spacing.four, gap: Spacing.four, flexGrow: 1 }}>
+      <FadeInUp style={{ flex: 1 }}><ScrollView contentContainerStyle={{ padding: Spacing.four, gap: Spacing.four, flexGrow: 1 }}>
         {loading ? (
           <ActivityIndicator size="large" color={Brand.accent} style={{ marginTop: Spacing.eight }} />
         ) : error ? (
@@ -193,9 +194,9 @@ export default function MyTradesScreen() {
             </ThemedText>
           </View>
         ) : (
-          completedTrades.map((trade) => renderTradeCard(trade))
+          completedTrades.map((trade, index) => <Stagger key={trade.id} index={index}>{renderTradeCard(trade)}</Stagger>)
         )}
-      </ScrollView>
+      </ScrollView></FadeInUp>
       {reviewFor && (
         <ReviewModal
           tradeId={reviewFor.id}

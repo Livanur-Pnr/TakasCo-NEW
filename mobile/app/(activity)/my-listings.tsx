@@ -1,3 +1,4 @@
+import { FadeInUp, Stagger } from '@/components/ui/motion';
 import { StyleSheet, View, ScrollView, ActivityIndicator, Image } from 'react-native';
 import { TouchableOpacity } from '@/components/ui/touchable';
 import { useRouter } from 'expo-router';
@@ -113,7 +114,7 @@ export default function MyListingsScreen() {
     return (
       <ThemedView style={styles.container}>
         <StorefrontHeader />
-        <ScrollView contentContainerStyle={desktopActivityStyles.page}>
+        <FadeInUp style={{ flex: 1 }}><ScrollView contentContainerStyle={desktopActivityStyles.page}>
           <View style={desktopActivityStyles.titleRow}>
             <ThemedText type="title" style={{ fontSize: 24, color: Brand.wordmark }}>İlanlarım</ThemedText>
             {!loading && !error && (
@@ -167,7 +168,7 @@ export default function MyListingsScreen() {
             </View>
           )}
         <SiteFooter />
-        </ScrollView>
+        </ScrollView></FadeInUp>
       </ThemedView>
     );
   }
@@ -182,7 +183,7 @@ export default function MyListingsScreen() {
         <View style={{ width: 24 }} />
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: Spacing.four, gap: Spacing.four, flexGrow: 1 }}>
+      <FadeInUp style={{ flex: 1 }}><ScrollView contentContainerStyle={{ padding: Spacing.four, gap: Spacing.four, flexGrow: 1 }}>
         {loading ? (
           <ActivityIndicator size="large" color={Brand.accent} style={{ marginTop: Spacing.eight }} />
         ) : error ? (
@@ -199,7 +200,8 @@ export default function MyListingsScreen() {
             </TouchableOpacity>
           </View>
         ) : (
-          products.map((item) => (
+          products.map((item, index) => (
+            <Stagger key={item.id} index={index}>
             <TouchableOpacity 
               key={item.id} 
               style={[styles.productCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}
@@ -226,9 +228,10 @@ export default function MyListingsScreen() {
                 {renderActions(item)}
               </View>
             </TouchableOpacity>
+            </Stagger>
           ))
         )}
-      </ScrollView>
+      </ScrollView></FadeInUp>
     </ThemedView>
   );
 }

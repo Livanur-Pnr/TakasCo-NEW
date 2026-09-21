@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FadeInUp } from '@/components/ui/motion';
+import { FadeInUp, Stagger } from '@/components/ui/motion';
 import { ActivityIndicator, Image, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { TextInput } from '@/components/ui/text-input';
 import { TouchableOpacity } from '@/components/ui/touchable';
@@ -324,17 +324,17 @@ export default function MessagesScreen() {
       {loading ? (
         <ActivityIndicator color={Brand.accent} style={{ marginTop: Spacing.six }} />
       ) : conversations.length === 0 ? (
-        <View style={{ alignItems: 'center', padding: Spacing.six, gap: Spacing.three }}>
+        <FadeInUp style={{ alignItems: 'center', padding: Spacing.six, gap: Spacing.three }}>
           <IconSymbol name="bubble.left.fill" size={44} color={theme.textSecondary} />
           <ThemedText style={{ color: theme.textSecondary, textAlign: 'center' }}>
             Henüz bir konuşman yok. Bir ilanın sayfasından satıcıya mesaj gönderebilirsin.
           </ThemedText>
-        </View>
+        </FadeInUp>
       ) : (
         <ScrollView>
-          {conversations.map((c) => (
+          {conversations.map((c, index) => (
+            <Stagger key={c.id} index={index}>
             <TouchableOpacity
-              key={c.id}
               onPress={() => open(c.id)}
               accessibilityRole="button"
               accessibilityLabel={`${c.other_user.name} ile konuşma${c.unread_count ? `, ${c.unread_count} okunmamış` : ''}`}
@@ -352,6 +352,7 @@ export default function MessagesScreen() {
                 </View>
               )}
             </TouchableOpacity>
+            </Stagger>
           ))}
         </ScrollView>
       )}

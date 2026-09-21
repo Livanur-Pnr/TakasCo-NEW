@@ -1,3 +1,4 @@
+import { FadeInUp } from '@/components/ui/motion';
 import { useState } from 'react';
 import { ActivityIndicator, StyleSheet } from 'react-native';
 import { TouchableOpacity } from '@/components/ui/touchable';
@@ -49,7 +50,8 @@ export default function ResetPasswordScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={{ flex: 1 }}>
+      <FadeInUp style={styles.container}>
       <ThemedText type="title" style={{ color: Brand.wordmark }}>Yeni Şifre Belirle</ThemedText>
       <ThemedText style={{ color: theme.textSecondary }}>{email ? `${email} hesabı için yeni bir şifre seç.` : 'Yeni bir şifre seç.'}</ThemedText>
       <PasswordInput
@@ -70,6 +72,7 @@ export default function ResetPasswordScreen() {
       <TouchableOpacity onPress={submit} disabled={loading} accessibilityRole="button" style={[styles.button, { backgroundColor: loading ? theme.backgroundSelected : Brand.accent }]}>
         {loading ? <ActivityIndicator color="#fff" /> : <ThemedText style={styles.buttonText}>Şifreyi Güncelle</ThemedText>}
       </TouchableOpacity>
+      </FadeInUp>
     </ThemedView>
   );
 }

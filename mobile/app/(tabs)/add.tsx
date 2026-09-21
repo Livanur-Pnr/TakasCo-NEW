@@ -1,4 +1,4 @@
-import { FadeImage } from '@/components/ui/motion';
+import { FadeImage, FadeInUp } from '@/components/ui/motion';
 import { StyleSheet, ScrollView, View, ActivityIndicator, Platform } from 'react-native';
 import { TextInput } from '@/components/ui/text-input';
 import { TouchableOpacity } from '@/components/ui/touchable';
@@ -363,7 +363,7 @@ export default function AddScreen() {
     const selectedCategoryName = categories.find((c) => c.id === selectedCategory)?.name;
     return (
       <ThemedView style={styles.container}>
-        <ScrollView contentContainerStyle={desktopAddStyles.page}>
+        <FadeInUp style={{ flex: 1 }}><ScrollView contentContainerStyle={desktopAddStyles.page}>
           <ThemedText type="title" style={{ fontSize: 24, color: Brand.wordmark, marginBottom: Spacing.five }}>İlan Ver</ThemedText>
 
           <View style={desktopAddStyles.mainRow}>
@@ -420,7 +420,7 @@ export default function AddScreen() {
             </View>
           </View>
         <SiteFooter />
-        </ScrollView>
+        </ScrollView></FadeInUp>
       </ThemedView>
     );
   }
@@ -431,7 +431,7 @@ export default function AddScreen() {
         <ThemedText type="title" style={{ fontSize: 24, color: Brand.wordmark }}>İlan Ekle</ThemedText>
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: Spacing.four, gap: Spacing.six }}>
+      <FadeInUp style={{ flex: 1 }}><ScrollView contentContainerStyle={{ padding: Spacing.four, gap: Spacing.six }}>
         {draftBanner}
         {renderImageUploader(100)}
         {renderTitleField()}
@@ -441,7 +441,7 @@ export default function AddScreen() {
         <ListingCommercialFields value={commercial} onChange={setCommercial} />
         {needsSwap(commercial.listingType) && renderSwapField()}
         {renderPublishButton()}
-      </ScrollView>
+      </ScrollView></FadeInUp>
     </ThemedView>
   );
 }

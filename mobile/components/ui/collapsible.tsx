@@ -1,5 +1,7 @@
-import { PropsWithChildren, useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { PropsWithChildren, useEffect, useRef, useState } from 'react';
+import { Animated, StyleSheet } from 'react-native';
+import { FadeInUp } from '@/components/ui/motion';
+import { Duration, Ease } from '@/constants/motion';
 import { TouchableOpacity } from '@/components/ui/touchable';
 
 import { ThemedText } from '@/components/themed-text';
@@ -10,6 +12,10 @@ import { Colors } from '@/constants/theme';
 export function Collapsible({ children, title }: PropsWithChildren & { title: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const theme = 'light' as const;
+  const turn = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.timing(turn, { toValue: isOpen ? 1 : 0, duration: Duration.normal, easing: Ease.standard, useNativeDriver: true }).start();
+  }, [isOpen, turn]);
 
   return (
     <ThemedView>
@@ -17,17 +23,13 @@ export function Collapsible({ children, title }: PropsWithChildren & { title: st
         style={styles.heading}
         onPress={() => setIsOpen((value) => !value)}
         activeOpacity={0.8}>
-        <IconSymbol
-          name="chevron.right"
-          size={18}
-          weight="medium"
-          color={Colors[theme].textSecondary}
-          style={{ transform: [{ rotate: isOpen ? '90deg' : '0deg' }] }}
-        />
+        <Animated.View style={{ transform: [{ rotate: turn.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '90deg'] }) }] }}>
+          <IconSymbol name="chevron.right" size={18} weight="medium" color={Colors[theme].textSecondary} />
+        </Animated.View>
 
         <ThemedText type="defaultSemiBold">{title}</ThemedText>
       </TouchableOpacity>
-      {isOpen && <ThemedView style={styles.content}>{children}</ThemedView>}
+      {isOpen && <FadeInUp distance={6}><ThemedView style={styles.content}>{children}</ThemedView></FadeInUp>}
     </ThemedView>
   );
 }

@@ -1,3 +1,4 @@
+import { FadeInUp } from '@/components/ui/motion';
 import { StyleSheet, View, ScrollView, ActivityIndicator, Image } from 'react-native';
 import { TouchableOpacity } from '@/components/ui/touchable';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -110,7 +111,7 @@ export default function ProfileScreen() {
 
     return (
       <ThemedView style={styles.container}>
-        <ScrollView contentContainerStyle={desktopProfileStyles.page}>
+        <FadeInUp style={{ flex: 1 }}><ScrollView contentContainerStyle={desktopProfileStyles.page}>
           <View style={desktopProfileStyles.mainRow}>
             <View style={desktopProfileStyles.sideCol}>
               <View style={[desktopProfileStyles.profileCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
@@ -180,7 +181,7 @@ export default function ProfileScreen() {
             </View>
           </View>
         <SiteFooter />
-        </ScrollView>
+        </ScrollView></FadeInUp>
       </ThemedView>
     );
   }
@@ -191,7 +192,7 @@ export default function ProfileScreen() {
         <ThemedText type="title" style={{ fontSize: 24, color: Brand.wordmark }}>Profil</ThemedText>
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: Spacing.four, gap: Spacing.six }}>
+      <FadeInUp style={{ flex: 1 }}><ScrollView contentContainerStyle={{ padding: Spacing.four, gap: Spacing.six }}>
         <View style={styles.profileHeader}>
           <View style={[styles.avatar, { backgroundColor: theme.backgroundSelected, overflow: 'hidden' }]}>
             {user?.profile_photo_path ? (
@@ -279,7 +280,7 @@ export default function ProfileScreen() {
             <ThemedText style={{ color: Brand.danger, fontWeight: 'bold' }}>Çıkış Yap</ThemedText>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+      </ScrollView></FadeInUp>
     </ThemedView>
   );
 }

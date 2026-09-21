@@ -1,3 +1,4 @@
+import { FadeInUp } from '@/components/ui/motion';
 import { StyleSheet, View, ScrollView, ActivityIndicator, Image } from 'react-native';
 import { TouchableOpacity } from '@/components/ui/touchable';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -108,7 +109,7 @@ export default function OfferScreen() {
     return (
       <ThemedView style={styles.container}>
         <StorefrontHeader />
-        <ScrollView contentContainerStyle={desktopActivityStyles.page}>
+        <FadeInUp style={{ flex: 1 }}><ScrollView contentContainerStyle={desktopActivityStyles.page}>
           <ThemedText type="title" style={{ fontSize: 24, color: Brand.wordmark }}>Teklif Gönder</ThemedText>
           <ThemedText style={{ color: theme.textSecondary, marginTop: Spacing.two, marginBottom: Spacing.six }}>
             Bu ürüne karşılık teklif etmek istediğiniz kendi ürününüzü seçin. İstersen birden fazla ürün ekleyebilirsin (en fazla 4).
@@ -173,7 +174,7 @@ export default function OfferScreen() {
             </>
           )}
         <SiteFooter />
-        </ScrollView>
+        </ScrollView></FadeInUp>
       </ThemedView>
     );
   }
@@ -188,7 +189,7 @@ export default function OfferScreen() {
         <View style={{ width: 24 }} />
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: Spacing.four, gap: Spacing.six }}>
+      <FadeInUp style={{ flex: 1 }}><ScrollView contentContainerStyle={{ padding: Spacing.four, gap: Spacing.six }}>
         <ThemedText type="subtitle" style={{ textAlign: 'center' }}>
           Bu ürüne karşılık ne teklif ediyorsun?
         </ThemedText>
@@ -230,7 +231,7 @@ export default function OfferScreen() {
           </View>
         )}
         {!loading && myProducts.length > 0 && <CashAdjustment value={cash} onChange={setCash} />}
-      </ScrollView>
+      </ScrollView></FadeInUp>
 
       <View style={[styles.footer, { backgroundColor: theme.backgroundElement, borderTopColor: theme.border }]}>
         <TouchableOpacity

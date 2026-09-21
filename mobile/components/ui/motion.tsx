@@ -89,3 +89,8 @@ export function FadeImage({ style, onLoad, ...rest }: ComponentProps<typeof Anim
     />
   );
 }
+
+// Liste öğeleri için sıralı giriş: ilk 6 öğe 45 ms arayla belirir, sonrakiler gecikmesiz (uzun listelerde bekleme olmaz).
+export function Stagger({ index, children, style }: { index: number; children: ReactNode; style?: StyleProp<ViewStyle> }) {
+  return <FadeInUp delay={Math.min(index, 5) * 45} distance={8} style={style}>{children}</FadeInUp>;
+}
