@@ -69,6 +69,7 @@ export function installWebMotionStyles() {
     @keyframes tk-accept { 0%, 66% { opacity: 1; } 70%, 100% { opacity: 0; } }
     @keyframes tk-done { 0%, 67% { opacity: 0; transform: scale(0.96); } 72%, 92% { opacity: 1; transform: scale(1); } 97%, 100% { opacity: 0; } }
     @keyframes tk-heart { 0%, 38%, 50%, 100% { transform: scale(1); } 44% { transform: scale(1.18); } }
+    @keyframes tk-ripple { 0% { transform: scale(1); opacity: 0.55; } 100% { transform: scale(1.7); opacity: 0; } }
     @keyframes tk-orbit { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     @keyframes tk-twinkle { 0%, 100% { opacity: 0.15; } 50% { opacity: 0.6; } }
     [data-scene="toast"] { animation: tk-toast 12s ease-in-out infinite both; }
@@ -77,6 +78,7 @@ export function installWebMotionStyles() {
     [data-scene="accept"] { animation: tk-accept 12s ease-in-out infinite both; }
     [data-scene="done"] { animation: tk-done 12s ease-in-out infinite both; }
     [data-scene="heart"] { animation: tk-heart 12s ease-in-out infinite; }
+    [data-scene="ripple"] { animation: tk-ripple 4.6s ease-out infinite; }
     [data-scene="orbit"] { animation: tk-orbit 90s linear infinite; }
     [data-scene="twinkle"] { animation: tk-twinkle 7s ease-in-out infinite; }
     [data-scene] { will-change: transform, opacity; }

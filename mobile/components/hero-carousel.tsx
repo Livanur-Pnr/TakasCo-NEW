@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, AppState, Image, PanResponder, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { BrandBackdrop, BrandScene } from '@/components/auth/brand-scene';
+import { BrandBackdrop } from '@/components/auth/brand-scene';
+import { ExchangeBadge, ExchangeEmblem } from '@/components/hero-emblem';
 import { FeatureChips } from '@/components/auth/feature-chips';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -143,9 +144,9 @@ function SlideView({ slide, active, hovered, height, compact }: { slide: Slide; 
 
         {/* ---- görsel ---- */}
         {!compact && (
-          <Animated.View style={[styles.mediaCol, mediaStyle]} pointerEvents="none">
+          <Animated.View style={[styles.mediaCol, mediaStyle]} pointerEvents="box-none">
             {brand ? (
-              <BrandScene />
+              <ExchangeEmblem />
             ) : photo ? (
               <View {...data('ambient', 'a')}>
                 <Animated.View style={[styles.photoCard, css({ boxShadow: '0 26px 54px rgba(12, 60, 34, 0.28), 0 2px 6px rgba(12, 60, 34, 0.10)' }), { transform: [{ scale: zoom.interpolate({ inputRange: [0, 1], outputRange: [1, 1.03] }) }] }]}>
@@ -168,11 +169,10 @@ function SlideView({ slide, active, hovered, height, compact }: { slide: Slide; 
                     </View>
                   )}
                 </Animated.View>
+                <ExchangeBadge style={{ right: -22, top: -22 }} />
               </View>
             ) : (
-              <View style={[styles.emblem, { backgroundColor: Brand.accent }]}>
-                <IconSymbol name="arrow.left.arrow.right" size={64} color="#fff" />
-              </View>
+              <ExchangeEmblem />
             )}
           </Animated.View>
         )}
@@ -313,7 +313,6 @@ const styles = StyleSheet.create({
   glass: { position: 'absolute', paddingHorizontal: 10, paddingVertical: 5, borderRadius: Radius.full, backgroundColor: 'rgba(255, 255, 255, 0.88)' },
   glassText: { color: '#111827', fontSize: 12, fontWeight: '700', lineHeight: 15 },
   pricePill: { position: 'absolute', paddingHorizontal: 12, paddingVertical: 6, borderRadius: Radius.full, backgroundColor: Brand.accent },
-  emblem: { width: 160, height: 160, borderRadius: 80, justifyContent: 'center', alignItems: 'center' },
   arrow: { position: 'absolute', top: '45%', width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.9)', justifyContent: 'center', alignItems: 'center', zIndex: 2 },
   segments: { position: 'absolute', bottom: Spacing.three, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', gap: Spacing.two, zIndex: 2 },
   segmentHit: { paddingVertical: 6 },
