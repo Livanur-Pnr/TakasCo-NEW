@@ -48,6 +48,8 @@ export function installWebMotionStyles() {
       [data-field][data-state="idle"]:hover { border-color: rgba(27, 122, 67, 0.5) !important; }
       [data-iconbtn]:hover { background-color: rgba(27, 122, 67, 0.09) !important; }
       [data-cta="primary"]:hover { background-image: ${Gradient.ctaHover} !important; }
+      [data-cta="light"]:hover { background-color: #ecfdf5 !important; }
+      [data-cta="ghost"]:hover { background-color: rgba(255, 255, 255, 0.14) !important; border-color: rgba(255, 255, 255, 0.85) !important; }
       [data-cta="outline"]:hover { background-color: #eef8f2 !important; border-color: rgba(27, 122, 67, 0.5) !important; }
       [data-cta]:hover [data-ctaarrow] { transform: translateX(3px); }
     }

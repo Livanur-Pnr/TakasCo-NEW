@@ -83,3 +83,4 @@ Hazırlık: `cd backend && php artisan serve`, `cd mobile && npx expo start --we
 - [ ] Tab tuşuyla gezinme sırası: Geri → E-posta → Şifre → göz → Şifremi unuttum → Giriş Yap → (Google) → Kayıt Ol; her birinde görünür odak.
 - [ ] Hover: çipler (1px yükselme + ikon), alan kenarlığı, Giriş Yap (gradyan/gölge/ok 3px), Kayıt Ol (çerçeve/zemin). Telefonda hover yok, basma geri bildirimi var.
 - [ ] Sol panel sahnesi: telefon hafifçe süzülür; ~12 sn'de bildirim, mesaj, teklif kartı belirip "Takas tamamlandı"ya döner ve başa sarar; pencere küçülünce sahne orantılı küçülür. "Hareketi azalt" açıkken her şey durur ve kartlar statik görünür.
+- [ ] Ana sayfa vitrini: 1. slayt koyu yeşil + animasyonlu uygulama sahnesi; ilan slaytlarında bulanık fotoğraf zemini ve süzülen fotoğraf kartı; oklar/noktalar/ilerleme çubuğu çalışır, fareyle durur; telefonda metin sıkışmaz.
