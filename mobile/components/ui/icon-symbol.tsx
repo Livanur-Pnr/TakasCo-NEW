@@ -44,6 +44,8 @@ const MAPPING = {
   'arrow.clockwise': 'refresh',
   'square.and.arrow.up': 'share',
   'bell.fill': 'notifications',
+  'arrow.right': 'arrow-forward',
+  'arrow.left': 'arrow-back',
   'envelope.fill': 'mail',
   'lock.fill': 'lock',
   'phone.fill': 'phone',
