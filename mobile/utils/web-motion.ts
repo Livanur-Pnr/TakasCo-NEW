@@ -72,6 +72,23 @@ export function installWebMotionStyles() {
     @keyframes tk-ripple { 0% { transform: scale(1); opacity: 0.55; } 100% { transform: scale(1.7); opacity: 0; } }
     @keyframes tk-orbit { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     @keyframes tk-twinkle { 0%, 100% { opacity: 0.15; } 50% { opacity: 0.6; } }
+    /* vitrin emblemi: hover'da oklar yer değiştirir (yay), grup büyür, halka yayılır. a/b adları animasyonu her girişte yeniden başlatır. */
+    @keyframes tk-arc-r-a { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(16px); } }
+    @keyframes tk-arc-r-b { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(16px); } }
+    @keyframes tk-arc-l-a { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-16px); } }
+    @keyframes tk-arc-l-b { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-16px); } }
+    @keyframes tk-pulse-a { 0%, 100% { transform: scale(1); } 40% { transform: scale(1.14); } }
+    @keyframes tk-pulse-b { 0%, 100% { transform: scale(1); } 40% { transform: scale(1.14); } }
+    @keyframes tk-flash-a { 0% { opacity: 0.75; transform: scale(1); } 100% { opacity: 0; transform: scale(1.5); } }
+    @keyframes tk-flash-b { 0% { opacity: 0.75; transform: scale(1); } 100% { opacity: 0; transform: scale(1.5); } }
+    [data-arc="top-a"] { animation: tk-arc-r-a 850ms cubic-bezier(0.3, 0, 0, 1); }
+    [data-arc="top-b"] { animation: tk-arc-r-b 850ms cubic-bezier(0.3, 0, 0, 1); }
+    [data-arc="bot-a"] { animation: tk-arc-l-a 850ms cubic-bezier(0.3, 0, 0, 1); }
+    [data-arc="bot-b"] { animation: tk-arc-l-b 850ms cubic-bezier(0.3, 0, 0, 1); }
+    [data-pulse="a"] { animation: tk-pulse-a 850ms ease-in-out; }
+    [data-pulse="b"] { animation: tk-pulse-b 850ms ease-in-out; }
+    [data-flash="a"] { animation: tk-flash-a 900ms cubic-bezier(0, 0, 0.2, 1); }
+    [data-flash="b"] { animation: tk-flash-b 900ms cubic-bezier(0, 0, 0.2, 1); }
     [data-scene="toast"] { animation: tk-toast 12s ease-in-out infinite both; }
     [data-scene="msg"] { animation: tk-msg 12s ease-in-out infinite both; }
     [data-scene="offer"] { animation: tk-offer 12s ease-in-out infinite both; }
