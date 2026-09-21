@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { memo, useRef } from 'react';
 import { Animated, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useReducedMotion } from '@/components/ui/motion';
@@ -16,6 +16,8 @@ import { Ease } from '@/constants/motion';
 const web = Platform.OS === 'web';
 const css = (style: object) => (web ? (style as any) : null);
 const data = (key: string, value: string) => ({ dataSet: { [key]: value } } as any);
+// hareketli öğeleri kendi katmanına alır: dönme/ölçek sırasında yeniden çizim (takılma/bulanıklık) olmaz
+const layer = css({ willChange: 'transform', backfaceVisibility: 'hidden' });
 
 const CX = 190;
 const CY = 150;
@@ -31,9 +33,9 @@ function Satellite({ icon, tint, bg, left, top, rotate, motion, pull }: { icon: 
   return (
     <Animated.View
       pointerEvents="none"
-      style={{ position: 'absolute', left, top, transform: [{ translateX: pull.interpolate({ inputRange: [0, 1], outputRange: [0, dx] }) }, { translateY: pull.interpolate({ inputRange: [0, 1], outputRange: [0, dy] }) }, { rotate }] }}
+      style={[{ position: 'absolute', left, top, transform: [{ translateX: pull.interpolate({ inputRange: [0, 1], outputRange: [0, dx] }) }, { translateY: pull.interpolate({ inputRange: [0, 1], outputRange: [0, dy] }) }, { rotate }] }, layer]}
     >
-      <View {...data('ambient', motion)} style={[styles.satellite, css({ boxShadow: '0 14px 30px rgba(0, 0, 0, 0.22)' })]}>
+      <View {...data('ambient', motion)} style={[styles.satellite, css({ boxShadow: '0 10px 22px rgba(0, 0, 0, 0.20)' })]}>
         <View style={[styles.satelliteIcon, { backgroundColor: bg }]}>
           <IconSymbol name={icon} size={26} color={tint} />
         </View>
@@ -43,7 +45,7 @@ function Satellite({ icon, tint, bg, left, top, rotate, motion, pull }: { icon: 
   );
 }
 
-export function ExchangeEmblem() {
+function ExchangeEmblemView() {
   const reduced = useReducedMotion();
   const hover = useRef(new Animated.Value(0)).current;   // 0/1: fare üstünde mi
   const swap = useRef(new Animated.Value(0)).current;    // 0 → 1 (yer değiştirdi) → 2 ≡ 0 (geri)
@@ -52,8 +54,12 @@ export function ExchangeEmblem() {
   const flash = useRef(new Animated.Value(0)).current;   // yayılan halka
   const swapped = useRef(false);
   const turns = useRef(0);
+  const lastEnter = useRef(0);
 
   const enter = () => {
+    const now = Date.now();
+    if (now - lastEnter.current < 500) return; // hover + tıklama çift tetiklemesin, hareket bitmeden üst üste binmesin
+    lastEnter.current = now;
     const dur = reduced ? 250 : 850;
     const target = swapped.current ? 2 : 1;
     swapped.current = !swapped.current;
@@ -95,12 +101,12 @@ export function ExchangeEmblem() {
       onPress={enter}
       style={[styles.stage, { cursor: 'pointer' as any }]}
     >
-      <View style={[styles.ring, styles.dashed, { width: 300, height: 300, borderRadius: 150, left: 50, top: 0 }]} {...data('scene', 'orbit')} pointerEvents="none">
+      <View style={[styles.ring, styles.dashed, { width: 300, height: 300, borderRadius: 150, left: 40, top: 0 }]} {...data('scene', 'orbit')} pointerEvents="none">
         <View style={[styles.dot, { left: 145, top: -5 }]} />
         <View style={[styles.dot, { right: 22, bottom: 52, width: 8, height: 8, opacity: 0.7 }]} />
         <View style={[styles.dot, { left: 30, bottom: 60, width: 6, height: 6, opacity: 0.55 }]} />
       </View>
-      <View style={[styles.ring, { width: 250, height: 250, borderRadius: 125, left: 75, top: 25, borderColor: 'rgba(255, 255, 255, 0.10)' }]} pointerEvents="none" />
+      <View style={[styles.ring, { width: 250, height: 250, borderRadius: 125, left: 65, top: 25, borderColor: 'rgba(255, 255, 255, 0.10)' }]} pointerEvents="none" />
       <View style={[styles.ripple, { width: 184, height: 184, borderRadius: 92, left: 98, top: 58 }]} {...data('scene', 'ripple')} pointerEvents="none" />
       <View style={[styles.ripple, { width: 184, height: 184, borderRadius: 92, left: 98, top: 58 }, css({ animationDelay: '2.3s' })]} {...data('scene', 'ripple')} pointerEvents="none" />
 
@@ -116,15 +122,16 @@ export function ExchangeEmblem() {
         style={[
           styles.circle,
           { left: 98, top: 58, transform: [{ scale: circleScale }] },
-          css({ backgroundImage: 'linear-gradient(145deg, #3fd68d 0%, #1B7A43 55%, #146c3a 100%)', boxShadow: '0 24px 50px rgba(0, 0, 0, 0.30), inset 0 2px 0 rgba(255, 255, 255, 0.30)' }),
+          layer,
+          css({ backgroundImage: 'linear-gradient(145deg, #3fd68d 0%, #1B7A43 55%, #146c3a 100%)', boxShadow: '0 18px 34px rgba(0, 0, 0, 0.26), inset 0 2px 0 rgba(255, 255, 255, 0.30)' }),
         ]}
       >
-        <Animated.View style={{ width: 96, height: ARROW + GAP + 8, transform: [{ rotate: groupRotate }, { scale: groupScale }] }}>
-          <Animated.View style={{ position: 'absolute', left: 44, top: 4, transform: [{ translateX: topX }, { translateY: topY }] }}>
-            <IconSymbol name="arrow.right" size={ARROW} color="#ffffff" />
+        <Animated.View style={[{ width: 96, height: ARROW + GAP + 8, transform: [{ rotate: groupRotate }, { scale: groupScale }] }, layer]}>
+          <Animated.View style={[styles.arrowBox, { left: 44, top: 4, transform: [{ translateX: topX }, { translateY: topY }] }, layer]}>
+            <IconSymbol name="arrow.right" size={ARROW} color="#ffffff" style={styles.arrowGlyph} />
           </Animated.View>
-          <Animated.View style={{ position: 'absolute', left: 6, top: 4 + GAP, transform: [{ translateX: botX }, { translateY: botY }] }}>
-            <IconSymbol name="arrow.left" size={ARROW} color="#ffffff" />
+          <Animated.View style={[styles.arrowBox, { left: 6, top: 4 + GAP, transform: [{ translateX: botX }, { translateY: botY }] }, layer]}>
+            <IconSymbol name="arrow.left" size={ARROW} color="#ffffff" style={styles.arrowGlyph} />
           </Animated.View>
         </Animated.View>
       </Animated.View>
@@ -147,5 +154,10 @@ const styles = StyleSheet.create({
   ripple: { position: 'absolute', borderWidth: 2, borderColor: 'rgba(110, 231, 183, 0.55)' },
   satellite: { width: 76, padding: 8, gap: 7, borderRadius: Radius.lg, backgroundColor: 'rgba(255, 255, 255, 0.97)' },
   satelliteIcon: { height: 42, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  arrowBox: { position: 'absolute', width: ARROW, height: ARROW, alignItems: 'center', justifyContent: 'center' },
+  arrowGlyph: { width: ARROW, height: ARROW, lineHeight: ARROW, textAlign: 'center' },
   satLine: { height: 6, width: '62%', borderRadius: 3, backgroundColor: '#e5e7eb' },
 });
+
+// Üst bileşen (fare/otomatik oynatma durumu) her değiştiğinde emblem yeniden çizilmesin
+export const ExchangeEmblem = memo(ExchangeEmblemView);

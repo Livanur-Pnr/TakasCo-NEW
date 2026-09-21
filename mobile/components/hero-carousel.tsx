@@ -81,7 +81,7 @@ function SlideView({ slide, active, hovered, height, compact }: { slide: Slide; 
     <Animated.View
       pointerEvents={active ? 'auto' : 'none'}
       {...({ 'aria-hidden': !active } as any)}
-      style={[StyleSheet.absoluteFill, { opacity: fade, transform: [{ scale: enter }] }]}
+      style={[StyleSheet.absoluteFill, { opacity: fade, transform: [{ scale: enter }] }, css({ willChange: 'opacity, transform' })]}
     >
       <View style={[styles.slide, compact && styles.slideCompact, { height, backgroundColor: brand ? '#14532D' : theme.backgroundSelected }, css(brand ? { backgroundImage: Gradient.brandPanel } : {})]}>
         {/* ---- zemin katmanları ---- */}
@@ -94,7 +94,7 @@ function SlideView({ slide, active, hovered, height, compact }: { slide: Slide; 
                 <Image
                   source={{ uri: photo }}
                   blurRadius={24}
-                  style={[{ position: 'absolute', top: -50, left: -50, right: -50, bottom: -50, opacity: 0.5 }, css({ filter: 'blur(28px) saturate(1.15)' })]}
+                  style={[{ position: 'absolute', top: -50, left: -50, right: -50, bottom: -50, opacity: 0.5 }, css({ filter: 'blur(22px) saturate(1.1)' })]}
                   resizeMode="cover"
                 />
               </View>
@@ -144,7 +144,7 @@ function SlideView({ slide, active, hovered, height, compact }: { slide: Slide; 
 
         {/* ---- görsel ---- */}
         {!compact && (
-          <Animated.View style={[styles.mediaCol, mediaStyle]} pointerEvents="box-none">
+          <Animated.View style={[styles.mediaCol, mediaStyle, css({ willChange: 'opacity, transform' })]} pointerEvents="box-none">
             {brand ? (
               <ExchangeEmblem />
             ) : photo ? (
@@ -187,6 +187,8 @@ export function HeroCarousel() {
   const [index, setIndex] = useState(0);
   const [hovered, setHovered] = useState(false);
   const [appActive, setAppActive] = useState(true);
+  const [inView, setInView] = useState(true);
+  const wrapRef = useRef<any>(null);
   const progress = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -200,9 +202,18 @@ export function HeroCarousel() {
     return () => sub.remove();
   }, []);
 
+  // vitrin ekran dışına kaydırılınca otomatik geçiş ve sürekli CSS animasyonları durur
+  useEffect(() => {
+    const el = wrapRef.current as Element | null;
+    if (!web || typeof IntersectionObserver === 'undefined' || !el || typeof (el as any).nodeType !== 'number') return;
+    const observer = new IntersectionObserver((entries) => setInView(entries.some((e) => e.isIntersecting)), { threshold: 0.05 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   const slides: Slide[] = useMemo(() => [{ key: 'brand', kind: 'brand' as const }, ...products.map((p) => ({ key: `p${p.id}`, kind: 'listing' as const, product: p }))], [products]);
   const count = slides.length;
-  const autoplay = count > 1 && !reduced && !hovered && appActive;
+  const autoplay = count > 1 && !reduced && !hovered && appActive && inView;
   const dark = slides[index]?.kind === 'brand';
 
   // slayt değişince ilerleme baştan başlar (elle geçişte de)
@@ -244,6 +255,8 @@ export function HeroCarousel() {
 
   return (
     <View
+      ref={wrapRef}
+      {...data('heropaused', inView ? 'false' : 'true')}
       accessibilityLabel="Öne çıkanlar"
       {...({ 'aria-roledescription': 'carousel' } as any)}
       style={[styles.wrap, desktop ? { marginHorizontal: Spacing.seven, marginTop: Spacing.six } : { marginHorizontal: Spacing.four, marginTop: Spacing.three }]}

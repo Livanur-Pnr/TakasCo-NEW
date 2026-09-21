@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { Image, Platform, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -172,7 +172,7 @@ export function BrandScene() {
 }
 
 // Panel arka planı: ince ızgara + iki yumuşak, çok yavaş süzülen ışık lekesi (yalnızca web)
-export function BrandBackdrop() {
+function BrandBackdropView() {
   if (!web) return null;
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
@@ -189,6 +189,8 @@ export function BrandBackdrop() {
     </View>
   );
 }
+
+export const BrandBackdrop = memo(BrandBackdropView);
 
 const s = StyleSheet.create({
   ring: { position: 'absolute', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.10)' },

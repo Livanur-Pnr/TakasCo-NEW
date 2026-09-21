@@ -84,6 +84,10 @@ export function installWebMotionStyles() {
     [data-scene] { will-change: transform, opacity; }
     @media (prefers-reduced-motion: reduce) { [data-scene] { animation: none !important; } }
 
+    /* görünmeyen slaytta ya da ekran dışına kaydırılmış vitrinde sürekli animasyonlar durur (boşuna çizim yapılmaz) */
+    [aria-hidden="true"] [data-scene], [aria-hidden="true"] [data-ambient],
+    [data-heropaused="true"] [data-scene], [data-heropaused="true"] [data-ambient] { animation-play-state: paused !important; }
+
 
     /* metin bağlantıları (alt bilgi vb.): renk + alt çizgi */
     [data-textlink="true"]:hover { text-decoration: underline; color: ${Brand.accent} !important; }
