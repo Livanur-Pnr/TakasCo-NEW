@@ -52,6 +52,13 @@ export function installWebMotionStyles() {
       [data-cta="ghost"]:hover { background-color: rgba(255, 255, 255, 0.14) !important; border-color: rgba(255, 255, 255, 0.85) !important; }
       [data-cta="outline"]:hover { background-color: #eef8f2 !important; border-color: rgba(27, 122, 67, 0.5) !important; }
       [data-cta]:hover [data-ctaarrow] { transform: translateX(3px); }
+
+      /* vitrin emblemi: fare emblemin üstündeyken daire büyür, ürün kartları merkeze yaklaşır (saf CSS, ortada kesilmez) */
+      [data-emblem="true"]:hover [data-emblemcircle] { transform: scale(1.06) !important; }
+      [data-emblem="true"]:hover [data-sat="tl"] { transform: translate(28px, 17px) rotate(-6deg) !important; }
+      [data-emblem="true"]:hover [data-sat="tr"] { transform: translate(-28px, 14px) rotate(5deg) !important; }
+      [data-emblem="true"]:hover [data-sat="br"] { transform: translate(-25px, -21px) rotate(-4deg) !important; }
+      [data-emblem="true"]:hover [data-sat="bl"] { transform: translate(25px, -22px) rotate(4deg) !important; }
     }
 
     /* arka plandaki çok yavaş, düşük opaklıklı ortam hareketi (yalnızca transform) */

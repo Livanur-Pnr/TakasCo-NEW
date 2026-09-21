@@ -7,7 +7,7 @@ import { Brand, Radius } from '@/constants/theme';
 // Fare emblemin herhangi bir yerine gelince (dokunmatikte dokununca):
 //   • iki ok yay çizerek çaprazlaşıp yer değiştirir (üstteki → alta, alttaki ↑ üste; sonraki girişte geri),
 //   • ok grubu aynı anda bir tam tur döner (tur birikir, geri sarmaz),
-//   • daire hafifçe büyür, üzerinden bir halka yayılır, ürün kartları merkeze yaklaşır; fare çekilince geri döner.
+//   • daire hafifçe büyür, üzerinden bir halka yayılır, ürün kartları merkeze doğru belirgin biçimde (~30px) yaklaşır; fare çekilince geri döner.
 // Tüm hareket tarayıcının CSS geçişleri/animasyonlarıyla yapılır (React yalnızca giriş başına bir kez durum değiştirir; kareler arası
 // JavaScript yoktur). Bu yüzden takılmaz ve üst üste girişlerde bile yumuşak devam eder. Animasyon adları (a/b) girişte sırayla değişerek
 // aynı animasyonun yeniden başlamasını sağlar. Anahtar kareler utils/web-motion.ts içindedir; "hareketi azalt" açıkken süreler ~0'a iner.
@@ -16,8 +16,6 @@ const web = Platform.OS === 'web';
 const css = (style: object) => (web ? (style as any) : null);
 const data = (key: string, value?: string) => (value === undefined ? {} : ({ dataSet: { [key]: value } } as any));
 
-const CX = 190;
-const CY = 150;
 const ARROW = 46;
 const GAP = 40; // iki okun dikey yer değiştirme mesafesi
 const EASE = 'cubic-bezier(0.3, 0, 0, 1)';
@@ -28,14 +26,14 @@ const move = (ms: number) => ({ ...layer, transitionProperty: 'transform', trans
 
 type SatIcon = 'tshirt.fill' | 'book.fill' | 'desktopcomputer' | 'sportscourt.fill';
 
-function Satellite({ icon, tint, bg, left, top, rotate, motion, pulled }: { icon: SatIcon; tint: string; bg: string; left: number; top: number; rotate: string; motion: 'a' | 'b' | 'c'; pulled: boolean }) {
-  // fare emblemin üstündeyken kart, merkeze doğru %11 kadar yaklaşır
-  const dx = pulled ? (CX - (left + 38)) * 0.11 : 0;
-  const dy = pulled ? (CY - (top + 45)) * 0.11 : 0;
+// Yaklaşma CSS'tedir (`[data-emblem]:hover [data-sat=…]`, utils/web-motion.ts): fare emblemin üstünde olduğu sürece tarayıcı kartları yakın tutar,
+// çekilince geri döner; React durumuna bağlı olmadığından ortada kesilmez.
+function Satellite({ icon, tint, bg, left, top, rotate, motion, slot }: { icon: SatIcon; tint: string; bg: string; left: number; top: number; rotate: string; motion: 'a' | 'b' | 'c'; slot: 'tl' | 'tr' | 'br' | 'bl' }) {
   return (
     <View
       pointerEvents="none"
-      style={[{ position: 'absolute', left, top, transform: [{ translateX: dx }, { translateY: dy }, { rotate }] }, css(move(420))]}
+      {...data('sat', slot)}
+      style={[{ position: 'absolute', left, top, transform: [{ rotate }] }, css(move(520))]}
     >
       <View {...data('ambient', motion)} style={[styles.satellite, css({ boxShadow: '0 10px 22px rgba(0, 0, 0, 0.20)' })]}>
         <View style={[styles.satelliteIcon, { backgroundColor: bg }]}>
@@ -48,19 +46,15 @@ function Satellite({ icon, tint, bg, left, top, rotate, motion, pulled }: { icon
 }
 
 function ExchangeEmblemView() {
-  const [hovered, setHovered] = useState(false);
   const [run, setRun] = useState(0); // giriş sayısı: tek → oklar yer değiştirmiş, çift → ilk konum
   const last = useRef(0);
 
   const enter = () => {
-    setHovered(true);
     const now = Date.now();
     if (now - last.current < 300) return; // hover + tıklama çift tetiklemesin
     last.current = now;
     setRun((r) => r + 1);
   };
-  const leave = () => setHovered(false);
-
   const swapped = run % 2 === 1;
   const parity = run === 0 ? undefined : run % 2 === 1 ? 'a' : 'b'; // animasyon adı değişince aynı animasyon yeniden oynar
 
@@ -68,8 +62,8 @@ function ExchangeEmblemView() {
     <Pressable
       accessible={false}
       onHoverIn={enter}
-      onHoverOut={leave}
       onPress={enter}
+      {...data('emblem', 'true')}
       style={[styles.stage, { cursor: 'pointer' as any }]}
     >
       <View style={[styles.ring, styles.dashed, { width: 300, height: 300, borderRadius: 150, left: 40, top: 0 }]} {...data('scene', 'orbit')} pointerEvents="none">
@@ -87,9 +81,10 @@ function ExchangeEmblemView() {
       {/* ana daire + ok grubu */}
       <View
         pointerEvents="none"
+        {...data('emblemcircle', 'true')}
         style={[
           styles.circle,
-          { left: 98, top: 58, transform: [{ scale: hovered ? 1.06 : 1 }] },
+          { left: 98, top: 58, transform: [{ scale: 1 }] },
           css({ ...move(320), backgroundImage: 'linear-gradient(145deg, #3fd68d 0%, #1B7A43 55%, #146c3a 100%)', boxShadow: '0 18px 34px rgba(0, 0, 0, 0.26), inset 0 2px 0 rgba(255, 255, 255, 0.30)' }),
         ]}
       >
@@ -109,10 +104,10 @@ function ExchangeEmblemView() {
         </View>
       </View>
 
-      <Satellite icon="tshirt.fill" tint="#047857" bg="#d1fae5" left={8} top={22} rotate="-6deg" motion="a" pulled={hovered} />
-      <Satellite icon="book.fill" tint="#b45309" bg="#fef3c7" left={296} top={34} rotate="5deg" motion="b" pulled={hovered} />
-      <Satellite icon="desktopcomputer" tint="#0369a1" bg="#e0f2fe" left={276} top={210} rotate="-4deg" motion="c" pulled={hovered} />
-      <Satellite icon="sportscourt.fill" tint="#be123c" bg="#ffe4e6" left={28} top={214} rotate="4deg" motion="a" pulled={hovered} />
+      <Satellite icon="tshirt.fill" tint="#047857" bg="#d1fae5" left={8} top={22} rotate="-6deg" motion="a" slot="tl" />
+      <Satellite icon="book.fill" tint="#b45309" bg="#fef3c7" left={296} top={34} rotate="5deg" motion="b" slot="tr" />
+      <Satellite icon="desktopcomputer" tint="#0369a1" bg="#e0f2fe" left={276} top={210} rotate="-4deg" motion="c" slot="br" />
+      <Satellite icon="sportscourt.fill" tint="#be123c" bg="#ffe4e6" left={28} top={214} rotate="4deg" motion="a" slot="bl" />
     </Pressable>
   );
 }
