@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Trade;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -25,8 +26,14 @@ class TradeEventNotification extends Notification
         $mailEvents = [self::OFFER_RECEIVED, self::OFFER_ACCEPTED, self::OFFER_COUNTERED];
 
         return in_array($this->event, $mailEvents, true) && ($notifiable->email_notifications ?? true) && $notifiable->email
-            ? ['database', 'mail']
-            : ['database'];
+            ? ['database', 'broadcast', 'mail']
+            : ['database', 'broadcast'];
+    }
+
+    // zil simgesinin anında güncellenmesi için yayın; kuyruk işçisi gerekmez
+    public function toBroadcast(object $notifiable): BroadcastMessage
+    {
+        return (new BroadcastMessage($this->toArray($notifiable)))->onConnection('sync');
     }
 
     // takas ortağının iletişim bilgisi e-postaya konmaz; yalnızca uygulama içinde paylaşılır

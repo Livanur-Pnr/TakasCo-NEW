@@ -94,6 +94,13 @@ class TradeController extends Controller
                 }
             }
         }
+        //rezerve edilmiş ya da yayın süresi dolmuş ilana yeni teklif verilemez
+        if ((int) $requestedProduct->status === Product::STATUS_RESERVED) {
+            return response()->json(['message' => 'Bu ilan şu an rezerve edilmiş.'], 409);
+        }
+        if ($requestedProduct->is_expired) {
+            return response()->json(['message' => 'Bu ilanın yayın süresi dolmuş.'], 409);
+        }
         //takaslanmış (status=3) bir ürün için teklif oluşturulamaz
         if (in_array((int) $requestedProduct->status, [3, AdminController::STATUS_REMOVED], true)
             || in_array((int) $offeredProduct->status, [3, AdminController::STATUS_REMOVED], true)) {

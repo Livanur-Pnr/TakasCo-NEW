@@ -1,4 +1,6 @@
 import { usePolling } from '@/hooks/use-polling';
+import * as SecureStore from '@/utils/storage';
+import { NOTIFICATION_EVENT, useRealtimeEvent } from '@/utils/realtime';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '@/utils/api';
 
@@ -45,7 +47,16 @@ export function useNotifications({ enabled = true, poll = false }: { enabled?: b
     };
   }, [enabled, poll, refresh]);
 
-  usePolling(refresh, POLL_INTERVAL_MS, enabled && poll);
+  // Reverb bağlıyken yeni bildirim olayı gelince anında yenilenir; polling seyrek bir güvence olarak kalır
+  const [userId, setUserId] = useState<number | null>(null);
+  useEffect(() => {
+    if (!enabled || !poll) return;
+    SecureStore.getItemAsync('user').then((raw) => {
+      try { setUserId(raw ? JSON.parse(raw).id : null); } catch { setUserId(null); }
+    });
+  }, [enabled, poll]);
+  const realtime = useRealtimeEvent(enabled && poll && userId ? `App.Models.User.${userId}` : null, NOTIFICATION_EVENT, () => { refresh(); });
+  usePolling(refresh, realtime ? 180000 : POLL_INTERVAL_MS, enabled && poll);
 
   const markRead = useCallback(async (id: string) => {
     setItems((prev) => prev.map((n) => (n.id === id && !n.read_at ? { ...n, read_at: new Date().toISOString() } : n)));

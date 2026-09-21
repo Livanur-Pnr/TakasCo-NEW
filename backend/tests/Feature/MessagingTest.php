@@ -142,4 +142,50 @@ class MessagingTest extends TestCase
         $this->assertSame([], $none->json('data'));
         $this->assertCount(3, $this->actingAs($b, 'sanctum')->getJson("/api/conversations/{$id}/messages")->json('data'));
     }
+
+    public function test_older_messages_can_be_paged_with_before_and_has_more_is_reported(): void
+    {
+        $a = User::factory()->create();
+        $b = User::factory()->create();
+        $id = $this->startConversation($a, $b);
+        // gönderim uç noktası dakikada 30 istekle sınırlı olduğu için mesajlar doğrudan eklenir
+        $ids = [];
+        foreach (range(1, 120) as $n) {
+            $ids[] = \App\Models\Message::create(['conversation_id' => $id, 'sender_id' => $a->id, 'body' => "m{$n}"])->id;
+        }
+
+        $first = $this->actingAs($b, 'sanctum')->getJson("/api/conversations/{$id}/messages")->assertOk();
+        $this->assertCount(100, $first->json('data'));
+        $this->assertTrue($first->json('has_more'));
+        $this->assertSame('m21', $first->json('data.0.body'));
+        $this->assertSame('m120', $first->json('data.99.body'));
+
+        $older = $this->actingAs($b, 'sanctum')->getJson("/api/conversations/{$id}/messages?before=" . $first->json('data.0.id'))->assertOk();
+        $this->assertCount(20, $older->json('data'));
+        $this->assertFalse($older->json('has_more'));
+        $this->assertSame('m1', $older->json('data.0.body'));
+        $this->assertSame('m20', $older->json('data.19.body'));
+
+        $this->assertFalse($this->actingAs($b, 'sanctum')->getJson("/api/conversations/{$id}/messages?after={$ids[118]}")->json('has_more'));
+    }
+
+    public function test_reading_messages_broadcasts_a_read_receipt_only_when_something_was_unread(): void
+    {
+        \Illuminate\Support\Facades\Event::fake([\App\Events\MessagesRead::class, \App\Events\MessageSent::class]);
+        $a = User::factory()->create();
+        $b = User::factory()->create();
+        $id = $this->startConversation($a, $b);
+        $this->actingAs($a, 'sanctum')->postJson("/api/conversations/{$id}/messages", ['body' => 'selam'])->assertCreated();
+
+        // gönderen kendi mesajını açınca okundu bilgisi üretilmez
+        $this->actingAs($a, 'sanctum')->getJson("/api/conversations/{$id}/messages")->assertOk();
+        \Illuminate\Support\Facades\Event::assertNotDispatched(\App\Events\MessagesRead::class);
+
+        $this->actingAs($b, 'sanctum')->getJson("/api/conversations/{$id}/messages")->assertOk();
+        \Illuminate\Support\Facades\Event::assertDispatched(\App\Events\MessagesRead::class, fn ($e) => $e->conversationId === $id && $e->readerId === $b->id);
+
+        // ikinci açılışta okunmamış mesaj kalmadığı için yeni olay yok
+        $this->actingAs($b, 'sanctum')->getJson("/api/conversations/{$id}/messages")->assertOk();
+        \Illuminate\Support\Facades\Event::assertDispatchedTimes(\App\Events\MessagesRead::class, 1);
+    }
 }

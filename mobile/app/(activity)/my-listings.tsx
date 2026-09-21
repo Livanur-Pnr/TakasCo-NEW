@@ -12,6 +12,7 @@ import { useIsDesktopWeb } from '@/hooks/use-is-desktop-web';
 import { desktopActivityStyles } from '@/components/ui/desktop-activity-styles';
 import { api, getImageUrl } from '@/utils/api';
 import { usePageTitle } from '@/utils/use-page-title';
+import { Alert } from '@/utils/alert';
 
 interface Product {
   id: number;
@@ -20,6 +21,8 @@ interface Product {
   thumb_path?: string | null;
   swap_expectation: string;
   status: number;
+  is_expired?: boolean;
+  expires_at?: string | null;
 }
 
 export default function MyListingsScreen() {
@@ -49,7 +52,56 @@ export default function MyListingsScreen() {
     }
   };
 
-  const statusInfo = (status: number) => {
+  // yayın süresi: kalan gün (yalnızca süreli ilanlarda)
+  const daysLeft = (p: Product) => (p.expires_at ? Math.max(0, Math.ceil((new Date(p.expires_at).getTime() - Date.now()) / 86400000)) : null);
+
+  const toggleReserve = async (p: Product) => {
+    try {
+      const r = await api.post(`/products/${p.id}/reserve`);
+      setProducts((prev) => prev.map((x) => (x.id === p.id ? { ...x, status: r.data.status } : x)));
+    } catch (e: any) {
+      Alert.alert('Uyarı', e.response?.data?.message || 'İşlem yapılamadı.');
+    }
+  };
+
+  const renew = async (p: Product) => {
+    try {
+      const r = await api.post(`/products/${p.id}/renew`);
+      setProducts((prev) => prev.map((x) => (x.id === p.id ? { ...x, is_expired: false, expires_at: r.data.expires_at } : x)));
+      Alert.alert('Tamam', 'İlanının yayın süresi yenilendi.');
+    } catch (e: any) {
+      Alert.alert('Uyarı', e.response?.data?.message || 'İlan yenilenemedi.');
+    }
+  };
+
+  // Rezerve / yenile düğmeleri (takaslanmış ya da kaldırılmış ilanlarda gösterilmez)
+  const renderActions = (p: Product) => {
+    if (p.status === 3 || p.status === 4) return null;
+    const left = daysLeft(p);
+    return (
+      <View style={{ gap: Spacing.two }}>
+        {left !== null && !p.is_expired && (
+          <ThemedText style={{ fontSize: 11, color: left <= 7 ? Brand.warning : theme.textSecondary }}>{left} gün yayında kalacak</ThemedText>
+        )}
+        <View style={{ flexDirection: 'row', gap: Spacing.two, flexWrap: 'wrap' }}>
+          {(p.is_expired || (left !== null && left <= 7)) && (
+            <TouchableOpacity onPress={() => renew(p)} accessibilityRole="button" style={[styles.actionBtn, { backgroundColor: Brand.accent }]}>
+              <ThemedText style={{ color: '#fff', fontSize: 12, fontWeight: '700' }}>Yenile</ThemedText>
+            </TouchableOpacity>
+          )}
+          {!p.is_expired && (
+            <TouchableOpacity onPress={() => toggleReserve(p)} accessibilityRole="button" style={[styles.actionBtn, { backgroundColor: theme.backgroundSelected }]}>
+              <ThemedText style={{ fontSize: 12, fontWeight: '700' }}>{p.status === 5 ? 'Aktif Et' : 'Rezerve Et'}</ThemedText>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    );
+  };
+
+  const statusInfo = (status: number, expired?: boolean) => {
+    if (expired) return { label: 'Süresi Doldu', color: Brand.danger };
+    if (status === 5) return { label: 'Rezerve', color: Brand.warning };
     if (status === 1) return { label: 'Yayında', color: Brand.success };
     if (status === 3) return { label: 'Takaslandı', color: Brand.accent };
     if (status === 4) return { label: 'Yayından Kaldırıldı', color: Brand.danger };
@@ -83,7 +135,7 @@ export default function MyListingsScreen() {
           ) : (
             <View style={desktopActivityStyles.grid}>
               {products.map((item) => {
-                const info = statusInfo(item.status);
+                const info = statusInfo(item.status, item.is_expired);
                 return (
                   <TouchableOpacity
                     key={item.id}
@@ -106,6 +158,7 @@ export default function MyListingsScreen() {
                       <View style={[styles.statusBadge, { backgroundColor: info.color + '20', alignSelf: 'flex-start' }]}>
                         <ThemedText style={{ fontSize: 10, fontWeight: 'bold', color: info.color }}>{info.label}</ThemedText>
                       </View>
+                      {renderActions(item)}
                     </View>
                   </TouchableOpacity>
                 );
@@ -164,11 +217,12 @@ export default function MyListingsScreen() {
               <View style={styles.productInfo}>
                 <ThemedText style={styles.productTitle} numberOfLines={1}>{item.title}</ThemedText>
                 <ThemedText style={styles.productDesc} numberOfLines={1}>Takas: {item.swap_expectation}</ThemedText>
-                <View style={[styles.statusBadge, { backgroundColor: statusInfo(item.status).color + '20' }]}>
-                  <ThemedText style={{ fontSize: 10, fontWeight: 'bold', color: statusInfo(item.status).color }}>
-                    {statusInfo(item.status).label}
+                <View style={[styles.statusBadge, { backgroundColor: statusInfo(item.status, item.is_expired).color + '20' }]}>
+                  <ThemedText style={{ fontSize: 10, fontWeight: 'bold', color: statusInfo(item.status, item.is_expired).color }}>
+                    {statusInfo(item.status, item.is_expired).label}
                   </ThemedText>
                 </View>
+                {renderActions(item)}
               </View>
             </TouchableOpacity>
           ))
@@ -180,6 +234,7 @@ export default function MyListingsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  actionBtn: { paddingHorizontal: Spacing.three, paddingVertical: 6, borderRadius: Radius.full },
   header: { padding: Spacing.four, paddingTop: Spacing.eight, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   productCard: { borderRadius: Radius.md, borderWidth: 1, overflow: 'hidden', flexDirection: 'row', alignItems: 'center' },
   imagePlaceholder: { width: 80, height: 80, justifyContent: 'center', alignItems: 'center' },

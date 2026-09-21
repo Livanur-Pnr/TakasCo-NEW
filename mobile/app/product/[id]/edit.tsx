@@ -10,6 +10,8 @@ import { api, getImageUrl, API_BASE_URL } from '@/utils/api';
 import * as SecureStore from '@/utils/storage';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Alert } from '@/utils/alert';
+import { compressImage } from '@/utils/image-compress';
+import { postFormWithProgress } from '@/utils/upload';
 import { ListingCommercialFields, DEFAULT_COMMERCIAL, CommercialValue, commercialFromProduct, needsPrice, needsSwap, parsePrice } from '@/components/listing-fields';
 
 const CONDITIONS = ['Sıfır', 'Az Kullanılmış', 'Eskimiş'];
@@ -33,6 +35,7 @@ export default function EditListingScreen() {
   const [commercial, setCommercial] = useState<CommercialValue>(DEFAULT_COMMERCIAL);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [photoBusy, setPhotoBusy] = useState(false);
+  const [uploadPercent, setUploadPercent] = useState<number | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -107,29 +110,43 @@ export default function EditListingScreen() {
     ]);
   };
 
+  // sıra hemen sunucuya kaydedilir; ilk fotoğraf kapaktır
+  const reorder = async (from: number, to: number) => {
+    if (to < 0 || to >= photos.length || photoBusy) return;
+    const next = [...photos];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    const previous = photos;
+    setPhotos(next);
+    try {
+      const r = await api.put(`/products/${id}/images/order`, { ids: next.map((p) => p.id) });
+      setPhotos(r.data.images);
+    } catch (e: any) {
+      setPhotos(previous);
+      Alert.alert('Uyarı', e.response?.data?.message || 'Sıra kaydedilemedi.');
+    }
+  };
+
   const addPhotos = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsMultipleSelection: true, selectionLimit: MAX_IMAGES - photos.length, quality: 0.8 });
     if (result.canceled) return;
     setPhotoBusy(true);
     try {
       const form = new FormData();
+      const compressed = await Promise.all(result.assets.map((a) => (Platform.OS === 'web' && a.file ? compressImage(a.file) : Promise.resolve(null))));
       result.assets.forEach((asset, i) => {
         const name = asset.fileName || asset.uri.split('/').pop() || `upload_${i}.jpg`;
         if (Platform.OS === 'web' && asset.file) {
-          form.append('images[]', asset.file, name);
+          form.append('images[]', compressed[i] ?? asset.file, compressed[i]?.name ?? name);
         } else {
           // @ts-ignore RN FormData dosya biçimi
           form.append('images[]', { uri: Platform.OS === 'ios' ? asset.uri.replace('file://', '') : asset.uri, name, type: asset.mimeType || 'image/jpeg' });
         }
       });
       const token = await SecureStore.getItemAsync('auth_token');
-      const res = await fetch(`${API_BASE_URL}/api/products/${id}/images`, {
-        method: 'POST',
-        headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
-        body: form,
-      });
-      const data = await res.json();
-      if (!res.ok) {
+      setUploadPercent(0);
+      const { ok, data } = await postFormWithProgress(`${API_BASE_URL}/api/products/${id}/images`, form, token, setUploadPercent);
+      if (!ok) {
         const errors = data.errors;
         throw new Error(errors ? Object.values(errors).flat().join(' ') : data.message || 'Fotoğraf eklenemedi.');
       }
@@ -137,6 +154,7 @@ export default function EditListingScreen() {
     } catch (e: any) {
       Alert.alert('Uyarı', e.message || 'Fotoğraf eklenemedi.');
     } finally {
+      setUploadPercent(null);
       setPhotoBusy(false);
     }
   };
@@ -169,6 +187,21 @@ export default function EditListingScreen() {
                       </View>
                     )}
                     {photos.length > 1 && (
+                      <View style={styles.moveRow}>
+                        <TouchableOpacity disabled={i === 0} onPress={() => reorder(i, i - 1)} accessibilityRole="button" accessibilityLabel="Sola taşı" style={[styles.moveBtn, i === 0 && { opacity: 0.3 }]}>
+                          <ThemedText style={styles.moveText}>◀</ThemedText>
+                        </TouchableOpacity>
+                        {i > 0 && (
+                          <TouchableOpacity onPress={() => reorder(i, 0)} accessibilityRole="button" accessibilityLabel="Kapak yap" style={styles.moveBtn}>
+                            <ThemedText style={styles.moveText}>Kapak</ThemedText>
+                          </TouchableOpacity>
+                        )}
+                        <TouchableOpacity disabled={i === photos.length - 1} onPress={() => reorder(i, i + 1)} accessibilityRole="button" accessibilityLabel="Sağa taşı" style={[styles.moveBtn, i === photos.length - 1 && { opacity: 0.3 }]}>
+                          <ThemedText style={styles.moveText}>▶</ThemedText>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                    {photos.length > 1 && (
                       <TouchableOpacity onPress={() => removePhoto(ph)} accessibilityRole="button" accessibilityLabel="Fotoğrafı sil" style={styles.removeBtn}>
                         <IconSymbol name="xmark.circle.fill" size={22} color={Brand.danger} />
                       </TouchableOpacity>
@@ -178,7 +211,7 @@ export default function EditListingScreen() {
               })}
               {photos.length < MAX_IMAGES && (
                 <TouchableOpacity onPress={addPhotos} disabled={photoBusy} accessibilityRole="button" accessibilityLabel="Fotoğraf ekle" style={[styles.photo, styles.addPhoto, { backgroundColor: theme.backgroundSelected, borderColor: theme.border }]}>
-                  {photoBusy ? <ActivityIndicator color={Brand.accent} /> : <IconSymbol name="plus.circle.fill" size={28} color={theme.textSecondary} />}
+                  {photoBusy ? (uploadPercent !== null && uploadPercent > 0 && uploadPercent < 100 ? <ThemedText style={{ fontSize: 12, fontWeight: '700' }}>%{uploadPercent}</ThemedText> : <ActivityIndicator color={Brand.accent} />) : <IconSymbol name="plus.circle.fill" size={28} color={theme.textSecondary} />}
                 </TouchableOpacity>
               )}
             </View>
@@ -251,6 +284,9 @@ const styles = StyleSheet.create({
   pill: { paddingHorizontal: Spacing.four, paddingVertical: Spacing.three, borderRadius: Radius.full },
   segment: { flex: 1, padding: Spacing.three, borderRadius: Radius.sm, alignItems: 'center' },
   button: { padding: Spacing.four, borderRadius: Radius.sm, alignItems: 'center' },
+  moveRow: { position: 'absolute', bottom: 4, right: 4, flexDirection: 'row', gap: 2 },
+  moveBtn: { backgroundColor: 'rgba(0,0,0,0.6)', paddingHorizontal: 5, paddingVertical: 2, borderRadius: Radius.sm },
+  moveText: { color: '#fff', fontSize: 10, fontWeight: '700' },
   photoRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.three },
   photo: { width: 90, height: 90, borderRadius: Radius.md, overflow: 'hidden' },
   addPhoto: { borderWidth: 1, borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center' },

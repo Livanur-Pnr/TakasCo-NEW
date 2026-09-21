@@ -15,6 +15,7 @@ import * as SecureStore from '@/utils/storage';
 import { ReportModal } from '@/components/report-modal';
 import { StatsLine, TrustBadges, UserStatsData } from '@/components/trust';
 import { timeAgo } from '@/utils/date';
+import { formatPrice } from '@/utils/listing';
 
 interface PublicUser {
   id: number;
@@ -22,6 +23,7 @@ interface PublicUser {
   city: string | null;
   district: string | null;
   profile_photo_path: string | null;
+  bio?: string | null;
   created_at: string;
 }
 
@@ -43,6 +45,8 @@ export default function UserProfileScreen() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [reportOpen, setReportOpen] = useState(false);
+  const [tab, setTab] = useState<'active' | 'traded' | 'reviews'>('active');
+  const [traded, setTraded] = useState<Product[] | null>(null);
   const [stats, setStats] = useState<UserStatsData | undefined>();
   const [reviews, setReviews] = useState<{ id: number; rating: number; comment: string | null; reviewer: string; created_at: string }[]>([]);
   const [meId, setMeId] = useState<number | null>(null);
@@ -75,9 +79,56 @@ export default function UserProfileScreen() {
     }
   };
 
+  // "Takaslananlar" sekmesi ilk açıldığında yüklenir
+  useEffect(() => {
+    if (tab !== 'traded' || traded !== null) return;
+    api.get(`/users/${id}/products`, { params: { status: 'traded' } }).then((r) => setTraded(r.data)).catch(() => setTraded([]));
+  }, [tab, traded, id]);
+
   const memberSince = user?.created_at
     ? new Date(user.created_at).toLocaleDateString('tr-TR', { year: 'numeric', month: 'long' })
     : null;
+
+  const renderProducts = (list: Product[], emptyText: string, dimmed: boolean) => (
+    <View style={styles.section}>
+      {list.length === 0 ? (
+        <View style={{ alignItems: 'center', padding: Spacing.six }}>
+          <IconSymbol name="doc.text.magnifyingglass" size={48} color={theme.textSecondary} />
+          <ThemedText style={{ marginTop: Spacing.three, color: theme.textSecondary }}>{emptyText}</ThemedText>
+        </View>
+      ) : (
+        <View style={isDesktopWeb ? desktopActivityStyles.grid : styles.grid}>
+          {list.map((item: any) => (
+            <TouchableOpacity
+              key={item.id}
+              style={[isDesktopWeb ? desktopActivityStyles.gridCard : styles.productCard, { backgroundColor: theme.cardBg, borderColor: theme.border, opacity: dimmed ? 0.85 : 1 }]}
+              onPress={() => router.push(`/product/${item.id}`)}
+            >
+              <View style={[isDesktopWeb ? desktopActivityStyles.gridImageWrap : styles.imagePlaceholder, { backgroundColor: theme.backgroundSelected }]}>
+                {item.image_path ? (
+                  <Image
+                    source={{ uri: getImageUrl(item.image_path.startsWith('[') ? JSON.parse(item.image_path)[0] : item.image_path) || undefined }}
+                    style={{ width: '100%', height: '100%' }}
+                  />
+                ) : (
+                  <IconSymbol name="house.fill" size={32} color={theme.textSecondary} />
+                )}
+                {dimmed && (
+                  <View style={{ position: 'absolute', top: 6, left: 6, backgroundColor: Brand.accent, paddingHorizontal: 6, paddingVertical: 2, borderRadius: Radius.sm }}>
+                    <ThemedText style={{ color: '#fff', fontSize: 10, fontWeight: '700' }}>TAKASLANDI</ThemedText>
+                  </View>
+                )}
+              </View>
+              <View style={styles.productInfo}>
+                <ThemedText style={styles.productTitle} numberOfLines={1}>{item.title}</ThemedText>
+                <ThemedText style={styles.productDesc} numberOfLines={1}>{formatPrice(item.price) ?? `Takas: ${item.swap_expectation}`}</ThemedText>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+    </View>
+  );
 
   if (loading) {
     return (
@@ -128,63 +179,46 @@ export default function UserProfileScreen() {
           </View>
           <ReportModal visible={reportOpen} onClose={() => setReportOpen(false)} targetType="user" targetId={user.id} title={user.name} />
 
-          <View style={styles.section}>
-            <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>Değerlendirmeler ({stats?.reviews_count ?? 0})</ThemedText>
-            {reviews.length === 0 ? (
-              <ThemedText style={{ color: theme.textSecondary }}>Bu kullanıcı henüz değerlendirilmemiş. Değerlendirmeler yalnızca tamamlanan takaslardan sonra yazılabilir.</ThemedText>
-            ) : (
-              reviews.map((r) => (
-                <View key={r.id} style={{ gap: 2, paddingVertical: Spacing.two, borderBottomWidth: 1, borderBottomColor: theme.border }}>
-                  <ThemedText style={{ fontWeight: '700' }}>
-                    <ThemedText style={{ color: Brand.warning }}>{'★'.repeat(r.rating)}</ThemedText>
-                    <ThemedText style={{ color: theme.border }}>{'★'.repeat(5 - r.rating)}</ThemedText>
-                    {'  '}{r.reviewer}
-                  </ThemedText>
-                  {!!r.comment && <ThemedText>{r.comment}</ThemedText>}
-                  <ThemedText style={{ fontSize: 11, color: theme.textSecondary }}>{timeAgo(r.created_at)}</ThemedText>
-                </View>
-              ))
-            )}
+          {!!user.bio && (
+            <ThemedText style={{ color: theme.textSecondary, lineHeight: 21 }}>{user.bio}</ThemedText>
+          )}
+
+          <View style={{ flexDirection: 'row', gap: Spacing.two, flexWrap: 'wrap' }}>
+            {([['active', `Aktif İlanlar (${products.length})`], ['traded', 'Takaslananlar'], ['reviews', `Değerlendirmeler (${stats?.reviews_count ?? 0})`]] as const).map(([key, label]) => (
+              <TouchableOpacity
+                key={key}
+                onPress={() => setTab(key)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: tab === key }}
+                style={{ paddingHorizontal: Spacing.four, paddingVertical: Spacing.two, borderRadius: Radius.full, backgroundColor: tab === key ? Brand.accent : theme.backgroundSelected }}
+              >
+                <ThemedText style={{ color: tab === key ? '#fff' : theme.text, fontWeight: '600', fontSize: 13 }}>{label}</ThemedText>
+              </TouchableOpacity>
+            ))}
           </View>
 
-          <View style={styles.section}>
-            <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
-              İlanları ({products.length})
-            </ThemedText>
-            {products.length === 0 ? (
-              <View style={{ alignItems: 'center', padding: Spacing.six }}>
-                <IconSymbol name="doc.text.magnifyingglass" size={48} color={theme.textSecondary} />
-                <ThemedText style={{ marginTop: Spacing.three, color: theme.textSecondary }}>
-                  Bu kullanıcının yayında bir ilanı yok.
-                </ThemedText>
-              </View>
-            ) : (
-              <View style={isDesktopWeb ? desktopActivityStyles.grid : styles.grid}>
-                {products.map((item) => (
-                  <TouchableOpacity
-                    key={item.id}
-                    style={[isDesktopWeb ? desktopActivityStyles.gridCard : styles.productCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}
-                    onPress={() => router.push(`/product/${item.id}`)}
-                  >
-                    <View style={[isDesktopWeb ? desktopActivityStyles.gridImageWrap : styles.imagePlaceholder, { backgroundColor: theme.backgroundSelected }]}>
-                      {item.image_path ? (
-                        <Image
-                          source={{ uri: getImageUrl(item.image_path.startsWith('[') ? JSON.parse(item.image_path)[0] : item.image_path) || undefined }}
-                          style={{ width: '100%', height: '100%' }}
-                        />
-                      ) : (
-                        <IconSymbol name="house.fill" size={32} color={theme.textSecondary} />
-                      )}
-                    </View>
-                    <View style={styles.productInfo}>
-                      <ThemedText style={styles.productTitle} numberOfLines={1}>{item.title}</ThemedText>
-                      <ThemedText style={styles.productDesc} numberOfLines={1}>Takas: {item.swap_expectation}</ThemedText>
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
-          </View>
+          {tab === 'reviews' && (
+            <View style={styles.section}>
+              {reviews.length === 0 ? (
+                <ThemedText style={{ color: theme.textSecondary }}>Bu kullanıcı henüz değerlendirilmemiş. Değerlendirmeler yalnızca tamamlanan takaslardan sonra yazılabilir.</ThemedText>
+              ) : (
+                reviews.map((r) => (
+                  <View key={r.id} style={{ gap: 2, paddingVertical: Spacing.two, borderBottomWidth: 1, borderBottomColor: theme.border }}>
+                    <ThemedText style={{ fontWeight: '700' }}>
+                      <ThemedText style={{ color: Brand.warning }}>{'★'.repeat(r.rating)}</ThemedText>
+                      <ThemedText style={{ color: theme.border }}>{'★'.repeat(5 - r.rating)}</ThemedText>
+                      {'  '}{r.reviewer}
+                    </ThemedText>
+                    {!!r.comment && <ThemedText>{r.comment}</ThemedText>}
+                    <ThemedText style={{ fontSize: 11, color: theme.textSecondary }}>{timeAgo(r.created_at)}</ThemedText>
+                  </View>
+                ))
+              )}
+            </View>
+          )}
+
+          {tab === 'active' && renderProducts(products, 'Bu kullanıcının yayında bir ilanı yok.', false)}
+          {tab === 'traded' && (traded === null ? <ActivityIndicator color={Brand.accent} /> : renderProducts(traded, 'Bu kullanıcı henüz bir takas tamamlamamış.', true))}
         </>
       )}
 

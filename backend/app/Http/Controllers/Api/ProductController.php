@@ -14,6 +14,7 @@ use App\Notifications\SavedSearchMatchNotification;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use App\Services\ProductImageService;
+use Illuminate\Support\Facades\DB;
 
 
 class ProductController extends Controller
@@ -153,6 +154,7 @@ class ProductController extends Controller
             'city' => $request->city ?? $request->user()->city,
             'district' => $request->district ?? $request->user()->district,
             'status' => 1, //ilan durumu aktif
+            'expires_at' => now()->addDays(Product::LISTING_DAYS),
             'image_path' => $paths[0], // products.image_path NOT NULL olduğu için kapak resmi burada da tutulur
         ]);
 
@@ -210,6 +212,41 @@ class ProductController extends Controller
         }
     }
 
+    // rezerve et / rezerveyi kaldır: rezerve ilan görünür kalır ama yeni takas teklifi alamaz
+    public function reserve(Request $request, $id)
+    {
+        $product = Product::findOrFail($id);
+
+        if ((int) $product->user_id !== (int) $request->user()->id) {
+            return response()->json(['message' => 'Bu ilanı güncelleme yetkiniz bulunmamaktadır.'], 403);
+        }
+        if (in_array((int) $product->status, [3, AdminController::STATUS_REMOVED], true)) {
+            return response()->json(['message' => 'Bu ilan artık rezerve edilemez.'], 409);
+        }
+
+        $reserve = (int) $product->status !== Product::STATUS_RESERVED;
+        $product->update(['status' => $reserve ? Product::STATUS_RESERVED : 1]);
+
+        return response()->json(['message' => $reserve ? 'İlan rezerve edildi.' : 'İlan yeniden aktif.', 'status' => (int) $product->status]);
+    }
+
+    // ilanın yayın süresini bugünden itibaren yeniden başlatır (süresi dolmuş ilan için de)
+    public function renew(Request $request, $id)
+    {
+        $product = Product::findOrFail($id);
+
+        if ((int) $product->user_id !== (int) $request->user()->id) {
+            return response()->json(['message' => 'Bu ilanı güncelleme yetkiniz bulunmamaktadır.'], 403);
+        }
+        if (in_array((int) $product->status, [3, AdminController::STATUS_REMOVED], true)) {
+            return response()->json(['message' => 'Bu ilan yenilenemez.'], 409);
+        }
+
+        $product->update(['expires_at' => now()->addDays(Product::LISTING_DAYS)]);
+
+        return response()->json(['message' => 'İlanın yayın süresi yenilendi.', 'expires_at' => $product->expires_at]);
+    }
+
     //admin onayı
     public function approve($id)
     {
@@ -227,7 +264,7 @@ class ProductController extends Controller
 
         // moderasyonla kaldırılmış veya sahibi askıdaki ilanı yalnızca sahibi ve adminler görebilir (route herkese açık olduğundan token elle çözülür)
         $ownerSuspended = User::whereKey($product->user_id)->whereNotNull('suspended_at')->exists();
-        if ((int) $product->status === AdminController::STATUS_REMOVED || $ownerSuspended) {
+        if ((int) $product->status === AdminController::STATUS_REMOVED || $ownerSuspended || $product->is_expired) {
             $viewer = auth('sanctum')->user();
             $allowed = $viewer && ($viewer->is_admin || (int) $viewer->id === (int) $product->user_id);
             abort_unless($allowed, 404);
@@ -239,7 +276,7 @@ class ProductController extends Controller
         if ($product->user) {
             $product->user->setAttribute('stats', UserStats::for($product->user->id, $product->user->created_at));
             $product->user->loadCount(['products' => function ($query) {
-                $query->whereIn('status', [1, 2]);
+                $query->whereIn('status', [1, 2, Product::STATUS_RESERVED])->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()));
             }]);
         }
 
@@ -467,6 +504,34 @@ class ProductController extends Controller
         }
 
         return response()->json(['message' => 'Fotoğraflar eklendi.', 'images' => $product->images()->get()], 201);
+    }
+
+    // fotoğraf sırasını değiştirir: gövdedeki `ids`, ilanın tüm fotoğraf id'lerinin (tam olarak) yeni sıralamasıdır; ilki kapak olur
+    public function reorderImages(Request $request, $id)
+    {
+        $product = Product::with('images')->findOrFail($id);
+
+        if ((int) $product->user_id !== (int) $request->user()->id) {
+            return response()->json(['message' => 'Bu ilanı güncelleme yetkiniz bulunmamaktadır.'], 403);
+        }
+
+        $data = $request->validate(['ids' => 'required|array|min:1|max:8', 'ids.*' => 'integer|distinct']);
+        $existing = $product->images->pluck('id')->map(fn ($i) => (int) $i)->sort()->values()->all();
+        $requested = collect($data['ids'])->map(fn ($i) => (int) $i);
+
+        if ($requested->sort()->values()->all() !== $existing) {
+            return response()->json(['message' => 'Sıralama, ilanın tüm fotoğraflarını içermelidir.'], 422);
+        }
+
+        DB::transaction(function () use ($product, $requested) {
+            foreach ($requested->values() as $position => $imageId) {
+                ProductImage::where('id', $imageId)->update(['sort_order' => $position, 'is_primary' => $position === 0]);
+            }
+            $cover = ProductImage::find($requested->first());
+            $product->update(['image_path' => $cover->getRawOriginal('image_path')]);
+        });
+
+        return response()->json(['message' => 'Fotoğraf sırası güncellendi.', 'images' => $product->images()->orderBy('sort_order')->get()]);
     }
 
     public function deleteImage(Request $request, $imageId)

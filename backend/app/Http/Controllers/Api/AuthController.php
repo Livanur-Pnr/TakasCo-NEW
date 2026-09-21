@@ -105,6 +105,7 @@ public function updateProfile(Request $request)
         'name' => 'required|string|max:255',
         'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
         'phone_number' => 'required|string',
+        'bio' => 'nullable|string|max:300',
         'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         'profile_photo_path' => ['nullable', 'string', Rule::in(self::PRESET_AVATARS)],
     ]);
@@ -121,6 +122,9 @@ public function updateProfile(Request $request)
         $user->email_verified_at = null;
     }
     $user->phone_number = $request->phone_number;
+    if ($request->has('bio')) {
+        $user->bio = trim((string) $request->bio) ?: null;
+    }
 
     // eski fotoğraf, ortak avatar değil de kullanıcıya özel yüklenmiş bir dosyaysa sil
     $oldPhotoIsOwnUpload = $user->profile_photo_path && str_starts_with($user->profile_photo_path, 'profiles/');

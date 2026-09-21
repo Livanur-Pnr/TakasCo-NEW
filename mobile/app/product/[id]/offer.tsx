@@ -54,7 +54,7 @@ export default function OfferScreen() {
     try {
       const response = await api.get('/user/products');
       // takaslanmış (status 3) ürünler teklif edilemez, backend de 409 ile reddeder
-      const usable = response.data.filter((p: { status?: number; listing_type?: string }) => p.status !== 3 && p.status !== 4 && p.listing_type !== 'satilik');
+      const usable = response.data.filter((p: { status?: number; listing_type?: string; is_expired?: boolean }) => p.status !== 3 && p.status !== 4 && p.listing_type !== 'satilik' && !p.is_expired);
       setMyProducts(usable);
       if (offered && usable.some((p: { id: number }) => String(p.id) === String(offered))) setSelectedIds([Number(offered)]);
     } catch (error) {

@@ -100,6 +100,7 @@ export default function HomeScreen() {
           <CityListings />
         </>
       ) : (
+        <>
         <View style={styles.section}>
           <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>Kategoriler</ThemedText>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: Spacing.two }}>
@@ -114,6 +115,10 @@ export default function HomeScreen() {
             ))}
           </ScrollView>
         </View>
+        <RecommendedListings />
+        <PopularListings />
+        <CityListings />
+        </>
       )}
 
       <View style={isDesktopWeb ? { paddingHorizontal: Spacing.seven, marginTop: Spacing.six, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' } : undefined}>

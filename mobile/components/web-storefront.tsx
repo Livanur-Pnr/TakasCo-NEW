@@ -12,6 +12,7 @@ import * as SecureStore from '@/utils/storage';
 import { useNotifications } from '@/hooks/use-notifications';
 import { useUnreadMessages } from '@/hooks/use-unread-messages';
 import { NotificationList } from '@/components/notification-list';
+import { useIsDesktopWeb } from '@/hooks/use-is-desktop-web';
 import { clearRecent as clearRecentStore, loadRecent, saveRecent } from '@/utils/recent-searches';
 
 interface Category {
@@ -521,6 +522,7 @@ export function CityListings() {
 function ListingStrip({ title, params, filter, subtitle, endpoint = '/products' }: { title: string; params: Record<string, any>; filter?: (p: any) => boolean; subtitle: (p: any) => string; endpoint?: string }) {
   const router = useRouter();
   const theme = useTheme();
+  const isDesktop = useIsDesktopWeb();
   const [items, setItems] = useState<any[]>([]);
   const paramKey = JSON.stringify(params);
 
@@ -533,10 +535,9 @@ function ListingStrip({ title, params, filter, subtitle, endpoint = '/products' 
 
   if (items.length === 0) return null;
 
-  return (
-    <View style={webStyles.popularListWrap}>
-      <ThemedText style={{ fontSize: 22, fontWeight: '800' }}>{title}</ThemedText>
-      <View style={webStyles.popularListRow}>
+  // masaüstünde sarmalı ızgara, telefonda yatay kaydırılan şerit
+  const cards = (
+      <View style={isDesktop ? webStyles.popularListRow : webStyles.stripRow}>
         {items.map((item) => {
           const raw = item.thumb_path ?? item.images?.[0]?.thumb_path ?? item.image_path;
           const path = typeof raw === 'string' && raw.startsWith('[') ? JSON.parse(raw)[0] : raw;
@@ -559,6 +560,12 @@ function ListingStrip({ title, params, filter, subtitle, endpoint = '/products' 
           );
         })}
       </View>
+  );
+
+  return (
+    <View style={isDesktop ? webStyles.popularListWrap : webStyles.stripWrap}>
+      <ThemedText style={{ fontSize: isDesktop ? 22 : 18, fontWeight: '800' }}>{title}</ThemedText>
+      {isDesktop ? cards : <ScrollView horizontal showsHorizontalScrollIndicator={false}>{cards}</ScrollView>}
     </View>
   );
 }
@@ -704,6 +711,8 @@ export const webStyles = StyleSheet.create({
   howCard: { flexBasis: 260, flexGrow: 1, borderRadius: Radius.lg, borderWidth: 1, padding: Spacing.five, gap: Spacing.two },
   howNumber: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginBottom: Spacing.one },
 
+  stripWrap: { paddingTop: Spacing.four, gap: Spacing.three },
+  stripRow: { flexDirection: 'row', gap: Spacing.three },
   popularListWrap: { paddingTop: Spacing.seven, gap: Spacing.four },
   popularListRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.four },
   popularListCard: { width: 200, borderRadius: Radius.md, borderWidth: 1, overflow: 'hidden', cursor: 'pointer' as any },

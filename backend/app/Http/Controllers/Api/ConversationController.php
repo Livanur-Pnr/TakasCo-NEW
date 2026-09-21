@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Events\MessageSent;
+use App\Events\MessagesRead;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\Product;
@@ -93,19 +94,38 @@ class ConversationController extends Controller
         $conversation = $this->authorizedConversation($request, $id);
         $me = (int) $request->user()->id;
 
-        Message::where('conversation_id', $conversation->id)->where('sender_id', '!=', $me)->whereNull('read_at')->update(['read_at' => now()]);
+        $marked = Message::where('conversation_id', $conversation->id)->where('sender_id', '!=', $me)->whereNull('read_at')->update(['read_at' => now()]);
+        if ($marked > 0) {
+            // gönderene "okundu" bilgisi; yayın hatası okumayı bozmaz
+            try {
+                event(new MessagesRead($conversation->id, $me));
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
 
-        // `after` verilirse yalnızca o mesajdan sonrakiler döner (artımlı polling: gereksiz veri taşınmaz)
+        // `after`: yalnızca o mesajdan sonrakiler (artımlı yenileme). `before`: bir sayfa daha eski mesaj. Yoksa son 100 mesaj.
+        // `has_more`, daha eski mesaj olup olmadığını söyler (yalnızca `after` dışındaki isteklerde anlamlıdır).
         $query = Message::where('conversation_id', $conversation->id);
-        $messages = $request->filled('after')
-            ? $query->where('id', '>', (int) $request->input('after'))->orderBy('id')->limit(100)->get()
-            : $query->orderByDesc('id')->limit(100)->get()->reverse()->values();
+        $hasMore = false;
+        if ($request->filled('after')) {
+            $messages = $query->where('id', '>', (int) $request->input('after'))->orderBy('id')->limit(100)->get();
+        } else {
+            $limit = $request->filled('before') ? 50 : 100;
+            if ($request->filled('before')) {
+                $query->where('id', '<', (int) $request->input('before'));
+            }
+            $page = $query->orderByDesc('id')->limit($limit + 1)->get();
+            $hasMore = $page->count() > $limit;
+            $messages = $page->take($limit)->reverse()->values();
+        }
         $other = $conversation->otherUser($me);
 
         return response()->json([
             'other_user' => ['id' => $other->id, 'name' => $other->name, 'profile_photo_path' => $other->profile_photo_path],
             'blocked' => UserBlock::existsBetween($me, (int) $other->id),
             'blocked_by_me' => UserBlock::where(['blocker_id' => $me, 'blocked_id' => $other->id])->exists(),
+            'has_more' => $hasMore,
             'product' => $conversation->product ? ['id' => $conversation->product->id, 'title' => $conversation->product->title] : null,
             'data' => $messages->map(fn (Message $m) => [
                 'id' => $m->id, 'sender_id' => $m->sender_id, 'body' => $m->body, 'created_at' => $m->created_at, 'read_at' => $m->read_at,

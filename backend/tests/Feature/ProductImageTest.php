@@ -82,6 +82,38 @@ class ProductImageTest extends TestCase
         ], ['Accept' => 'application/json'])->assertStatus(422);
     }
 
+    public function test_owner_can_reorder_photos_and_the_first_becomes_the_cover(): void
+    {
+        $owner = User::factory()->create();
+        $stranger = User::factory()->create();
+        $category = Category::create(['name' => 'Elektronik']);
+        $img = fn (string $n) => UploadedFile::fake()->image($n, 300, 300);
+        $create = $this->actingAs($owner, 'sanctum')->post('/api/products', [
+            'title' => 'Sıralı', 'category_id' => $category->id, 'description' => 'd', 'condition' => 'Sıfır', 'swap_expectation' => 'y',
+            'images' => [$img('a.jpg'), $img('b.jpg'), $img('c.jpg')],
+        ], ['Accept' => 'application/json'])->assertStatus(201);
+        $id = $create->json('product.id');
+        $ids = collect($create->json('product.images'))->pluck('id')->all();
+        foreach ($create->json('product.images') as $image) {
+            $this->created[] = $image['image_path'];
+        }
+
+        [$a, $b, $c] = $ids;
+        $this->actingAs($stranger, 'sanctum')->putJson("/api/products/{$id}/images/order", ['ids' => [$c, $b, $a]])->assertStatus(403);
+        $this->actingAs($owner, 'sanctum')->putJson("/api/products/{$id}/images/order", ['ids' => [$c, $b]])->assertStatus(422);
+        $this->actingAs($owner, 'sanctum')->putJson("/api/products/{$id}/images/order", ['ids' => [$c, $b, 9999]])->assertStatus(422);
+        $this->actingAs($owner, 'sanctum')->putJson("/api/products/{$id}/images/order", ['ids' => [$c, $c, $a]])->assertStatus(422);
+
+        $res = $this->actingAs($owner, 'sanctum')->putJson("/api/products/{$id}/images/order", ['ids' => [$c, $a, $b]])->assertOk();
+        $this->assertSame([$c, $a, $b], collect($res->json('images'))->pluck('id')->all());
+
+        $detail = $this->getJson("/api/products/{$id}")->json();
+        $this->assertSame([$c, $a, $b], collect($detail['images'])->pluck('id')->all());
+        $this->assertTrue((bool) $detail['images'][0]['is_primary']);
+        $this->assertFalse((bool) $detail['images'][1]['is_primary']);
+        $this->assertSame(\App\Models\ProductImage::find($c)->getRawOriginal('image_path'), \App\Models\Product::find($id)->getRawOriginal('image_path'));
+    }
+
     public function test_owner_can_add_photos_up_to_limit_and_cover_moves_when_deleted(): void
     {
         $owner = User::factory()->create();

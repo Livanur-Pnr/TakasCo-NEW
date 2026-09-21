@@ -29,6 +29,7 @@ export default function ProfileSettingsScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [bio, setBio] = useState('');
   const [existingPhoto, setExistingPhoto] = useState<string | null>(null);
   
   // newPhoto tutulurken ImagePicker Asset objesi tutulur
@@ -51,6 +52,7 @@ export default function ProfileSettingsScreen() {
       setName(user.name || '');
       setEmail(user.email || '');
       setPhoneNumber(user.phone_number || '');
+      setBio(user.bio || '');
       setExistingPhoto(user.profile_photo_path || null);
     } catch (error) {
       console.error('Kullanıcı bilgileri alınamadı:', error);
@@ -119,6 +121,7 @@ export default function ProfileSettingsScreen() {
       formData.append('name', name);
       formData.append('email', email);
       formData.append('phone_number', phoneNumber);
+      formData.append('bio', bio.trim());
 
       if (newPhoto) {
         const filename = newPhoto.fileName || newPhoto.uri.split('/').pop() || 'profile.jpg';
@@ -285,6 +288,21 @@ export default function ProfileSettingsScreen() {
             keyboardType="phone-pad"
             value={phoneNumber}
             onChangeText={setPhoneNumber}
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <ThemedText style={styles.label}>Hakkında <ThemedText style={{ fontWeight: '400', color: theme.textSecondary, fontSize: 12 }}>(herkese açık profilinde görünür, {bio.length}/300)</ThemedText></ThemedText>
+          <TextInput
+            style={[styles.input, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text, height: 90 }]}
+            placeholder="Kendini kısaca tanıt: neler takas etmeyi seviyorsun?"
+            placeholderTextColor={theme.textSecondary}
+            multiline
+            textAlignVertical="top"
+            maxLength={300}
+            value={bio}
+            onChangeText={setBio}
+            accessibilityLabel="Hakkında"
           />
         </View>
 

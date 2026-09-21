@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
 import * as SecureStore from '@/utils/storage';
@@ -81,4 +81,56 @@ export function useRealtimeEvent(channel: string | null, event: string, handler:
   }, [channel, event]);
 
   return connected;
+}
+
+// Laravel'in yayın bildirimi olayı (Echo'nun `.notification()` yardımcısının dinlediği olay)
+export const NOTIFICATION_EVENT = '.Illuminate\\Notifications\\Events\\BroadcastNotificationCreated';
+
+// "Yazıyor…" göstergesi: sunucuya uğramadan, aynı özel kanaldaki istemciler arasında "whisper" olayıyla gider.
+// `typing` karşı taraf yazarken (3 sn boyunca) true olur; `notifyTyping` kendi yazışımızı en fazla 2 sn'de bir bildirir.
+export function useTyping(channel: string | null, myId: number | null) {
+  const [typing, setTyping] = useState(false);
+  const channelRef = useRef<any>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastSent = useRef(0);
+
+  useEffect(() => {
+    if (!channel || !REALTIME_ENABLED) return;
+    let cancelled = false;
+    const listener = (payload: { user_id?: number }) => {
+      if (payload?.user_id === myId) return;
+      setTyping(true);
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = setTimeout(() => setTyping(false), 3000);
+    };
+
+    getEcho()
+      .then((instance) => {
+        if (!instance || cancelled) return;
+        channelRef.current = instance.private(channel);
+        channelRef.current.listenForWhisper('typing', listener);
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+      if (timer.current) clearTimeout(timer.current);
+      setTyping(false);
+      channelRef.current?.stopListeningForWhisper?.('typing', listener);
+      channelRef.current = null;
+    };
+  }, [channel, myId]);
+
+  const notifyTyping = useCallback(() => {
+    const now = Date.now();
+    if (now - lastSent.current < 2000 || !channelRef.current || !myId) return;
+    lastSent.current = now;
+    try {
+      channelRef.current.whisper('typing', { user_id: myId });
+    } catch {
+      // bağlantı yoksa sessizce geç
+    }
+  }, [myId]);
+
+  return { typing, notifyTyping };
 }

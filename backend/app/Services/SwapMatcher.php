@@ -59,6 +59,7 @@ class SwapMatcher
     public static function forUser(int $userId, int $limit = 10): array
     {
         $mine = Product::with('category')->where('user_id', $userId)->whereIn('status', [1, 2])
+            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
             ->where('listing_type', '!=', 'satilik')->latest()->limit(20)->get();
         if ($mine->isEmpty()) {
             return [];
@@ -68,7 +69,7 @@ class SwapMatcher
             ->merge(UserBlock::where('blocked_id', $userId)->pluck('blocker_id'))->unique()->all();
 
         $others = Product::published()->with(['category', 'user:id,name'])->where('user_id', '!=', $userId)
-            ->where('listing_type', '!=', 'satilik')->whereNotIn('user_id', $blocked)->latest()->limit(self::CANDIDATE_LIMIT)->get();
+            ->where('listing_type', '!=', 'satilik')->where('status', '!=', 5)->whereNotIn('user_id', $blocked)->latest()->limit(self::CANDIDATE_LIMIT)->get();
 
         $pending = Trade::where('status', TradeStatus::Pending->value)
             ->where(fn ($q) => $q->where('sender_id', $userId)->orWhere('receiver_id', $userId))

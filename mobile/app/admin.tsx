@@ -9,12 +9,24 @@ import { api, getImageUrl } from '@/utils/api';
 import { Alert } from '@/utils/alert';
 import { timeAgo } from '@/utils/date';
 
-type Tab = 'overview' | 'products' | 'users' | 'reports';
+type Tab = 'overview' | 'products' | 'users' | 'reports' | 'reviews' | 'actions';
 
 interface Overview { users: number; active_products: number; removed_products: number; active_trades: number; completed_trades: number; conversations: number; pending_reports: number }
 interface AdminReport { id: number; target_type: 'product' | 'user'; target_id: number; target_label: string; reason: string; details: string | null; status: string; reporter: string | null; created_at: string }
 
 const REASON_LABEL: Record<string, string> = { spam: 'Spam / reklam', yaniltici: 'Yanıltıcı bilgi', uygunsuz: 'Uygunsuz içerik', sahte: 'Sahte / taklit', diger: 'Diğer' };
+interface AdminReview { id: number; rating: number; comment: string | null; reviewer: string; reviewee: string; created_at: string }
+interface AdminActionRow { id: number; action: string; target_type: string | null; target_id: number | null; details: string | null; admin: string; created_at: string }
+
+const ACTION_LABEL: Record<string, string> = {
+  product_removed: 'İlanı kaldırdı',
+  product_restored: 'İlanı geri yükledi',
+  user_suspended: 'Hesabı askıya aldı',
+  user_unsuspended: 'Askıyı kaldırdı',
+  report_resolved: 'Şikayeti sonuçlandırdı',
+  review_deleted: 'Değerlendirmeyi sildi',
+};
+
 interface AdminProduct { id: number; title: string; status: number; thumb_path: string | null; category: string | null; owner: { id: number; name: string; email: string } | null; created_at: string; deleted: boolean }
 interface AdminUser { id: number; name: string; email: string; city: string | null; is_admin: boolean; suspended: boolean; products_count: number; created_at: string }
 
@@ -63,11 +75,15 @@ export default function AdminScreen() {
             <Pill label="İlanlar" active={tab === 'products'} onPress={() => setTab('products')} />
             <Pill label="Kullanıcılar" active={tab === 'users'} onPress={() => setTab('users')} />
             <Pill label="Şikayetler" active={tab === 'reports'} onPress={() => setTab('reports')} />
+            <Pill label="Değerlendirmeler" active={tab === 'reviews'} onPress={() => setTab('reviews')} />
+            <Pill label="İşlem Kaydı" active={tab === 'actions'} onPress={() => setTab('actions')} />
           </View>
           {tab === 'overview' && <OverviewTab onError={onError} />}
           {tab === 'products' && <ProductsTab onError={onError} />}
           {tab === 'users' && <UsersTab onError={onError} />}
           {tab === 'reports' && <ReportsTab onError={onError} />}
+          {tab === 'reviews' && <ReviewsTab onError={onError} />}
+          {tab === 'actions' && <ActionsTab onError={onError} />}
         </>
       )}
     </SubPage>
@@ -283,6 +299,130 @@ function ReportsTab({ onError }: { onError: (e: any) => void }) {
 
       {loading && <ActivityIndicator color={Brand.accent} />}
       {!loading && items.length === 0 && <ThemedText style={{ color: theme.textSecondary, textAlign: 'center' }}>Şikayet yok.</ThemedText>}
+      {!loading && page < lastPage && (
+        <TouchableOpacity onPress={() => load(page + 1)} accessibilityRole="button" style={{ alignSelf: 'center' }}>
+          <ThemedText style={{ color: Brand.accent, fontWeight: '700' }}>Daha fazla yükle</ThemedText>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
+
+function ReviewsTab({ onError }: { onError: (e: any) => void }) {
+  const theme = useTheme();
+  const [items, setItems] = useState<AdminReview[]>([]);
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [rating, setRating] = useState<number | null>(null);
+
+  const load = useCallback(async (pageToLoad: number) => {
+    setLoading(true);
+    try {
+      const r = await api.get('/admin/reviews', { params: { page: pageToLoad, rating: rating ?? undefined } });
+      setItems((prev) => (pageToLoad === 1 ? r.data.data : [...prev, ...r.data.data]));
+      setPage(r.data.current_page);
+      setLastPage(r.data.last_page);
+    } catch (e) {
+      onError(e);
+    } finally {
+      setLoading(false);
+    }
+  }, [rating, onError]);
+
+  useEffect(() => { load(1); }, [load]);
+
+  const remove = (r: AdminReview) => {
+    Alert.alert('Değerlendirmeyi Sil', `${r.reviewer} tarafından ${r.reviewee} için yazılan ${r.rating} yıldızlı değerlendirme silinecek ve puan ortalaması yeniden hesaplanacak.`, [
+      { text: 'Vazgeç', style: 'cancel' },
+      {
+        text: 'Sil',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await api.delete(`/admin/reviews/${r.id}`);
+            setItems((prev) => prev.filter((x) => x.id !== r.id));
+          } catch (e: any) {
+            Alert.alert('Hata', e.response?.data?.message || 'Silinemedi.');
+          }
+        },
+      },
+    ]);
+  };
+
+  return (
+    <View style={{ gap: Spacing.four }}>
+      <View style={styles.tabs}>
+        <Pill label="Tümü" active={rating === null} onPress={() => setRating(null)} />
+        {[1, 2, 3, 4, 5].map((n) => (
+          <Pill key={n} label={`${n} ★`} active={rating === n} onPress={() => setRating(n)} />
+        ))}
+      </View>
+
+      {items.map((r) => (
+        <View key={r.id} style={[styles.row, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
+          <View style={{ flex: 1, gap: 2 }}>
+            <ThemedText style={{ fontWeight: '700' }}>
+              <ThemedText style={{ color: Brand.warning }}>{'★'.repeat(r.rating)}</ThemedText>
+              {'  '}{r.reviewer} → {r.reviewee}
+            </ThemedText>
+            {!!r.comment && <ThemedText style={{ fontSize: 13 }}>{r.comment}</ThemedText>}
+            <ThemedText style={{ color: theme.textSecondary, fontSize: 12 }}>{timeAgo(r.created_at)}</ThemedText>
+          </View>
+          <TouchableOpacity onPress={() => remove(r)} accessibilityRole="button" style={[styles.action, { backgroundColor: Brand.danger + '18' }]}>
+            <ThemedText style={{ color: Brand.danger, fontWeight: '700', fontSize: 12 }}>Sil</ThemedText>
+          </TouchableOpacity>
+        </View>
+      ))}
+
+      {loading && <ActivityIndicator color={Brand.accent} />}
+      {!loading && items.length === 0 && <ThemedText style={{ color: theme.textSecondary, textAlign: 'center' }}>Değerlendirme yok.</ThemedText>}
+      {!loading && page < lastPage && (
+        <TouchableOpacity onPress={() => load(page + 1)} accessibilityRole="button" style={{ alignSelf: 'center' }}>
+          <ThemedText style={{ color: Brand.accent, fontWeight: '700' }}>Daha fazla yükle</ThemedText>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
+
+function ActionsTab({ onError }: { onError: (e: any) => void }) {
+  const theme = useTheme();
+  const [items, setItems] = useState<AdminActionRow[]>([]);
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async (pageToLoad: number) => {
+    setLoading(true);
+    try {
+      const r = await api.get('/admin/actions', { params: { page: pageToLoad } });
+      setItems((prev) => (pageToLoad === 1 ? r.data.data : [...prev, ...r.data.data]));
+      setPage(r.data.current_page);
+      setLastPage(r.data.last_page);
+    } catch (e) {
+      onError(e);
+    } finally {
+      setLoading(false);
+    }
+  }, [onError]);
+
+  useEffect(() => { load(1); }, [load]);
+
+  return (
+    <View style={{ gap: Spacing.three }}>
+      {items.map((a) => (
+        <View key={a.id} style={[styles.row, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
+          <View style={{ flex: 1, gap: 2 }}>
+            <ThemedText style={{ fontWeight: '700' }}>{a.admin} · {ACTION_LABEL[a.action] ?? a.action}</ThemedText>
+            {!!a.details && <ThemedText style={{ fontSize: 13, color: theme.textSecondary }} numberOfLines={2}>{a.details}</ThemedText>}
+          </View>
+          <ThemedText style={{ color: theme.textSecondary, fontSize: 12 }}>{timeAgo(a.created_at)}</ThemedText>
+        </View>
+      ))}
+
+      {loading && <ActivityIndicator color={Brand.accent} />}
+      {!loading && items.length === 0 && <ThemedText style={{ color: theme.textSecondary, textAlign: 'center' }}>Henüz kayıtlı bir yönetici işlemi yok.</ThemedText>}
       {!loading && page < lastPage && (
         <TouchableOpacity onPress={() => load(page + 1)} accessibilityRole="button" style={{ alignSelf: 'center' }}>
           <ThemedText style={{ color: Brand.accent, fontWeight: '700' }}>Daha fazla yükle</ThemedText>

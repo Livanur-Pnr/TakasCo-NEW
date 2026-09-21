@@ -155,6 +155,8 @@ export default function ProductDetailScreen() {
   const isOwner = currentUserId === product.user_id;
   const canEdit = ![3, 4].includes(Number(product.status));
   const swapOpen = product.listing_type !== 'satilik';
+  const reserved = Number(product.status) === 5;
+  const canOffer = swapOpen && !reserved && !product.is_expired;
   const priceText = formatPrice(product.price);
   const deliveryChips = [product.meetup_enabled !== false ? 'Elden teslim' : null, product.shipping_enabled ? 'Kargo' : null].filter(Boolean) as string[];
 
@@ -357,6 +359,11 @@ export default function ProductDetailScreen() {
                 <View style={[desktopStyles.chip, { backgroundColor: Brand.accent + '18' }]}>
                   <ThemedText style={[desktopStyles.chipText, { color: Brand.accent, fontWeight: '700' }]}>{badgeFor(product.listing_type)}</ThemedText>
                 </View>
+                {reserved && (
+                  <View style={[desktopStyles.chip, { backgroundColor: Brand.warning + '25' }]}>
+                    <ThemedText style={[desktopStyles.chipText, { color: Brand.warning, fontWeight: '700' }]}>Rezerve</ThemedText>
+                  </View>
+                )}
                 {!!product.brand && (
                   <View style={[desktopStyles.chip, { backgroundColor: theme.backgroundSelected }]}>
                     <ThemedText style={desktopStyles.chipText}>Marka: {product.brand}</ThemedText>
@@ -396,7 +403,13 @@ export default function ProductDetailScreen() {
                 </View>
               )}
 
-              {!isOwner && swapOpen && (
+              {!isOwner && reserved && (
+                <View style={[desktopStyles.swapBox, { backgroundColor: Brand.warning + '20' }]}>
+                  <ThemedText type="defaultSemiBold" style={{ fontSize: 13 }}>Bu ilan şu an rezerve</ThemedText>
+                  <ThemedText style={{ fontSize: 13, marginTop: 2 }}>Sahibi başka bir kullanıcıyla anlaştı; yeni teklif alamıyor. Satıcıya mesaj yazarak durumunu sorabilirsin.</ThemedText>
+                </View>
+              )}
+              {!isOwner && canOffer && (
                 <TouchableOpacity style={[desktopStyles.ctaButton, { backgroundColor: Brand.accent }]} onPress={() => router.push(`/product/${id}/offer`)}>
                   <IconSymbol name="arrow.left.arrow.right" size={18} color="#fff" />
                   <ThemedText style={desktopStyles.ctaText}>Bu Ürün İçin Takas Teklifi Gönder</ThemedText>
@@ -627,9 +640,9 @@ export default function ProductDetailScreen() {
         <View style={[styles.footer, { backgroundColor: theme.backgroundElement, borderTopColor: theme.border }]}>
           <TouchableOpacity
             style={[styles.button, { backgroundColor: Brand.accent }]}
-            onPress={() => (swapOpen ? router.push(`/product/${id}/offer`) : startChat())}
+            onPress={() => (canOffer ? router.push(`/product/${id}/offer`) : startChat())}
           >
-            <ThemedText style={styles.buttonText}>{swapOpen ? 'Takas Teklif Et' : 'Satıcıya Mesaj Gönder'}</ThemedText>
+            <ThemedText style={styles.buttonText}>{canOffer ? 'Takas Teklif Et' : 'Satıcıya Mesaj Gönder'}</ThemedText>
           </TouchableOpacity>
         </View>
       )}

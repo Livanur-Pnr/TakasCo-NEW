@@ -9,7 +9,7 @@ import { ReportModal } from '@/components/report-modal';
 import { Brand, Radius, Spacing } from '@/constants/theme';
 import { useIsDesktopWeb } from '@/hooks/use-is-desktop-web';
 import { usePolling } from '@/hooks/use-polling';
-import { useRealtimeEvent } from '@/utils/realtime';
+import { useRealtimeEvent, useTyping } from '@/utils/realtime';
 import { useTheme } from '@/hooks/use-theme';
 import { api, getImageUrl } from '@/utils/api';
 import { Alert } from '@/utils/alert';
@@ -25,7 +25,7 @@ interface Conversation {
   last_message: { body: string; sender_id: number; created_at: string } | null;
   unread_count: number;
 }
-interface ChatMessage { id: number; sender_id: number; body: string; created_at: string }
+interface ChatMessage { id: number; sender_id: number; body: string; created_at: string; read_at?: string | null }
 
 function Avatar({ person, size = 40 }: { person: Person; size?: number }) {
   const theme = useTheme();
@@ -52,6 +52,8 @@ function ChatPane({ conversationId, me, onBack }: { conversationId: number; me: 
   const [blocked, setBlocked] = useState(false);
   const [blockedByMe, setBlockedByMe] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
 
   const lastIdRef = useRef(0);
@@ -67,6 +69,7 @@ function ChatPane({ conversationId, me, onBack }: { conversationId: number; me: 
       setProduct(res.data.product);
       const incoming: ChatMessage[] = res.data.data;
       if (after === 0) {
+        setHasMore(!!res.data.has_more);
         setMessages(incoming);
       } else if (incoming.length > 0) {
         setMessages((prev) => {
@@ -87,6 +90,32 @@ function ChatPane({ conversationId, me, onBack }: { conversationId: number; me: 
     setLoading(true);
     setMessages([]);
   }, [conversationId]);
+
+  // daha eski mesajları yukarıya ekler (başlangıçta yalnızca son 100 mesaj gelir)
+  const loadOlder = async () => {
+    if (loadingOlder || messages.length === 0) return;
+    setLoadingOlder(true);
+    try {
+      const res = await api.get(`/conversations/${conversationId}/messages`, { params: { before: messages[0].id } });
+      const older: ChatMessage[] = res.data.data;
+      setMessages((prev) => {
+        const known = new Set(prev.map((m) => m.id));
+        return [...older.filter((m) => !known.has(m.id)), ...prev];
+      });
+      setHasMore(!!res.data.has_more);
+    } catch {
+      // interceptor gerekli mesajı gösterir
+    } finally {
+      setLoadingOlder(false);
+    }
+  };
+
+  // Karşı taraf mesajları okuyunca benim gönderdiklerim "okundu" olur
+  useRealtimeEvent(`conversation.${conversationId}`, '.messages.read', () => {
+    const now = new Date().toISOString();
+    setMessages((prev) => prev.map((m) => (m.sender_id === me && !m.read_at ? { ...m, read_at: now } : m)));
+  });
+  const { typing, notifyTyping } = useTyping(`conversation.${conversationId}`, me);
 
   // Reverb bağlıyken yeni mesaj olayı gelince yalnızca yeni mesajlar çekilir; polling seyrek bir güvence olarak kalır
   const realtime = useRealtimeEvent(`conversation.${conversationId}`, '.message.sent', () => { load(); });
@@ -177,6 +206,11 @@ function ChatPane({ conversationId, me, onBack }: { conversationId: number; me: 
         contentContainerStyle={{ padding: Spacing.four, gap: Spacing.two, flexGrow: 1, justifyContent: messages.length ? 'flex-end' : 'center' }}
         onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: false })}
       >
+        {hasMore && !loading && (
+          <TouchableOpacity onPress={loadOlder} disabled={loadingOlder} accessibilityRole="button" style={{ alignSelf: 'center', padding: Spacing.two }}>
+            {loadingOlder ? <ActivityIndicator color={Brand.accent} /> : <ThemedText style={{ color: Brand.accent, fontWeight: '700', fontSize: 13 }}>Önceki mesajları yükle</ThemedText>}
+          </TouchableOpacity>
+        )}
         {loading ? (
           <ActivityIndicator color={Brand.accent} />
         ) : messages.length === 0 ? (
@@ -188,12 +222,15 @@ function ChatPane({ conversationId, me, onBack }: { conversationId: number; me: 
               <View key={m.id} style={[styles.bubbleRow, { justifyContent: mine ? 'flex-end' : 'flex-start' }]}>
                 <View style={[styles.bubble, { backgroundColor: mine ? Brand.accent : theme.backgroundSelected }]}>
                   <ThemedText style={{ color: mine ? '#fff' : theme.text }}>{m.body}</ThemedText>
-                  <ThemedText style={{ color: mine ? 'rgba(255,255,255,0.75)' : theme.textSecondary, fontSize: 10, marginTop: 2 }}>{timeAgo(m.created_at)}</ThemedText>
+                  <ThemedText style={{ color: mine ? 'rgba(255,255,255,0.75)' : theme.textSecondary, fontSize: 10, marginTop: 2 }}>
+                    {timeAgo(m.created_at)}{mine ? (m.read_at ? '  ✓✓' : '  ✓') : ''}
+                  </ThemedText>
                 </View>
               </View>
             );
           })
         )}
+        {typing && <ThemedText style={{ color: theme.textSecondary, fontSize: 12, fontStyle: 'italic' }}>{other?.name ?? 'Karşı taraf'} yazıyor…</ThemedText>}
       </ScrollView>
 
       {blocked ? (
@@ -209,7 +246,7 @@ function ChatPane({ conversationId, me, onBack }: { conversationId: number; me: 
           placeholder="Mesajını yaz..."
           placeholderTextColor={theme.textSecondary}
           value={text}
-          onChangeText={setText}
+          onChangeText={(t) => { setText(t); if (t) notifyTyping(); }}
           onSubmitEditing={send}
           onKeyPress={Platform.OS === 'web' ? (e: any) => { if (e.nativeEvent.key === 'Enter' && !e.nativeEvent.shiftKey) { e.preventDefault?.(); send(); } } : undefined}
           maxLength={1000}

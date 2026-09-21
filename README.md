@@ -23,6 +23,9 @@ Ayrıntılar: [`TAKASCO_ARCHITECTURE.md`](./TAKASCO_ARCHITECTURE.md) · Gelişti
 - Şifremi unuttum (e-posta ile sıfırlama), sitemap.xml/robots.txt, ürün structured data
 - İlan görüntülenme sayısı, arama önerileri ve son aramalar
 - Değerlendirmeler (tamamlanan takas sonrası) ve gerçek verilerden güven rozetleri
+- Mesajlaşma: yazıyor göstergesi, okundu (✓✓), eski mesajları yükleme, anlık zil bildirimi
+- İlan: fotoğraf küçültme/sıralama/ilerleme, taslak, rezerve, 60 gün yayın süresi + yenileme
+- Profil: hakkında yazısı, Aktif/Takaslananlar/Değerlendirmeler sekmeleri; yönetimde değerlendirme silme ve işlem kaydı
 - Google ile giriş (web)
 - Gerçek zamanlı mesajlaşma (Reverb WebSocket, polling yedekli)
 - Aynı teklifte çoklu ürün (en fazla 4), e-posta doğrulama ve "E-posta Doğrulandı" rozeti
@@ -81,7 +84,7 @@ Gizli anahtarlar depoya girmez: `.env`, SQLite dosyası ve yüklenen görseller 
 ## Test
 
 ```bash
-cd backend && php artisan test        # 156 test (takas güvenliği, yetkilendirme, bildirim, mesajlaşma, admin, görsel, auth…)
+cd backend && php artisan test        # 175 test (takas güvenliği, yetkilendirme, bildirim, mesajlaşma, admin, görsel, auth…)
 cd mobile  && npx tsc --noEmit        # tip kontrolü
 ```
 
@@ -103,3 +106,5 @@ cd mobile  && npx tsc --noEmit        # tip kontrolü
 - Kullanıcı engelleme / şikayet (raporlama) sistemi henüz yok
 - E-posta doğrulama ve parola sıfırlama API tarafında yok
 - Şehir/ilçe metin olarak tutulur; konum bazlı "yakınımdaki ilanlar" yok
+
+Yayına alma: bkz. `TAKASCO_DEPLOYMENT.md` (mimari, ortam değişkenleri, sunucu kurulumu, kontrol listeleri).

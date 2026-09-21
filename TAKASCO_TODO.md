@@ -85,3 +85,12 @@ Bilinçli olarak yapılmayacaklar: Cüzdan/para çekme (gerçek ödeme altyapıs
 Hâlâ yapılmayanlar: WebSocket/Reverb ve Google-Apple girişi (üçüncü taraf paket kurulumu kullanıcıya bırakıldı), cüzdan (gerçek ödeme altyapısı yok), kimlik ve telefon doğrulama (belge/SMS süreci yok).
 - [x] L3. Gerçek zamanlı mesajlaşma (Laravel Reverb / WebSocket): `MessageSent` olayı, `conversation.{id}` ve kişisel kanallar, Bearer token ile kanal yetkisi (`/api/broadcasting/auth`), istemcide Echo. Reverb kapalıysa ya da anahtar tanımsızsa polling aynen çalışır.
 - [x] L4. Google ile giriş/kayıt (yalnızca web: Google Identity Services + backend'de yerel ID token doğrulaması, ek paket yok). Native (Expo Go/iOS/Android) Google girişi ve Apple girişi yapılmadı.
+- [x] L5. Yayın hazırlığı: CORS yapılandırması (`config/cors.php`, `CORS_ALLOWED_ORIGINS`), güvenlik güncellemeleri (composer/npm), statik web derlemesi doğrulandı (`expo export -p web`), `TAKASCO_DEPLOYMENT.md` yayın rehberi. Canlı ortamda yapılacaklar rehberdeki kontrol listesinde.
+
+## M. Profesyonelleştirme turu
+- [x] M1. Mesajlaşma cilası: zil bildirimleri gerçek zamanlı, "yazıyor…", okundu işareti (✓/✓✓), eski mesajları yükleme.
+- [x] M2. Mobil ana sayfa: Sana Özel / Popüler / Şehrindeki İlanlar (masaüstü ile eşitlik).
+- [x] M3. İlan verme: fotoğraf küçültme (web), sıralama/kapak yap, yükleme ilerlemesi, taslak saklama.
+- [x] M4. Profil: "hakkında" yazısı ve herkese açık profilde Aktif / Takaslananlar / Değerlendirmeler sekmeleri.
+- [x] M5. Yönetim: değerlendirme silme, yönetici işlem kaydı.
+- [x] M6. İlan yaşam döngüsü: Rezerve, süre dolumu + yenileme.

@@ -49,6 +49,14 @@ Hazırlık: `cd backend && php artisan serve`, `cd mobile && npx expo start --we
 
 - [ ] **Google girişi (web):** giriş ve kayıt ekranında "Google ile devam et" düğmesi görünüyor; test kullanıcısı olarak eklenen hesapla giriş yapılıyor; ilk girişte onboarding açılıyor, sonrakinde ana sayfa; aynı e-postayla önceden açılmış hesap varsa o hesaba bağlanıyor.
 
+## Profesyonelleştirme turu (M grubu)
+- [ ] **Sohbet:** karşı taraf yazarken "… yazıyor…", benim mesajımda ✓ → karşı taraf sohbeti açınca ✓✓; 100'den fazla mesajlı sohbette "Önceki mesajları yükle"; başka sekmedeyken gelen bildirimde zil rozeti anında artıyor.
+- [ ] **Mobil ana sayfa:** telefon genişliğinde "Sana Özel / Popüler / Şehrindeki İlanlar" yatay şeritleri görünüyor (veri yoksa görünmüyor).
+- [ ] **İlan verme:** 3+ MB'lık fotoğraf web'de küçülüp yükleniyor; ◀ ▶ ve "Kapak" düğmeleriyle sıra değişiyor; yükleme sırasında "%NN" görünüyor; formu yarım bırakıp sayfayı yenileyince taslak geri geliyor ("Temizle" çalışıyor); İlanı Düzenle'de sıra değişince ilan sayfasında kapak da değişiyor.
+- [ ] **Profil:** Profil Ayarları'nda "Hakkında" yazısı kaydediliyor ve herkese açık profilde görünüyor; Aktif İlanlar / Takaslananlar / Değerlendirmeler sekmeleri çalışıyor.
+- [ ] **Yönetim:** Değerlendirmeler sekmesinde puana göre filtre + silme; İşlem Kaydı sekmesinde yaptığın işlemler (kim, ne, hedef) görünüyor.
+- [ ] **Yaşam döngüsü:** Benim İlanlarım'da "Rezerve Et" → durum "Rezerve", başka kullanıcı ilan sayfasında teklif düğmesi yerine uyarı ve mesaj düğmesi görüyor; "Aktif Et" geri alıyor. Süresi dolmuş ilanda "Süresi Doldu" + "Yenile" (süre dolumunu denemek için veritabanında `expires_at` geçmişe alınabilir).
+
 ## Üretime çıkmadan
 - [ ] `.env`: `APP_ENV=production`, `APP_DEBUG=false`, gerçek `APP_URL`, SMTP, `EXPO_PUBLIC_API_URL`.
 - [ ] İlk admin hesabı veritabanında elle `is_admin=1` yapılır.

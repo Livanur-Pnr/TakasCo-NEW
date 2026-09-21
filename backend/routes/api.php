@@ -61,7 +61,10 @@ Route::middleware(['auth:sanctum', NotSuspended::class])->group(function () {
             Route::post('/', 'store');
             Route::delete('/{id}', 'destroy');
             Route::put('/{id}', 'update');
-            Route::post('/{id}/images', 'addImages');          
+            Route::post('/{id}/images', 'addImages');
+            Route::put('/{id}/images/order', 'reorderImages');
+            Route::post('/{id}/reserve', 'reserve');
+            Route::post('/{id}/renew', 'renew');          
             Route::post('/{id}/favorite', 'toggleFavorite'); 
             
             // Admin Özel: Ürün Onaylama
@@ -86,6 +89,9 @@ Route::middleware(['auth:sanctum', NotSuspended::class])->group(function () {
         Route::post('/users/{id}/unsuspend', 'unsuspendUser');
         Route::get('/reports', 'reports');
         Route::post('/reports/{id}/resolve', 'resolveReport');
+        Route::get('/reviews', 'reviews');
+        Route::delete('/reviews/{id}', 'deleteReview');
+        Route::get('/actions', 'actions');
     });
 
     Route::get('/recommendations', [\App\Http\Controllers\Api\RecommendationController::class, 'index']);

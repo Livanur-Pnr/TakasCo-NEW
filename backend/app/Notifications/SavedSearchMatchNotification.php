@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\Product;
 use App\Models\SavedSearch;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Notification;
 
 // kayıtlı aramaya uyan yeni ilan için uygulama içi bildirim
@@ -15,7 +16,12 @@ class SavedSearchMatchNotification extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'broadcast'];
+    }
+
+    public function toBroadcast(object $notifiable): BroadcastMessage
+    {
+        return (new BroadcastMessage($this->toArray($notifiable)))->onConnection('sync');
     }
 
     public function toArray(object $notifiable): array

@@ -134,6 +134,18 @@ class NotificationTest extends TestCase
         $this->postJson('/api/notifications/read-all')->assertStatus(401);
     }
 
+    public function test_notifications_are_also_broadcast_in_real_time_with_the_same_content(): void
+    {
+        $sender = User::factory()->create(['name' => 'Ayşe']);
+        $receiver = User::factory()->create();
+        $trade = $this->pendingTrade($sender, $receiver);
+        $n = new TradeEventNotification(TradeEventNotification::OFFER_RECEIVED, $trade);
+
+        $this->assertContains('broadcast', $n->via($receiver));
+        $this->assertSame($n->toArray($receiver), $n->toBroadcast($receiver)->data);
+        $this->assertSame('sync', $n->toBroadcast($receiver)->connection); // kuyruk işçisi gerektirmez
+    }
+
     public function test_offer_received_and_accepted_are_also_emailed(): void
     {
         Notification::fake();
@@ -164,10 +176,10 @@ class NotificationTest extends TestCase
 
         $this->assertContains('mail', $accepted->via($sender));
         $this->actingAs($sender, 'sanctum')->postJson('/api/user/preferences', ['email_notifications' => false])->assertOk();
-        $this->assertSame(['database'], $accepted->via($sender->fresh()));
+        $this->assertSame(['database', 'broadcast'], $accepted->via($sender->fresh()));
 
         $rejected = new TradeEventNotification(TradeEventNotification::OFFER_REJECTED, $trade);
-        $this->assertSame(['database'], $rejected->via($receiver));
+        $this->assertSame(['database', 'broadcast'], $rejected->via($receiver));
 
         $this->actingAs($sender, 'sanctum')->postJson('/api/user/preferences', ['email_notifications' => 'belki'])->assertStatus(422);
     }

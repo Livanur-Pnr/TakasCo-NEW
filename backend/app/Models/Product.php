@@ -13,19 +13,31 @@ class Product extends Model
 
     protected $dates = ['deleted_at'];
     protected $with = ['images'];
-    protected $appends = ['image_path', 'thumb_path'];
+    protected $appends = ['image_path', 'thumb_path', 'is_expired'];
+
+    public const STATUS_RESERVED = 5;       // sahibi tarafından rezerve edildi (görünür, yeni teklif alamaz)
+    public const LISTING_DAYS = 60;         // yeni ilan bu kadar gün yayında kalır
 
     // bir ürünün birden fazla resmi olabilir
-    // herkese açık ilanlar: yayında (1,2) ve sahibi askıda değil
+    // herkese açık ilanlar: yayında (1,2) ya da rezerve (5), süresi dolmamış ve sahibi askıda değil
     public function scopePublished($query)
     {
-        return $query->whereIn('status', [1, 2])->whereHas('user', fn ($u) => $u->whereNull('suspended_at'));
+        return $query->whereIn('status', [1, 2, self::STATUS_RESERVED])
+            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+            ->whereHas('user', fn ($u) => $u->whereNull('suspended_at'));
+    }
+
+    // süresi dolan ilan herkese açık listelerden çıkar; sahibi "Yenile" ile yeniden yayına alabilir
+    public function getIsExpiredAttribute(): bool
+    {
+        return $this->expires_at !== null && $this->expires_at->isPast();
     }
 
     public function images()
     {
         //biribine bağladık 
-        return $this->hasMany(ProductImage::class, 'product_id');
+        // fotoğraflar kullanıcının belirlediği sırayla gelir (ilki kapak)
+        return $this->hasMany(ProductImage::class, 'product_id')->orderBy('sort_order')->orderBy('id');
     }
     //izin verilen güvenli sütun listesi
     protected $fillable = [
@@ -45,6 +57,7 @@ class Product extends Model
         'brand',
         'shipping_enabled',
         'meetup_enabled',
+        'expires_at',
     ];
 
     public const TYPES = ['satilik', 'takas', 'ikisi'];
@@ -53,6 +66,7 @@ class Product extends Model
         'price' => 'float',
         'shipping_enabled' => 'boolean',
         'meetup_enabled' => 'boolean',
+        'expires_at' => 'datetime',
     ];
 
     public function acceptsSwap(): bool

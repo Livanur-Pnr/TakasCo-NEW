@@ -22,6 +22,7 @@ export interface ProductCardItem {
   price?: number | null;
   listing_type?: string;
   brand?: string | null;
+  status?: number;
 }
 
 // Ana sayfa ve keşfet ızgarasında ortak kullanılan ürün kartı
@@ -47,7 +48,7 @@ export function ProductCard({ item, isFavorite, onToggleFavorite }: { item: Prod
           <IconSymbol name="house.fill" size={32} color={theme.textSecondary} />
         )}
         <View style={[styles.badge, { backgroundColor: item.listing_type === 'satilik' ? theme.backgroundElement : Brand.accent }]}>
-          <ThemedText style={{ fontSize: 10, fontWeight: '700', color: item.listing_type === 'satilik' ? theme.text : '#fff' }}>{badgeFor(item.listing_type)}</ThemedText>
+          <ThemedText style={{ fontSize: 10, fontWeight: '700', color: item.listing_type === 'satilik' ? theme.text : '#fff' }}>{item.status === 5 ? 'Rezerve' : badgeFor(item.listing_type)}</ThemedText>
         </View>
         <TouchableOpacity
           style={[styles.favorite, { backgroundColor: theme.backgroundElement }]}

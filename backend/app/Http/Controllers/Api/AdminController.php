@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Enums\TradeStatus;
 use App\Http\Controllers\Controller;
+use App\Models\AdminAction;
 use App\Models\Product;
 use App\Models\Trade;
 use App\Models\User;
@@ -57,7 +58,7 @@ class AdminController extends Controller
     }
 
     // ilanı yayından kaldırır ve üzerindeki bekleyen teklifleri reddeder (tek transaction)
-    public function removeProduct($id)
+    public function removeProduct(Request $request, $id)
     {
         $product = Product::findOrFail($id);
 
@@ -69,10 +70,12 @@ class AdminController extends Controller
                 ->update(['status' => TradeStatus::Rejected->value]);
         });
 
+        AdminAction::record($request->user(), 'product_removed', 'product', $product->id, $product->title);
+
         return response()->json(['message' => 'İlan yayından kaldırıldı.']);
     }
 
-    public function restoreProduct($id)
+    public function restoreProduct(Request $request, $id)
     {
         $product = Product::findOrFail($id);
 
@@ -81,6 +84,7 @@ class AdminController extends Controller
         }
 
         $product->update(['status' => 1]);
+        AdminAction::record($request->user(), 'product_restored', 'product', $product->id, $product->title);
 
         return response()->json(['message' => 'İlan yeniden yayına alındı.']);
     }
@@ -120,14 +124,17 @@ class AdminController extends Controller
         $user->forceFill(['suspended_at' => now()])->save();
         $user->tokens()->delete();
         Cache::forget('cities.active');
+        AdminAction::record($request->user(), 'user_suspended', 'user', $user->id, $user->name);
 
         return response()->json(['message' => 'Hesap askıya alındı.']);
     }
 
-    public function unsuspendUser($id)
+    public function unsuspendUser(Request $request, $id)
     {
-        User::findOrFail($id)->forceFill(['suspended_at' => null])->save();
+        $user = User::findOrFail($id);
+        $user->forceFill(['suspended_at' => null])->save();
         Cache::forget('cities.active');
+        AdminAction::record($request->user(), 'user_unsuspended', 'user', $user->id, $user->name);
 
         return response()->json(['message' => 'Askı kaldırıldı.']);
     }
@@ -159,11 +166,53 @@ class AdminController extends Controller
         }));
     }
 
+    // değerlendirme moderasyonu: uygunsuz/sahte yorumlar silinebilir (puan ortalamaları otomatik yeniden hesaplanır)
+    public function reviews(Request $request)
+    {
+        $query = \App\Models\Review::with(['reviewer:id,name', 'reviewee:id,name'])->latest()->orderByDesc('id');
+        if ($request->filled('rating')) {
+            $query->where('rating', (int) $request->input('rating'));
+        }
+        if ($request->filled('q')) {
+            $query->where('comment', 'like', '%' . $request->input('q') . '%');
+        }
+
+        $page = $query->paginate(min((int) $request->input('per_page', 20), 50));
+
+        return response()->json($page->through(fn ($r) => [
+            'id' => $r->id, 'rating' => $r->rating, 'comment' => $r->comment,
+            'reviewer' => $r->reviewer?->name ?? 'Silinmiş Kullanıcı', 'reviewee' => $r->reviewee?->name ?? 'Silinmiş Kullanıcı',
+            'created_at' => $r->created_at,
+        ]));
+    }
+
+    public function deleteReview(Request $request, $id)
+    {
+        $review = \App\Models\Review::with('reviewee:id,name')->findOrFail($id);
+        $summary = $review->rating . '★ → ' . ($review->reviewee?->name ?? 'silinmiş kullanıcı') . ($review->comment ? ': ' . mb_substr($review->comment, 0, 80) : '');
+        $review->delete();
+        AdminAction::record($request->user(), 'review_deleted', 'review', (int) $id, $summary);
+
+        return response()->json(['message' => 'Değerlendirme silindi.']);
+    }
+
+    public function actions(Request $request)
+    {
+        $page = AdminAction::with('admin:id,name')->latest()->orderByDesc('id')->paginate(min((int) $request->input('per_page', 30), 100));
+
+        return response()->json($page->through(fn ($a) => [
+            'id' => $a->id, 'action' => $a->action, 'target_type' => $a->target_type, 'target_id' => $a->target_id,
+            'details' => $a->details, 'admin' => $a->admin?->name ?? 'Silinmiş Yönetici', 'created_at' => $a->created_at,
+        ]));
+    }
+
     public function resolveReport(Request $request, $id)
     {
         $data = $request->validate(['status' => 'required|in:çözüldü,reddedildi']);
         $report = \App\Models\Report::findOrFail($id);
         $report->update(['status' => $data['status'], 'resolved_by' => $request->user()->id, 'resolved_at' => now()]);
+
+        AdminAction::record($request->user(), 'report_resolved', 'report', $report->id, $data['status']);
 
         return response()->json(['message' => 'Şikayet güncellendi.']);
     }
