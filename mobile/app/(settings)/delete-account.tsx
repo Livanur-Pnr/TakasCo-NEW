@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { ActivityIndicator, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { TextInput } from '@/components/ui/text-input';
+import { TouchableOpacity } from '@/components/ui/touchable';
 import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { SubPage } from '@/components/ui/sub-page';

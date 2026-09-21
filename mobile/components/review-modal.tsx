@@ -1,7 +1,10 @@
 import { useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { TextInput } from '@/components/ui/text-input';
+import { TouchableOpacity } from '@/components/ui/touchable';
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Radius, Spacing } from '@/constants/theme';
+import { AnimatedModal } from '@/components/ui/animated-modal';
 import { useTheme } from '@/hooks/use-theme';
 import { api } from '@/utils/api';
 import { Alert } from '@/utils/alert';
@@ -31,9 +34,9 @@ export function ReviewModal({ tradeId, partnerName, onClose, onDone }: { tradeId
   };
 
   return (
-    <Modal visible transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose}>
-        <Pressable style={[styles.sheet, { backgroundColor: theme.backgroundElement, borderColor: theme.border }]} onPress={() => {}}>
+    <AnimatedModal onClose={onClose}>
+      {(dismiss) => (
+        <View style={[styles.sheet, { backgroundColor: theme.backgroundElement, borderColor: theme.border }]}>
           <ThemedText type="defaultSemiBold" style={{ fontSize: 17 }}>{partnerName ? `${partnerName} kişisini değerlendir` : 'Takası değerlendir'}</ThemedText>
 
           <View style={styles.stars} accessibilityRole="radiogroup">
@@ -63,16 +66,16 @@ export function ReviewModal({ tradeId, partnerName, onClose, onDone }: { tradeId
           />
 
           <View style={styles.actions}>
-            <TouchableOpacity onPress={onClose} accessibilityRole="button" style={styles.btn}>
+            <TouchableOpacity onPress={dismiss} accessibilityRole="button" style={styles.btn}>
               <ThemedText style={{ color: theme.textSecondary }}>Vazgeç</ThemedText>
             </TouchableOpacity>
             <TouchableOpacity onPress={submit} disabled={!rating || busy} accessibilityRole="button" style={[styles.btn, { backgroundColor: Brand.accent, opacity: !rating || busy ? 0.5 : 1 }]}>
               {busy ? <ActivityIndicator color="#fff" /> : <ThemedText style={{ color: '#fff', fontWeight: '700' }}>Gönder</ThemedText>}
             </TouchableOpacity>
           </View>
-        </Pressable>
-      </Pressable>
-    </Modal>
+        </View>
+      )}
+    </AnimatedModal>
   );
 }
 

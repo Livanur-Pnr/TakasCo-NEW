@@ -1,4 +1,6 @@
-import { StyleSheet, View, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, ActivityIndicator } from 'react-native';
+import { TextInput } from '@/components/ui/text-input';
+import { TouchableOpacity } from '@/components/ui/touchable';
 import { useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
 import * as SecureStore from '@/utils/storage';

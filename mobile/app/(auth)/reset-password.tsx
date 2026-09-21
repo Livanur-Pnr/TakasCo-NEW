@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { ActivityIndicator, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, StyleSheet } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/touchable';
+import { PasswordInput } from '@/components/ui/form';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
@@ -50,20 +52,16 @@ export default function ResetPasswordScreen() {
     <ThemedView style={styles.container}>
       <ThemedText type="title" style={{ color: Brand.wordmark }}>Yeni Şifre Belirle</ThemedText>
       <ThemedText style={{ color: theme.textSecondary }}>{email ? `${email} hesabı için yeni bir şifre seç.` : 'Yeni bir şifre seç.'}</ThemedText>
-      <TextInput
+      <PasswordInput
         style={[styles.input, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }]}
         placeholder="Yeni şifre (en az 8 karakter)"
-        placeholderTextColor={theme.textSecondary}
-        secureTextEntry
         value={password}
         onChangeText={setPassword}
         accessibilityLabel="Yeni şifre"
       />
-      <TextInput
+      <PasswordInput
         style={[styles.input, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }]}
         placeholder="Yeni şifre (tekrar)"
-        placeholderTextColor={theme.textSecondary}
-        secureTextEntry
         value={confirm}
         onChangeText={setConfirm}
         onSubmitEditing={submit}

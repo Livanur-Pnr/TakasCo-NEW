@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Image, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { FadeInUp } from '@/components/ui/motion';
+import { ActivityIndicator, Image, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { TextInput } from '@/components/ui/text-input';
+import { TouchableOpacity } from '@/components/ui/touchable';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -46,6 +49,9 @@ function ChatPane({ conversationId, me, onBack }: { conversationId: number; me: 
   const [other, setOther] = useState<Person | null>(null);
   const [product, setProduct] = useState<{ id: number; title: string } | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const knownIds = useRef<Set<number>>(new Set());
+  const baselineSet = useRef(false);
+  const animateNew = baselineSet.current;
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
@@ -89,7 +95,15 @@ function ChatPane({ conversationId, me, onBack }: { conversationId: number; me: 
     lastIdRef.current = 0;
     setLoading(true);
     setMessages([]);
+    knownIds.current = new Set();
+    baselineSet.current = false;
   }, [conversationId]);
+
+  useEffect(() => {
+    if (messages.length === 0) return;
+    messages.forEach((m) => knownIds.current.add(m.id));
+    baselineSet.current = true;
+  }, [messages]);
 
   // daha eski mesajları yukarıya ekler (başlangıçta yalnızca son 100 mesaj gelir)
   const loadOlder = async () => {
@@ -218,15 +232,16 @@ function ChatPane({ conversationId, me, onBack }: { conversationId: number; me: 
         ) : (
           messages.map((m) => {
             const mine = m.sender_id === me;
+            const Row: any = animateNew && !knownIds.current.has(m.id) ? FadeInUp : View;
             return (
-              <View key={m.id} style={[styles.bubbleRow, { justifyContent: mine ? 'flex-end' : 'flex-start' }]}>
+              <Row key={m.id} style={[styles.bubbleRow, { justifyContent: mine ? 'flex-end' : 'flex-start' }]} {...(Row === FadeInUp ? { distance: 8 } : null)}>
                 <View style={[styles.bubble, { backgroundColor: mine ? Brand.accent : theme.backgroundSelected }]}>
                   <ThemedText style={{ color: mine ? '#fff' : theme.text }}>{m.body}</ThemedText>
                   <ThemedText style={{ color: mine ? 'rgba(255,255,255,0.75)' : theme.textSecondary, fontSize: 10, marginTop: 2 }}>
                     {timeAgo(m.created_at)}{mine ? (m.read_at ? '  ✓✓' : '  ✓') : ''}
                   </ThemedText>
                 </View>
-              </View>
+              </Row>
             );
           })
         )}

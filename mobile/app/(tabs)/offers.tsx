@@ -1,5 +1,8 @@
-import { StyleSheet, View, TouchableOpacity, ScrollView, ActivityIndicator, Image, Modal, Pressable } from 'react-native';
-import { useState, useCallback, useEffect } from 'react';
+import { StyleSheet, View, ScrollView, ActivityIndicator, Image, Animated } from 'react-native';
+import { Duration, Ease } from '@/constants/motion';
+import { FadeInUp } from '@/components/ui/motion';
+import { TouchableOpacity } from '@/components/ui/touchable';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
@@ -14,6 +17,7 @@ import { api, getImageUrl } from '@/utils/api';
 import { Alert } from '@/utils/alert';
 import { usePageTitle } from '@/utils/use-page-title';
 import { ReviewModal } from '@/components/review-modal';
+import { AnimatedModal } from '@/components/ui/animated-modal';
 import { MatchesSection } from '@/components/matches-section';
 import { CashAdjustment, CashValue, NO_CASH, cashError, cashPayload, cashSummary } from '@/components/cash-adjustment';
 
@@ -73,9 +77,9 @@ function CounterModal({ trade, onClose, onDone }: { trade: Trade; onClose: () =>
   };
 
   return (
-    <Modal visible transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose}>
-        <Pressable style={[styles.sheet, { backgroundColor: theme.backgroundElement, borderColor: theme.border }]} onPress={() => {}}>
+    <AnimatedModal onClose={onClose}>
+      {(dismiss) => (
+        <View style={[styles.sheet, { backgroundColor: theme.backgroundElement, borderColor: theme.border }]}>
           <ScrollView contentContainerStyle={{ gap: Spacing.four }}>
             <ThemedText type="defaultSemiBold" style={{ fontSize: 17 }}>Karşı Teklif Yap</ThemedText>
             <ThemedText style={{ color: theme.textSecondary, fontSize: 13 }}>
@@ -99,7 +103,7 @@ function CounterModal({ trade, onClose, onDone }: { trade: Trade; onClose: () =>
             </View>
             <CashAdjustment value={cash} onChange={setCash} />
             <View style={{ flexDirection: 'row', gap: Spacing.three, justifyContent: 'flex-end' }}>
-              <TouchableOpacity onPress={onClose} accessibilityRole="button" style={[styles.button, { backgroundColor: theme.backgroundSelected }]}>
+              <TouchableOpacity onPress={dismiss} accessibilityRole="button" style={[styles.button, { backgroundColor: theme.backgroundSelected }]}>
                 <ThemedText style={{ fontWeight: '600' }}>Vazgeç</ThemedText>
               </TouchableOpacity>
               <TouchableOpacity onPress={submit} disabled={busy} accessibilityRole="button" style={[styles.button, { backgroundColor: Brand.accent, opacity: busy ? 0.6 : 1 }]}>
@@ -107,9 +111,9 @@ function CounterModal({ trade, onClose, onDone }: { trade: Trade; onClose: () =>
               </TouchableOpacity>
             </View>
           </ScrollView>
-        </Pressable>
-      </Pressable>
-    </Modal>
+        </View>
+      )}
+    </AnimatedModal>
   );
 }
 
@@ -118,6 +122,11 @@ export default function OffersScreen() {
   usePageTitle('Tekliflerim');
   const isDesktopWeb = useIsDesktopWeb();
   const [activeTab, setActiveTab] = useState<'incoming' | 'outgoing'>('incoming');
+  const [tabsWidth, setTabsWidth] = useState(0);
+  const indicator = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.timing(indicator, { toValue: activeTab === 'incoming' ? 0 : 1, duration: Duration.normal, easing: Ease.standard, useNativeDriver: true }).start();
+  }, [activeTab, indicator]);
   const [incoming, setIncoming] = useState<Trade[]>([]);
   const [outgoing, setOutgoing] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
@@ -213,11 +222,13 @@ export default function OffersScreen() {
   const renderTrades = (trades: Trade[], isIncoming: boolean) => {
     if (trades.length === 0) {
       return (
-        <ThemedView style={[styles.emptyState, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
-          <ThemedText style={{ color: theme.textSecondary }}>
-            Henüz {isIncoming ? 'gelen' : 'gönderilen'} bir teklif bulunmuyor.
-          </ThemedText>
-        </ThemedView>
+        <FadeInUp>
+          <ThemedView style={[styles.emptyState, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
+            <ThemedText style={{ color: theme.textSecondary }}>
+              Henüz {isIncoming ? 'gelen' : 'gönderilen'} bir teklif bulunmuyor.
+            </ThemedText>
+          </ThemedView>
+        </FadeInUp>
       );
     }
 
@@ -356,19 +367,25 @@ export default function OffersScreen() {
 
         <MatchesSection />
 
-        <View style={[styles.tabsContainer, { borderBottomColor: theme.border }]}>
+        <View style={[styles.tabsContainer, { borderBottomColor: theme.border }]} onLayout={(e) => setTabsWidth(e.nativeEvent.layout.width)}>
           <TouchableOpacity
-            style={[styles.tab, activeTab === 'incoming' && { borderBottomColor: Brand.accent, borderBottomWidth: 2 }]}
+            style={styles.tab}
             onPress={() => setActiveTab('incoming')}
           >
             <ThemedText style={{ fontWeight: activeTab === 'incoming' ? 'bold' : 'normal', color: activeTab === 'incoming' ? theme.text : theme.textSecondary }}>Gelen Teklifler</ThemedText>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.tab, activeTab === 'outgoing' && { borderBottomColor: Brand.accent, borderBottomWidth: 2 }]}
+            style={styles.tab}
             onPress={() => setActiveTab('outgoing')}
           >
             <ThemedText style={{ fontWeight: activeTab === 'outgoing' ? 'bold' : 'normal', color: activeTab === 'outgoing' ? theme.text : theme.textSecondary }}>Giden Teklifler</ThemedText>
           </TouchableOpacity>
+          {tabsWidth > 0 && (
+            <Animated.View
+              pointerEvents="none"
+              style={{ position: 'absolute', left: 0, bottom: -1, height: 2, width: tabsWidth / 2, backgroundColor: Brand.accent, transform: [{ translateX: indicator.interpolate({ inputRange: [0, 1], outputRange: [0, tabsWidth / 2] }) }] }}
+            />
+          )}
         </View>
 
         <View style={{ marginTop: Spacing.four, gap: Spacing.four }}>
@@ -377,7 +394,9 @@ export default function OffersScreen() {
           ) : error ? (
             <ErrorState message="Teklifler yüklenirken bir sorun oluştu. Lütfen tekrar dene." onRetry={fetchTrades} />
           ) : (
-            renderTrades(activeTab === 'incoming' ? incoming : outgoing, activeTab === 'incoming')
+            <FadeInUp key={activeTab} distance={6} style={{ gap: Spacing.four }}>
+              {renderTrades(activeTab === 'incoming' ? incoming : outgoing, activeTab === 'incoming')}
+            </FadeInUp>
           )}
         </View>
       {isDesktopWeb && <SiteFooter />}

@@ -11,7 +11,7 @@ export function installWebA11yStyles() {
   style.id = 'takasco-a11y';
   style.textContent = `
     [tabindex]:focus-visible, button:focus-visible, a:focus-visible, [role="button"]:focus-visible,
-    [role="link"]:focus-visible, input:focus-visible, textarea:focus-visible {
+    [role="link"]:focus-visible {
       outline: 2px solid ${Brand.accent} !important;
       outline-offset: 2px;
     }

@@ -5,8 +5,10 @@ import 'react-native-reanimated';
 import { ToastProvider } from '@/components/ui/toast-provider';
 import { CookieBanner } from '@/components/cookie-banner';
 import { installWebA11yStyles } from '@/utils/web-a11y';
+import { installWebMotionStyles } from '@/utils/web-motion';
 
 installWebA11yStyles();
+installWebMotionStyles();
 
 
 export const unstable_settings = {

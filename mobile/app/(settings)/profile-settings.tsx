@@ -1,4 +1,6 @@
-import { StyleSheet, View, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Image, Platform, Modal } from 'react-native';
+import { StyleSheet, View, ScrollView, ActivityIndicator, Image, Platform } from 'react-native';
+import { TextInput } from '@/components/ui/text-input';
+import { TouchableOpacity } from '@/components/ui/touchable';
 import { useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
 import * as ImagePicker from 'expo-image-picker';
@@ -11,6 +13,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { SubPage } from '@/components/ui/sub-page';
 import { api, getImageUrl } from '@/utils/api';
 import { Alert } from '@/utils/alert';
+import { AnimatedModal } from '@/components/ui/animated-modal';
 
 // Backend'deki PRESET_AVATARS listesiyle birebir aynı olmalı (backend/app/Http/Controllers/Api/AuthController.php)
 const PRESET_AVATARS = [
@@ -188,17 +191,7 @@ export default function ProfileSettingsScreen() {
       overlay={(
         <>
 {/* Fotoğraf kaynağı seçim modalı */}
-      <Modal
-        visible={photoMenuVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setPhotoMenuVisible(false)}
-      >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => setPhotoMenuVisible(false)}
-        >
+      <AnimatedModal visible={photoMenuVisible} onClose={() => setPhotoMenuVisible(false)} variant="sheet">
           <View style={[styles.modalSheet, { backgroundColor: theme.backgroundElement }]}>
             <ThemedText type="defaultSemiBold" style={{ marginBottom: Spacing.three, textAlign: 'center' }}>
               Profil Fotoğrafı
@@ -215,8 +208,7 @@ export default function ProfileSettingsScreen() {
               <ThemedText style={{ color: Brand.danger, fontWeight: '600' }}>Vazgeç</ThemedText>
             </TouchableOpacity>
           </View>
-        </TouchableOpacity>
-      </Modal>
+      </AnimatedModal>
         </>
       )}
     >
@@ -342,7 +334,7 @@ const styles = StyleSheet.create({
   button: { padding: Spacing.four, borderRadius: Radius.sm, alignItems: 'center' },
   buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-  modalSheet: { padding: Spacing.six, borderTopLeftRadius: Radius.md, borderTopRightRadius: Radius.md },
+  modalSheet: { width: '100%', padding: Spacing.six, borderTopLeftRadius: Radius.md, borderTopRightRadius: Radius.md },
   modalOption: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three, paddingVertical: Spacing.four, borderBottomWidth: 1, justifyContent: 'center' },
   modalOptionText: { fontSize: 16 }
 });

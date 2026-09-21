@@ -1,4 +1,6 @@
-import { StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, Image } from 'react-native';
+import { StyleSheet, Image } from 'react-native';
+import { TextInput } from '@/components/ui/text-input';
+import { TouchableOpacity } from '@/components/ui/touchable';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import * as SecureStore from '@/utils/storage';
@@ -8,9 +10,10 @@ import { Brand, Spacing, Radius } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { api } from '@/utils/api';
-import { Alert } from '@/utils/alert';
 import { GoogleSignIn } from '@/components/google-sign-in';
 import { usePageTitle } from '@/utils/use-page-title';
+import { FadeInUp } from '@/components/ui/motion';
+import { ActionButton, ActionStatus, FormError, PasswordInput } from '@/components/ui/form';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -19,15 +22,17 @@ export default function LoginScreen() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<ActionStatus>('idle');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Uyarı', 'Lütfen e-posta ve şifrenizi girin.');
+      setErrorMsg('Lütfen e-posta ve şifrenizi girin.');
       return;
     }
 
-    setLoading(true);
+    setErrorMsg(null);
+    setStatus('loading');
     try {
       const response = await api.post('/login', {
         email,
@@ -43,13 +48,12 @@ export default function LoginScreen() {
       // 2. Kullanıcı nesnesini string'e çevirip 'user' adıyla sakla
       await SecureStore.setItemAsync('user', JSON.stringify(user)); 
 
-      router.replace('/(tabs)');
+      setStatus('success');
+      setTimeout(() => router.replace('/(tabs)'), 450);
     } catch (error: any) {
       // Backend'den dönen hataları göster
-      const errorMessage = error.response?.data?.message || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.';
-      Alert.alert('Hata', errorMessage);
-    } finally {
-      setLoading(false);
+      setErrorMsg(error.response?.data?.message || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.');
+      setStatus('idle');
     }
   };
 
@@ -59,6 +63,7 @@ export default function LoginScreen() {
         <IconSymbol name="chevron.right" size={24} color={theme.text} style={{ transform: [{ rotate: '180deg' }] }} />
       </TouchableOpacity>
 
+      <FadeInUp>
       <ThemedView style={styles.header}>
         <ThemedView style={styles.brandRow}>
           <Image source={require('@/assets/images/takasco-logo.png')} style={styles.logo} />
@@ -67,7 +72,9 @@ export default function LoginScreen() {
         <ThemedText type="title" style={{ color: Brand.wordmark }}>Giriş Yap</ThemedText>
         <ThemedText style={styles.subtitle}>Devam etmek için hesabınıza giriş yapın</ThemedText>
       </ThemedView>
+      </FadeInUp>
 
+      <FadeInUp delay={90}>
       <ThemedView style={styles.form}>
         <ThemedView style={styles.inputContainer}>
           <ThemedText style={styles.label}>E-posta</ThemedText>
@@ -78,33 +85,26 @@ export default function LoginScreen() {
             autoCapitalize="none"
             keyboardType="email-address"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(v) => { setEmail(v); setErrorMsg(null); }}
+            error={!!errorMsg}
           />
         </ThemedView>
 
         <ThemedView style={styles.inputContainer}>
           <ThemedText style={styles.label}>Şifre</ThemedText>
-          <TextInput 
-            style={[styles.input, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }]} 
-            placeholder="Şifreniz" 
-            placeholderTextColor={theme.textSecondary}
-            secureTextEntry
+          <PasswordInput
+            style={[styles.input, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }]}
+            placeholder="Şifreniz"
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(v) => { setPassword(v); setErrorMsg(null); }}
+            error={!!errorMsg}
+            onSubmitEditing={handleLogin}
           />
         </ThemedView>
 
-        <TouchableOpacity 
-          style={[styles.button, { backgroundColor: loading ? theme.backgroundSelected : Brand.accent }]} 
-          onPress={handleLogin}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <ThemedText style={styles.buttonText}>Giriş Yap</ThemedText>
-          )}
-        </TouchableOpacity>
+        <FormError message={errorMsg} />
+
+        <ActionButton label="Giriş Yap" status={status} onPress={handleLogin} />
 
         <GoogleSignIn />
 
@@ -112,6 +112,7 @@ export default function LoginScreen() {
           <ThemedText style={{ color: Brand.accent, fontWeight: '600' }}>Şifremi unuttum</ThemedText>
         </TouchableOpacity>
       </ThemedView>
+      </FadeInUp>
     </ThemedView>
   );
 }

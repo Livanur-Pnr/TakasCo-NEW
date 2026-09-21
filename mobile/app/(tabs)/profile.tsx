@@ -1,4 +1,5 @@
-import { StyleSheet, View, ScrollView, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
+import { StyleSheet, View, ScrollView, ActivityIndicator, Image } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/touchable';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import * as SecureStore from '@/utils/storage';

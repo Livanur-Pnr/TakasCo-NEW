@@ -50,3 +50,7 @@ Yeni bir ekran / özellik eklerken sıra: backend uç + **test** → istemci ekr
 5. Liste uçları sayfalı mı ve `per_page` sınırlı mı? N+1 var mı (`with`/`withCount`)?
 6. Hata durumunda `getMessage()` istemciye dönmüyor mu (`report($e)` + genel mesaj)?
 7. Test: başarı, yetkisiz, yanlış kullanıcı, doğrulama hatası
+
+## Düğme animasyonları
+Yeni ortak bileşenler: metin girişi için `@/components/ui/text-input` (RN `TextInput` yerine), modal için `@/components/ui/animated-modal` (RN `Modal` yerine), formlarda `@/components/ui/form` (`FormError`, `ActionButton`, `PasswordInput`), süre/eğri/mesafe için `@/constants/motion`. Yalnızca `transform`/`opacity` animasyonu; zıplama, dönme, parlama yok.
+Tüm düğmeler `TouchableOpacity`'yi **`react-native`'den değil `@/components/ui/touchable`'dan** içe aktarmalıdır (aynı özellikleri kabul eder). Bileşen boyuta göre hareket seçer: ikon düğmeleri (≤ 48 px) belirgin büyür, geniş satır/kartlar çok ince, ekran boyutlu alanlar (> 600×480) yalnızca opaklık değiştirir. Kartlar için `hoverLift` ver. Hero gibi özel durumlar için `AnimatedPressable` (`components/ui/motion.tsx`) ve giriş animasyonu için `FadeInUp` vardır. Web'de kalan `role="button"/"link"` öğeler ve renk geçişleri `utils/web-motion.ts` ile yönetilir.

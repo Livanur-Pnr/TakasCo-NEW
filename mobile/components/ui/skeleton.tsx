@@ -16,8 +16,8 @@ export function Skeleton({ style }: { style?: StyleProp<ViewStyle> }) {
     if (prefersReducedMotion()) return;
     const loop = Animated.loop(
       Animated.sequence([
-        Animated.timing(opacity, { toValue: 0.45, duration: 800, useNativeDriver: Platform.OS !== 'web' }),
-        Animated.timing(opacity, { toValue: 1, duration: 800, useNativeDriver: Platform.OS !== 'web' }),
+        Animated.timing(opacity, { toValue: 0.6, duration: 1000, useNativeDriver: Platform.OS !== 'web' }),
+        Animated.timing(opacity, { toValue: 1, duration: 1000, useNativeDriver: Platform.OS !== 'web' }),
       ])
     );
     loop.start();

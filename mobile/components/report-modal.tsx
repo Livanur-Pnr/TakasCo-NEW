@@ -1,7 +1,10 @@
 import { useState } from 'react';
-import { Modal, View, TouchableOpacity, TextInput, StyleSheet, ActivityIndicator, Pressable } from 'react-native';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import { TextInput } from '@/components/ui/text-input';
+import { TouchableOpacity } from '@/components/ui/touchable';
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Spacing, Radius } from '@/constants/theme';
+import { AnimatedModal } from '@/components/ui/animated-modal';
 import { useTheme } from '@/hooks/use-theme';
 import { api } from '@/utils/api';
 import { Alert } from '@/utils/alert';
@@ -49,9 +52,8 @@ export function ReportModal({ visible, onClose, targetType, targetId, title }: P
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={close}>
-      <Pressable style={styles.backdrop} onPress={close}>
-        <Pressable style={[styles.sheet, { backgroundColor: theme.backgroundElement, borderColor: theme.border }]} onPress={() => {}}>
+    <AnimatedModal visible={visible} onClose={close}>
+        <View style={[styles.sheet, { backgroundColor: theme.backgroundElement, borderColor: theme.border }]}>
           <ThemedText type="defaultSemiBold" style={{ fontSize: 17 }}>Şikayet Et</ThemedText>
           <ThemedText style={{ color: theme.textSecondary, fontSize: 13 }} numberOfLines={2}>{title}</ThemedText>
 
@@ -95,9 +97,8 @@ export function ReportModal({ visible, onClose, targetType, targetId, title }: P
               {sending ? <ActivityIndicator color="#fff" /> : <ThemedText style={{ color: '#fff', fontWeight: '700' }}>Gönder</ThemedText>}
             </TouchableOpacity>
           </View>
-        </Pressable>
-      </Pressable>
-    </Modal>
+        </View>
+    </AnimatedModal>
   );
 }
 

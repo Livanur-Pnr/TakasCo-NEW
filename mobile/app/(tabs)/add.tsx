@@ -1,4 +1,7 @@
-import { StyleSheet, ScrollView, View, TouchableOpacity, TextInput, Image, ActivityIndicator, Platform } from 'react-native';
+import { FadeImage } from '@/components/ui/motion';
+import { StyleSheet, ScrollView, View, ActivityIndicator, Platform } from 'react-native';
+import { TextInput } from '@/components/ui/text-input';
+import { TouchableOpacity } from '@/components/ui/touchable';
 import { useState, useEffect, useRef } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
@@ -211,7 +214,7 @@ export default function AddScreen() {
     <View style={styles.imageGallery}>
       {images.map((img, index) => (
         <View key={index} style={[styles.imageUpload, { backgroundColor: theme.backgroundSelected, borderColor: theme.border, width: size, height: size }]}>
-          <Image source={{ uri: img.uri }} style={styles.uploadedImage} />
+          <FadeImage source={{ uri: img.uri }} style={styles.uploadedImage} />
           {index === 0 && (
             <View style={[styles.coverBadge, { backgroundColor: Brand.accent }]}>
               <ThemedText style={{ color: '#fff', fontSize: 10, fontWeight: '700' }}>KAPAK</ThemedText>
@@ -384,7 +387,7 @@ export default function AddScreen() {
               <View style={[desktopAddStyles.previewCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
                 <View style={[desktopAddStyles.previewImageWrap, { backgroundColor: theme.backgroundSelected }]}>
                   {images[0] ? (
-                    <Image source={{ uri: images[0].uri }} style={{ width: '100%', height: '100%' }} />
+                    <FadeImage source={{ uri: images[0].uri }} style={{ width: '100%', height: '100%' }} />
                   ) : (
                     <IconSymbol name="house.fill" size={32} color={theme.textSecondary} />
                   )}

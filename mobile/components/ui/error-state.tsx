@@ -1,8 +1,10 @@
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/touchable';
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Spacing, Radius } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { FadeInUp } from '@/components/ui/motion';
 
 // Ağ/sunucu hatalarını "sonuç yok" boş durumlarından ayırmak için ortak bileşen.
 // Kullanıcıya gerçek sebebi anlatır ve tekrar denemesi için bir yol verir.
@@ -16,7 +18,7 @@ export function ErrorState({
   const theme = useTheme();
 
   return (
-    <View style={styles.container}>
+    <FadeInUp style={styles.container}>
       <IconSymbol name="exclamationmark.triangle.fill" size={48} color={Brand.warning} />
       <ThemedText style={[styles.message, { color: theme.textSecondary }]}>{message}</ThemedText>
       {onRetry && (
@@ -30,7 +32,7 @@ export function ErrorState({
           <ThemedText style={styles.retryText}>Tekrar Dene</ThemedText>
         </TouchableOpacity>
       )}
-    </View>
+    </FadeInUp>
   );
 }
 

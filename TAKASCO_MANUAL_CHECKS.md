@@ -57,7 +57,19 @@ Hazırlık: `cd backend && php artisan serve`, `cd mobile && npx expo start --we
 - [ ] **Yönetim:** Değerlendirmeler sekmesinde puana göre filtre + silme; İşlem Kaydı sekmesinde yaptığın işlemler (kim, ne, hedef) görünüyor.
 - [ ] **Yaşam döngüsü:** Benim İlanlarım'da "Rezerve Et" → durum "Rezerve", başka kullanıcı ilan sayfasında teklif düğmesi yerine uyarı ve mesaj düğmesi görüyor; "Aktif Et" geri alıyor. Süresi dolmuş ilanda "Süresi Doldu" + "Yenile" (süre dolumunu denemek için veritabanında `expires_at` geçmişe alınabilir).
 
+- [ ] **Hareket:** ana sayfada karşılama bölümü sırayla yukarı kayarak giriyor; sağdaki takas oku yavaşça dönüyor, halkalar yayılıyor, noktalar süzülüyor; "İlan Ver" ve "Keşfetmeye Başla" düğmeleri üzerine gelince büyüyor (ok sağa kayıyor), basınca küçülüyor; tüm sitede düğmeler hover'da hafif büyüyor, ürün kartları yükseliyor. İşletim sisteminde "animasyonları azalt" açıkken hareketler duruyor.
+
+- [ ] **Tüm düğmeler:** sitede rastgele düğmelere (header ikonları, filtre çipleri, ayar satırları, sohbet gönder, kalp) fare ile gel/bas: küçük ikonlar belirgin "pop", geniş satırlar çok hafif; ürün kartı üzerine gelince yükseliyor; favori kalbine basınca "pat" diye büyüyor; tam ekran galeri fotoğrafı üzerine gelince oynamıyor; telefonda basınca küçülüp soluklaşıyor. Hiçbir düğmenin yeri/genişliği bozulmamış olmalı (özellikle yan yana düğmeler ve sabit alt çubuklar).
+
 ## Üretime çıkmadan
 - [ ] `.env`: `APP_ENV=production`, `APP_DEBUG=false`, gerçek `APP_URL`, SMTP, `EXPO_PUBLIC_API_URL`.
 - [ ] İlk admin hesabı veritabanında elle `is_admin=1` yapılır.
 - [ ] `php artisan images:thumbnails` eski ilanlar için bir kez çalıştırılır.
+
+## Hareket / mikro-etkileşim (N3)
+- [ ] Ana sayfa vitrini: otomatik döner, fareyle üstüne gelince durur, ilerleme çubuğu akar, noktalara/oklara basınca geçer.
+- [ ] Giriş/kayıt: sayfa yumuşakça belirir; boş gönderince hata mesajı kaydırarak çıkar; şifre göz simgesiyle görünür olur; başarılı girişte düğme kısa süre yeşil "Tamamlandı" olur.
+- [ ] Bildirim (toast): sağdan girer, alt çizgi kısalır, süre bitince ya da X ile çıkar. Silme/çıkış onay diyaloğu yumuşak açılıp kapanır.
+- [ ] Modallar (rapor, değerlendirme, karşı teklif, zil, profil fotoğrafı): açılış/kapanış animasyonu, dışarı tıklayınca ve Esc ile kapanma.
+- [ ] Menü bağlantıları hover'da alttan çizgi; ürün kartında hover'da görsel hafif büyür.
+- [ ] İşletim sisteminde "hareketi azalt" açıkken animasyonlar atlanır.

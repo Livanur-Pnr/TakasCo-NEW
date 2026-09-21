@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, Switch, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Switch, View } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/touchable';
 import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Spacing, Radius } from '@/constants/theme';

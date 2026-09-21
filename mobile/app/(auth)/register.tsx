@@ -1,4 +1,6 @@
-import { StyleSheet, TouchableOpacity, TextInput, ScrollView, ActivityIndicator } from 'react-native';
+import { StyleSheet, ScrollView } from 'react-native';
+import { TextInput } from '@/components/ui/text-input';
+import { TouchableOpacity } from '@/components/ui/touchable';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import * as SecureStore from '@/utils/storage';
@@ -8,9 +10,10 @@ import { Brand, Spacing, Radius } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { api } from '@/utils/api';
-import { Alert } from '@/utils/alert';
 import { GoogleSignIn } from '@/components/google-sign-in';
 import { usePageTitle } from '@/utils/use-page-title';
+import { FadeInUp } from '@/components/ui/motion';
+import { ActionButton, ActionStatus, FormError, PasswordInput } from '@/components/ui/form';
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -22,20 +25,22 @@ export default function RegisterScreen() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<ActionStatus>('idle');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleRegister = async () => {
     if (!name || !email || !phoneNumber || !password || !passwordConfirmation) {
-      Alert.alert('Uyarı', 'Lütfen tüm alanları doldurun.');
+      setErrorMsg('Lütfen tüm alanları doldurun.');
       return;
     }
 
     if (password !== passwordConfirmation) {
-      Alert.alert('Uyarı', 'Şifreler eşleşmiyor.');
+      setErrorMsg('Şifreler eşleşmiyor.');
       return;
     }
 
-    setLoading(true);
+    setErrorMsg(null);
+    setStatus('loading');
     try {
       const response = await api.post('/register', {
         name,
@@ -50,7 +55,8 @@ export default function RegisterScreen() {
       await SecureStore.setItemAsync('auth_token', access_token);
       await SecureStore.setItemAsync('user', JSON.stringify(user)); 
 
-      router.replace('/onboarding'); // yeni üyeye tek seferlik ilgi alanı/şehir sorusu (atlanabilir)
+      setStatus('success');
+      setTimeout(() => router.replace('/onboarding'), 450); // yeni üyeye tek seferlik ilgi alanı/şehir sorusu (atlanabilir)
     } catch (error: any) {
       console.error(error.response?.data);
       let errorMessage = 'Kayıt başarısız.';
@@ -63,9 +69,8 @@ export default function RegisterScreen() {
             errorMessage = data.message;
         }
       }
-      Alert.alert('Hata', errorMessage);
-    } finally {
-      setLoading(false);
+      setErrorMsg(errorMessage);
+      setStatus('idle');
     }
   };
 
@@ -75,11 +80,14 @@ export default function RegisterScreen() {
         <IconSymbol name="chevron.right" size={24} color={theme.text} style={{ transform: [{ rotate: '180deg' }] }} />
       </TouchableOpacity>
 
+      <FadeInUp>
       <ThemedView style={styles.header}>
         <ThemedText type="title" style={{ color: Brand.wordmark }}>Kayıt Ol</ThemedText>
         <ThemedText style={styles.subtitle}>Yeni bir hesap oluşturun</ThemedText>
       </ThemedView>
+      </FadeInUp>
 
+      <FadeInUp delay={90}>
       <ThemedView style={styles.form}>
         <ThemedView style={styles.inputContainer}>
           <ThemedText style={styles.label}>Ad Soyad</ThemedText>
@@ -119,41 +127,32 @@ export default function RegisterScreen() {
 
         <ThemedView style={styles.inputContainer}>
           <ThemedText style={styles.label}>Şifre</ThemedText>
-          <TextInput 
-            style={[styles.input, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }]} 
-            placeholder="Şifreniz" 
-            placeholderTextColor={theme.textSecondary}
-            secureTextEntry
+          <PasswordInput
+            style={[styles.input, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }]}
+            placeholder="Şifreniz"
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(v) => { setPassword(v); setErrorMsg(null); }}
+            error={!!errorMsg}
           />
         </ThemedView>
 
         <ThemedView style={styles.inputContainer}>
           <ThemedText style={styles.label}>Şifre (Tekrar)</ThemedText>
-          <TextInput 
-            style={[styles.input, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }]} 
-            placeholder="Şifrenizi tekrar girin" 
-            placeholderTextColor={theme.textSecondary}
-            secureTextEntry
+          <PasswordInput
+            style={[styles.input, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }]}
+            placeholder="Şifrenizi tekrar girin"
             value={passwordConfirmation}
-            onChangeText={setPasswordConfirmation}
+            onChangeText={(v) => { setPasswordConfirmation(v); setErrorMsg(null); }}
+            error={!!errorMsg}
           />
         </ThemedView>
 
-        <TouchableOpacity 
-          style={[styles.button, { backgroundColor: loading ? theme.backgroundSelected : Brand.accent }]} 
-          onPress={handleRegister}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <ThemedText style={styles.buttonText}>Kayıt Ol</ThemedText>
-          )}
-        </TouchableOpacity>
+        <FormError message={errorMsg} />
+
+        <ActionButton label="Kayıt Ol" status={status} onPress={handleRegister} />
         <GoogleSignIn />
       </ThemedView>
+      </FadeInUp>
     </ScrollView>
   );
 }

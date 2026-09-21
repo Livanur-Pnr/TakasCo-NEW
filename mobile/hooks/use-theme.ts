@@ -12,7 +12,6 @@ import { Colors } from '../constants/theme';
 // import { useColorScheme } from 'react-native';
 
 // For web, you can use this simple hook:
-import { useColorScheme } from './use-color-scheme';
 
 export function useTheme() {
   return Colors.light;

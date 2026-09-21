@@ -44,6 +44,10 @@ const MAPPING = {
   'arrow.clockwise': 'refresh',
   'square.and.arrow.up': 'share',
   'bell.fill': 'notifications',
+  'eye.fill': 'visibility',
+  'eye.slash.fill': 'visibility-off',
+  'info.circle.fill': 'info',
+  'checkmark.circle.fill': 'check-circle',
   'bubble.left.fill': 'chat-bubble',
   'message.fill': 'chat',
 } as IconMapping;

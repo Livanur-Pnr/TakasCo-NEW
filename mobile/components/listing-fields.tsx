@@ -1,4 +1,6 @@
-import { StyleSheet, Switch, TextInput, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Switch, View } from 'react-native';
+import { TextInput } from '@/components/ui/text-input';
+import { TouchableOpacity } from '@/components/ui/touchable';
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';

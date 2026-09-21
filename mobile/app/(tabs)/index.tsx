@@ -1,4 +1,5 @@
-import { StyleSheet, FlatList, ScrollView, View, TouchableOpacity, ActivityIndicator, useWindowDimensions } from 'react-native';
+import { StyleSheet, FlatList, ScrollView, View, ActivityIndicator, useWindowDimensions } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/touchable';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { ThemedView } from '@/components/themed-view';
@@ -6,6 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Brand, Spacing, Radius } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { FadeInUp } from '@/components/ui/motion';
 import { ProductCard } from '@/components/product-card';
 import { ErrorState } from '@/components/ui/error-state';
 import { ProductGridSkeleton } from '@/components/ui/skeleton';
@@ -14,6 +16,7 @@ import { useFavorites } from '@/hooks/use-favorites';
 import { useIsDesktopWeb } from '@/hooks/use-is-desktop-web';
 import { CategoryBanners, PopularSearches, HomeHero, SellCta, TrustBadges, SiteFooter, HowItWorks, PopularListings, CityListings, RecommendedListings } from '@/components/web-storefront';
 import { usePageTitle } from '@/utils/use-page-title';
+import { HeroCarousel } from '@/components/hero-carousel';
 
 interface Product {
   id: number;
@@ -101,6 +104,7 @@ export default function HomeScreen() {
         </>
       ) : (
         <>
+        <HeroCarousel />
         <View style={styles.section}>
           <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>Kategoriler</ThemedText>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: Spacing.two }}>
@@ -169,8 +173,10 @@ export default function HomeScreen() {
               )}
             </>
           }
-          renderItem={({ item }) => (
-            <ProductCard item={item} isFavorite={isFavorite(item.id)} onToggleFavorite={() => toggleFavorite(item.id)} />
+          renderItem={({ item, index }) => (
+            <FadeInUp delay={(index % 6) * 45} distance={8} style={{ flex: 1 }}>
+              <ProductCard item={item} isFavorite={isFavorite(item.id)} onToggleFavorite={() => toggleFavorite(item.id)} />
+            </FadeInUp>
           )}
         />
       )}

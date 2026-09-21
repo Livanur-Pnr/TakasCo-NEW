@@ -18,7 +18,7 @@ export function useFavorites() {
       }
       const response = await api.get('/favorites');
       setFavoriteIds(new Set(response.data.map((p: { id: number }) => p.id)));
-    } catch (error) {
+    } catch {
       // giriş yapılmamışsa ya da istek başarısız olursa favori listesi boş kalır
     }
   }, []);
@@ -40,7 +40,7 @@ export function useFavorites() {
     // iyimser güncelleme: sunucu cevabını beklemeden arayüzü hemen güncelle
     setFavoriteIds((prev) => {
       const next = new Set(prev);
-      next.has(productId) ? next.delete(productId) : next.add(productId);
+      if (next.has(productId)) next.delete(productId); else next.add(productId);
       return next;
     });
 
@@ -48,14 +48,14 @@ export function useFavorites() {
       const response = await api.post(`/products/${productId}/favorite`);
       setFavoriteIds((prev) => {
         const next = new Set(prev);
-        response.data.is_favorite ? next.add(productId) : next.delete(productId);
+        if (response.data.is_favorite) next.add(productId); else next.delete(productId);
         return next;
       });
-    } catch (error) {
+    } catch {
       // istek başarısız oldu, iyimser değişikliği geri al
       setFavoriteIds((prev) => {
         const next = new Set(prev);
-        next.has(productId) ? next.delete(productId) : next.add(productId);
+        if (next.has(productId)) next.delete(productId); else next.add(productId);
         return next;
       });
       Alert.alert('Hata', 'Favori durumu güncellenemedi. Lütfen tekrar dene.');

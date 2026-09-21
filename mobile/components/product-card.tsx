@@ -1,9 +1,13 @@
-import { useState } from 'react';
-import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { Animated, StyleSheet, View } from 'react-native';
+import { Duration, Ease } from '@/constants/motion';
+import { useReducedMotion } from '@/components/ui/motion';
+import { TouchableOpacity } from '@/components/ui/touchable';
 import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Brand, Radius, Spacing } from '@/constants/theme';
+import { HeartIcon } from '@/components/ui/heart-icon';
 import { useTheme } from '@/hooks/use-theme';
 import { getImageUrl } from '@/utils/api';
 import { timeAgo } from '@/utils/date';
@@ -30,6 +34,14 @@ export function ProductCard({ item, isFavorite, onToggleFavorite }: { item: Prod
   const router = useRouter();
   const theme = useTheme();
   const [imageFailed, setImageFailed] = useState(false);
+  const reduced = useReducedMotion();
+  const zoom = useRef(new Animated.Value(0)).current;
+  const loaded = useRef(new Animated.Value(0)).current;
+  const setHover = (on: boolean) => {
+    if (reduced) return;
+    Animated.timing(zoom, { toValue: on ? 1 : 0, duration: Duration.slow, easing: Ease.decelerate, useNativeDriver: true }).start();
+  };
+  const showImage = () => Animated.timing(loaded, { toValue: 1, duration: reduced ? 0 : Duration.normal, useNativeDriver: true }).start();
   const stored = item.thumb_path ?? item.image_path;
   const imagePath = stored?.startsWith('[') ? JSON.parse(stored)[0] : stored;
   const meta = [item.brand, item.condition, item.city, timeAgo(item.created_at)].filter(Boolean).join(' · ');
@@ -40,10 +52,18 @@ export function ProductCard({ item, isFavorite, onToggleFavorite }: { item: Prod
       onPress={() => router.push(`/product/${item.id}`)}
       accessibilityRole="link"
       accessibilityLabel={item.title}
+      hoverLift
+      onHoverIn={() => setHover(true)}
+      onHoverOut={() => setHover(false)}
     >
       <View style={[styles.image, { backgroundColor: theme.backgroundSelected }]}>
         {imagePath && !imageFailed ? (
-          <Image source={{ uri: getImageUrl(imagePath) || undefined }} style={{ width: '100%', height: '100%' }} onError={() => setImageFailed(true)} />
+          <Animated.Image
+            source={{ uri: getImageUrl(imagePath) || undefined }}
+            style={{ width: '100%', height: '100%', opacity: loaded, transform: [{ scale: zoom.interpolate({ inputRange: [0, 1], outputRange: [1, 1.04] }) }] }}
+            onLoad={showImage}
+            onError={() => setImageFailed(true)}
+          />
         ) : (
           <IconSymbol name="house.fill" size={32} color={theme.textSecondary} />
         )}
@@ -58,7 +78,7 @@ export function ProductCard({ item, isFavorite, onToggleFavorite }: { item: Prod
           accessibilityLabel={isFavorite ? 'Favorilerden çıkar' : 'Favorilere ekle'}
           accessibilityState={{ selected: isFavorite }}
         >
-          <IconSymbol name="heart.fill" size={13} color={isFavorite ? Brand.danger : theme.textSecondary} />
+          <HeartIcon active={isFavorite} size={13} activeColor={Brand.danger} inactiveColor={theme.textSecondary} />
           {!!item.favorited_by_count && <ThemedText style={styles.favCount}>{item.favorited_by_count}</ThemedText>}
         </TouchableOpacity>
       </View>

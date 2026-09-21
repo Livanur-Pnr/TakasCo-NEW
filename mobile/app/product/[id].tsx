@@ -1,4 +1,6 @@
-import { StyleSheet, View, ScrollView, TouchableOpacity, ActivityIndicator, Image, Dimensions, Modal, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
+import { FadeImage } from '@/components/ui/motion';
+import { StyleSheet, View, ScrollView, ActivityIndicator, Image, Dimensions, Modal, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/touchable';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEffect, useState, useRef } from 'react';
@@ -19,6 +21,7 @@ import { badgeFor, formatPrice } from '@/utils/listing';
 import { StatsLine, TrustBadges } from '@/components/trust';
 import { useProductSeo } from '@/utils/seo';
 import { ZoomableImage } from '@/components/zoomable-image';
+import { HeartIcon } from '@/components/ui/heart-icon';
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -247,7 +250,7 @@ export default function ProductDetailScreen() {
                     accessibilityRole="button"
                     accessibilityLabel={isFavorite(item.id) ? 'Favorilerden çıkar' : 'Favorilere ekle'}
                   >
-                    <IconSymbol name="heart.fill" size={11} color={isFavorite(item.id) ? Brand.danger : theme.textSecondary} />
+                    <HeartIcon active={isFavorite(item.id)} size={11} activeColor={Brand.danger} inactiveColor={theme.textSecondary} />
                     {!!item.favorited_by_count && <ThemedText style={desktopStyles.similarFavCount}>{item.favorited_by_count}</ThemedText>}
                   </TouchableOpacity>
                 </View>
@@ -292,7 +295,7 @@ export default function ProductDetailScreen() {
                 onPress={() => openImageModal(currentImageIndex)}
               >
                 {mainImage ? (
-                  <Image source={{ uri: getImageUrl(mainImage.image_path) || undefined }} style={desktopStyles.mainImage} />
+                  <FadeImage key={mainImage.id ?? currentImageIndex} source={{ uri: getImageUrl(mainImage.image_path) || undefined }} style={desktopStyles.mainImage} />
                 ) : (
                   <IconSymbol name="house.fill" size={64} color={theme.textSecondary} />
                 )}
@@ -347,7 +350,7 @@ export default function ProductDetailScreen() {
                     accessibilityLabel={isFavorite(product.id) ? 'Favorilerden çıkar' : 'Favorilere ekle'}
                     accessibilityState={{ selected: isFavorite(product.id) }}
                   >
-                    <IconSymbol name="heart.fill" size={22} color={isFavorite(product.id) ? Brand.danger : theme.textSecondary} />
+                    <HeartIcon active={isFavorite(product.id)} size={22} activeColor={Brand.danger} inactiveColor={theme.textSecondary} />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -551,7 +554,7 @@ export default function ProductDetailScreen() {
                 accessibilityLabel={isFavorite(product.id) ? 'Favorilerden çıkar' : 'Favorilere ekle'}
                 accessibilityState={{ selected: isFavorite(product.id) }}
               >
-                <IconSymbol name="heart.fill" size={28} color={isFavorite(product.id) ? Brand.danger : theme.textSecondary} />
+                <HeartIcon active={isFavorite(product.id)} size={28} activeColor={Brand.danger} inactiveColor={theme.textSecondary} />
               </TouchableOpacity>
             </View>
           </View>

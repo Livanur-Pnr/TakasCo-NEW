@@ -1,4 +1,5 @@
-import { ActivityIndicator, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/touchable';
 import { useRouter } from 'expo-router';
 import { NotificationList } from '@/components/notification-list';
 import { ThemedText } from '@/components/themed-text';

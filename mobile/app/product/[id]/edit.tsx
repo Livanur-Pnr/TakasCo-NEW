@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { TextInput } from '@/components/ui/text-input';
+import { TouchableOpacity } from '@/components/ui/touchable';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
@@ -9,6 +11,8 @@ import { useTheme } from '@/hooks/use-theme';
 import { api, getImageUrl, API_BASE_URL } from '@/utils/api';
 import * as SecureStore from '@/utils/storage';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { ActionButton } from '@/components/ui/form';
+import { FadeImage } from '@/components/ui/motion';
 import { Alert } from '@/utils/alert';
 import { compressImage } from '@/utils/image-compress';
 import { postFormWithProgress } from '@/utils/upload';
@@ -27,6 +31,7 @@ export default function EditListingScreen() {
   const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [condition, setCondition] = useState('Sıfır');
@@ -83,7 +88,8 @@ export default function EditListingScreen() {
         ...(categoryId ? { category_id: categoryId } : {}),
       });
       Alert.alert('Başarılı', 'İlanın güncellendi.');
-      router.replace(`/product/${id}`);
+      setSaved(true);
+      setTimeout(() => router.replace(`/product/${id}`), 450);
     } catch (e: any) {
       const errors = e.response?.data?.errors;
       Alert.alert('Hata', errors ? Object.values(errors).flat().join(' ') : e.response?.data?.message || 'İlan güncellenemedi.');
@@ -161,11 +167,8 @@ export default function EditListingScreen() {
 
   const input = [styles.input, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }];
 
-  const saveButton = (
-    <TouchableOpacity onPress={save} disabled={saving || loading} accessibilityRole="button" style={[styles.button, { backgroundColor: Brand.accent, opacity: saving ? 0.6 : 1 }]}>
-      {saving ? <ActivityIndicator color="#fff" /> : <ThemedText style={styles.buttonText}>Değişiklikleri Kaydet</ThemedText>}
-    </TouchableOpacity>
-  );
+  const saveButton = <ActionButton label="Değişiklikleri Kaydet" status={saved ? 'success' : saving ? 'loading' : 'idle'} onPress={save} disabled={loading} style={{ marginTop: Spacing.two }} />;
+
 
   return (
     <SubPage title="İlanı Düzenle" footer={saveButton}>
@@ -180,7 +183,7 @@ export default function EditListingScreen() {
                 const path = ph.image_path.startsWith('[') ? JSON.parse(ph.image_path)[0] : ph.image_path;
                 return (
                   <View key={ph.id} style={[styles.photo, { backgroundColor: theme.backgroundSelected }]}>
-                    <Image source={{ uri: getImageUrl(path) || undefined }} style={{ width: '100%', height: '100%' }} />
+                    <FadeImage source={{ uri: getImageUrl(path) || undefined }} style={{ width: '100%', height: '100%' }} />
                     {i === 0 && (
                       <View style={[styles.cover, { backgroundColor: Brand.accent }]}>
                         <ThemedText style={{ color: '#fff', fontSize: 10, fontWeight: '700' }}>KAPAK</ThemedText>

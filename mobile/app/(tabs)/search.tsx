@@ -1,4 +1,6 @@
-import { StyleSheet, FlatList, View, TouchableOpacity, TextInput, ActivityIndicator, useWindowDimensions } from 'react-native';
+import { StyleSheet, FlatList, View, ActivityIndicator, useWindowDimensions } from 'react-native';
+import { TextInput } from '@/components/ui/text-input';
+import { TouchableOpacity } from '@/components/ui/touchable';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { ThemedView } from '@/components/themed-view';
@@ -6,6 +8,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Brand, Spacing, Radius } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { FadeInUp } from '@/components/ui/motion';
 import { ProductCard } from '@/components/product-card';
 import { ErrorState } from '@/components/ui/error-state';
 import { ProductGridSkeleton } from '@/components/ui/skeleton';
@@ -187,17 +190,19 @@ export default function SearchScreen() {
   }, [loadingMore, loading, page, lastPage]);
 
   // Hem mobil hem masaüstü ızgarasında kullanılan aynı ürün kartı
-  const renderProductItem = ({ item }: { item: Product }) => (
-    <ProductCard item={item} isFavorite={isFavorite(item.id)} onToggleFavorite={() => toggleFavorite(item.id)} />
+  const renderProductItem = ({ item, index }: { item: Product; index: number }) => (
+    <FadeInUp delay={(index % 6) * 45} distance={8} style={{ flex: 1 }}>
+      <ProductCard item={item} isFavorite={isFavorite(item.id)} onToggleFavorite={() => toggleFavorite(item.id)} />
+    </FadeInUp>
   );
 
   const emptyOrErrorState = error ? (
     <ErrorState message="Sonuçlar yüklenirken bir sorun oluştu. Lütfen tekrar dene." onRetry={() => fetchProducts(1)} />
   ) : (
-    <View style={{ alignItems: 'center', padding: Spacing.eight, flex: 1 }}>
+    <FadeInUp style={{ alignItems: 'center', padding: Spacing.eight, flex: 1 }}>
       <IconSymbol name="magnifyingglass" size={48} color={theme.textSecondary} />
       <ThemedText style={{ marginTop: Spacing.four, color: theme.textSecondary }}>Aramana uygun bir ilan bulamadık.</ThemedText>
-    </View>
+    </FadeInUp>
   );
 
   if (isDesktopWeb) {

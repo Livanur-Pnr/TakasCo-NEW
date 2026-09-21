@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Image, ScrollView, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, View } from 'react-native';
+import { TouchableOpacity } from '@/components/ui/touchable';
 import { ThemedText } from '@/components/themed-text';
 
 const ZOOM = 2.5;

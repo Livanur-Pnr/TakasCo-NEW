@@ -20,6 +20,7 @@ export default function TabLayout() {
         headerShown: isDesktopWeb,
         header: () => <StorefrontHeader />,
         tabBarButton: HapticTab,
+        animation: 'fade',
       }}>
       <Tabs.Screen
         name="index"

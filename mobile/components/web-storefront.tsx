@@ -1,8 +1,13 @@
 // Sadece genis web tarayicisinda (Dolap tarzi masaustu magaza gorunumu) kullanilan bilesenler.
 // Telefon/Expo Go uzerindeki gercek mobil deneyimi etkilemez.
-import { StyleSheet, View, TouchableOpacity, TextInput, Image, Modal, ScrollView } from 'react-native';
+import { StyleSheet, View, Image, ScrollView } from 'react-native';
+import { TextInput } from '@/components/ui/text-input';
+import { TouchableOpacity } from '@/components/ui/touchable';
 import { useRouter, usePathname, useGlobalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { HeroCarousel } from '@/components/hero-carousel';
+import { AnimatedModal } from '@/components/ui/animated-modal';
+import { Reveal } from '@/components/ui/motion';
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Spacing, Radius } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -240,12 +245,8 @@ export function WebHeader() {
         </TouchableOpacity>
       </View>
 
-      <Modal visible={bellOpen} transparent animationType="none" onRequestClose={() => setBellOpen(false)}>
-        <TouchableOpacity style={webStyles.bellBackdrop} activeOpacity={1} onPress={() => setBellOpen(false)} accessibilityLabel="Bildirim panelini kapat">
-          <View
-            style={[webStyles.bellPanel, { backgroundColor: theme.cardBg, borderColor: theme.border }]}
-            onStartShouldSetResponder={() => true}
-          >
+      <AnimatedModal visible={bellOpen} onClose={() => setBellOpen(false)} variant="dropdown">
+          <View style={[webStyles.bellPanel, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
             <View style={[webStyles.bellPanelHeader, { borderBottomColor: theme.border }]}>
               <ThemedText style={{ fontWeight: '800', fontSize: 16 }}>Bildirimler</ThemedText>
               {unread > 0 && (
@@ -280,8 +281,7 @@ export function WebHeader() {
               <ThemedText style={{ color: Brand.accent, fontWeight: '700', fontSize: 13 }}>Tüm bildirimleri gör</ThemedText>
             </TouchableOpacity>
           </View>
-        </TouchableOpacity>
-      </Modal>
+        </AnimatedModal>
     </View>
   );
 }
@@ -303,12 +303,12 @@ export function CategoryNav({ categories }: { categories: Category[] }) {
           <TouchableOpacity
             key={cat.id}
             style={webStyles.navItemBtn}
+            {...({ dataSet: { nav: 'link', active: active ? 'true' : 'false' } } as any)}
             onPress={() => router.push({ pathname: '/(tabs)/search', params: { categoryId: cat.id, categoryName: cat.name } })}
           >
             <ThemedText style={[webStyles.navItem, { color: active ? Brand.accent : theme.text, fontWeight: active ? '800' : '600' }]}>
               {cat.name}
             </ThemedText>
-            {active && <View style={[webStyles.navItemUnderline, { backgroundColor: Brand.accent }]} />}
           </TouchableOpacity>
         );
       })}
@@ -321,7 +321,7 @@ export function CategoryBanners({ categories }: { categories: Category[] }) {
   const router = useRouter();
   if (categories.length === 0) return null;
   return (
-    <View style={webStyles.bannerGrid}>
+    <Reveal style={webStyles.bannerGrid}>
       {categories.map((cat) => {
         const visual = visualFor(cat.name);
         return (
@@ -338,7 +338,7 @@ export function CategoryBanners({ categories }: { categories: Category[] }) {
           </TouchableOpacity>
         );
       })}
-    </View>
+    </Reveal>
   );
 }
 
@@ -365,36 +365,11 @@ export function PopularSearches({ terms }: { terms: string[] }) {
 }
 
 // Ana sayfa üst kısmındaki büyük tanıtım alanı (Dolap'ın "Dolap'ta sat..." hero'su)
+// Ana sayfa vitrini: bkz. components/hero-carousel.tsx (gerçek ilanlarla, otomatik oynatmalı, fareyle duran carousel)
 export function HomeHero() {
-  const router = useRouter();
-  const theme = useTheme();
-  return (
-    <View style={[webStyles.hero, { backgroundColor: theme.backgroundSelected }]}>
-      <View style={{ flex: 1, gap: Spacing.three, maxWidth: 520 }}>
-        <View style={webStyles.heroBadge}>
-          <ThemedText style={webStyles.heroBadgeText}>GÜVENLİ VE ÜCRETSİZ</ThemedText>
-        </View>
-        <ThemedText style={[webStyles.heroTitle, { color: Brand.wordmark }]}>TakasCo&apos;da takasla, kullanmadıkların birinin favorisi olsun</ThemedText>
-        <ThemedText style={{ color: theme.textSecondary, fontSize: 15, lineHeight: 22 }}>
-          Eşyalarını satışa çıkarmadan, ihtiyacın olan şeylerle değiştir. Ücretsiz ilan ver, güvenle takasla.
-        </ThemedText>
-        <View style={{ flexDirection: 'row', gap: Spacing.three, marginTop: Spacing.two }}>
-          <TouchableOpacity style={[webStyles.heroBtnFilled, { backgroundColor: Brand.accent }]} onPress={() => router.push('/(tabs)/add')}>
-            <ThemedText style={{ color: '#fff', fontWeight: '700' }}>İlan Ver</ThemedText>
-          </TouchableOpacity>
-          <TouchableOpacity style={[webStyles.heroBtnOutline, { borderColor: Brand.accent }]} onPress={() => router.push('/(tabs)/search')}>
-            <ThemedText style={{ color: Brand.accent, fontWeight: '700' }}>Keşfetmeye Başla →</ThemedText>
-          </TouchableOpacity>
-        </View>
-      </View>
-      <View style={[webStyles.heroIconCircle, { backgroundColor: Brand.accent }]}>
-        <IconSymbol name="arrow.left.arrow.right" size={64} color="#fff" />
-      </View>
-    </View>
-  );
+  return <HeroCarousel />;
 }
 
-// Ürün ızgarasının altında yer alan "ilan ver" çağrısı (Dolap'ın "Satıcı Ol" bandı)
 export function SellCta() {
   const router = useRouter();
   const theme = useTheme();
@@ -405,7 +380,7 @@ export function SellCta() {
         <ThemedText style={[webStyles.sellCtaTitle, { color: Brand.wordmark }]}>Kullanmadıkların birine değer katsın</ThemedText>
         <ThemedText style={{ color: theme.textSecondary, fontSize: 14 }}>Dakikalar içinde ilan ver, teklifleri uygulamadan yönet. İlan vermek tamamen ücretsiz.</ThemedText>
       </View>
-      <TouchableOpacity style={[webStyles.heroBtnFilled, { backgroundColor: Brand.accent }]} onPress={() => router.push('/(tabs)/add')}>
+      <TouchableOpacity accessibilityRole="button" onPress={() => router.push('/(tabs)/add')} style={[webStyles.heroBtnFilled, { backgroundColor: Brand.accent }]}>
         <ThemedText style={{ color: '#fff', fontWeight: '700' }}>Ücretsiz İlan Ver</ThemedText>
       </TouchableOpacity>
     </View>
@@ -563,10 +538,10 @@ function ListingStrip({ title, params, filter, subtitle, endpoint = '/products' 
   );
 
   return (
-    <View style={isDesktop ? webStyles.popularListWrap : webStyles.stripWrap}>
+    <Reveal style={isDesktop ? webStyles.popularListWrap : webStyles.stripWrap}>
       <ThemedText style={{ fontSize: isDesktop ? 22 : 18, fontWeight: '800' }}>{title}</ThemedText>
       {isDesktop ? cards : <ScrollView horizontal showsHorizontalScrollIndicator={false}>{cards}</ScrollView>}
-    </View>
+    </Reveal>
   );
 }
 
@@ -623,7 +598,7 @@ export function SiteFooter() {
             <ThemedText style={[footerStyles.colTitle, { color: theme.textSecondary }]}>{col.title.toLocaleUpperCase('tr-TR')}</ThemedText>
             {col.links.map((link) => (
               <TouchableOpacity key={link.label} onPress={link.onPress} accessibilityRole="link" style={webStyles.navItemBtn}>
-                <ThemedText style={{ fontSize: 14 }}>{link.label}</ThemedText>
+                <ThemedText style={{ fontSize: 14 }} {...({ dataSet: { textlink: 'true' } } as any)}>{link.label}</ThemedText>
               </TouchableOpacity>
             ))}
           </View>
@@ -698,6 +673,9 @@ export const webStyles = StyleSheet.create({
   heroTitle: { fontSize: 34, fontWeight: '800', lineHeight: 40 },
   heroBtnFilled: { paddingHorizontal: Spacing.six, paddingVertical: Spacing.three, borderRadius: Radius.full, cursor: 'pointer' as any },
   heroBtnOutline: { paddingHorizontal: Spacing.six, paddingVertical: Spacing.three, borderRadius: Radius.full, borderWidth: 1.5, cursor: 'pointer' as any },
+  heroEmblem: { width: 250, height: 250, justifyContent: 'center', alignItems: 'center' },
+  heroRing: { position: 'absolute', width: 160, height: 160, borderRadius: 80, borderWidth: 2, borderColor: Brand.accent },
+  heroDot: { position: 'absolute', borderRadius: 99 },
   heroIconCircle: { width: 160, height: 160, borderRadius: 80, justifyContent: 'center', alignItems: 'center' },
 
   sellCta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: Spacing.eight, borderRadius: Radius.lg, padding: Spacing.six, gap: Spacing.six },
