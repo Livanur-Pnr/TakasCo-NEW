@@ -90,6 +90,7 @@ Hazırlık: `cd backend && php artisan serve`, `cd mobile && npx expo start --we
 ## İletişim formu (N6)
 - [ ] İletişim sayfasında formu doldurup gönder; "Mesajın bize ulaştı!" onayı görünür.
 - [ ] Admin panelinde "İletişim Mesajları" sekmesinde mesaj "Bekleyen" listesinde görünür; "Yanıtlandı" işaretleyince listeden kalkar ve "Yanıtlandı" sekmesinde görünür.
+- [ ] Form gönderilince admin hesabının e-postasına bildirim gider (SMTP gerçek yapılandırılmışsa); e-postayı yanıtlayınca cevap formu gönderenin e-postasına gitmeli (Reply-To).
 - [ ] Giriş yapmış kullanıcı formu gönderince ad/e-posta otomatik doluyor ve admin panelinde "üye: ..." etiketiyle görünüyor.
 
 ## Karanlık mod (N7)

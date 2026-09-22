@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\ContactMessage;
 use App\Models\User;
+use App\Notifications\ContactMessageNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class ContactMessageTest extends TestCase
@@ -60,6 +62,30 @@ class ContactMessageTest extends TestCase
 
         $this->assertCount(0, $this->actingAs($admin, 'sanctum')->getJson('/api/admin/contact-messages')->json('data'));
         $this->assertCount(1, $this->actingAs($admin, 'sanctum')->getJson('/api/admin/contact-messages?status=' . urlencode('yanıtlandı'))->json('data'));
+    }
+
+    public function test_admins_are_notified_by_mail_when_a_message_is_submitted(): void
+    {
+        Notification::fake();
+        $admin = $this->admin();
+        $otherAdmin = $this->admin();
+        $regular = User::factory()->create();
+
+        $payload = ['name' => 'Ayşe', 'email' => 'ayse@example.com', 'subject' => 'Sorum var', 'message' => 'Merhaba.'];
+        $this->postJson('/api/contact', $payload)->assertCreated();
+
+        Notification::assertSentTo([$admin, $otherAdmin], ContactMessageNotification::class);
+        Notification::assertNotSentTo($regular, ContactMessageNotification::class);
+    }
+
+    public function test_no_notification_is_sent_when_there_are_no_admins(): void
+    {
+        Notification::fake();
+        $payload = ['name' => 'Ayşe', 'email' => 'ayse@example.com', 'subject' => 'Sorum var', 'message' => 'Merhaba.'];
+
+        $this->postJson('/api/contact', $payload)->assertCreated();
+
+        Notification::assertNothingSent();
     }
 
     public function test_overview_reports_pending_contact_message_count(): void
