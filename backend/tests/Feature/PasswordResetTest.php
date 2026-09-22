@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use Illuminate\Auth\Notifications\ResetPassword;
+use App\Notifications\ResetPasswordNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
@@ -18,7 +18,7 @@ class PasswordResetTest extends TestCase
         $this->postJson('/api/forgot-password', ['email' => $user->email])->assertOk();
 
         $token = null;
-        Notification::assertSentTo($user, ResetPassword::class, function ($n) use (&$token) {
+        Notification::assertSentTo($user, ResetPasswordNotification::class, function ($n) use (&$token) {
             $token = $n->token;
 
             return true;
@@ -34,7 +34,7 @@ class PasswordResetTest extends TestCase
         $user->createToken('eski');
         $token = $this->requestToken($user);
 
-        $url = (new ResetPassword($token))->toMail($user)->actionUrl;
+        $url = (new ResetPasswordNotification($token))->toMail($user)->actionUrl;
         $this->assertStringStartsWith('https://takasco.example/reset-password?token=' . $token, $url);
 
         $payload = ['token' => $token, 'email' => $user->email, 'password' => 'yenisifre123', 'password_confirmation' => 'yenisifre123'];
@@ -55,7 +55,7 @@ class PasswordResetTest extends TestCase
         $unknown = $this->postJson('/api/forgot-password', ['email' => 'yok@example.com'])->assertOk()->json('message');
 
         $this->assertSame($known, $unknown);
-        Notification::assertSentTimes(ResetPassword::class, 1);
+        Notification::assertSentTimes(ResetPasswordNotification::class, 1);
         $this->postJson('/api/forgot-password', ['email' => 'gecersiz'])->assertStatus(422);
     }
 

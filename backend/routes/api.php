@@ -36,6 +36,7 @@ Route::middleware('throttle:10,1')->controller(AuthController::class)->group(fun
 });
 Route::post('/auth/google', [\App\Http\Controllers\Api\GoogleAuthController::class, 'login'])->middleware('throttle:10,1');
 Route::post('/forgot-password', [\App\Http\Controllers\Api\PasswordResetController::class, 'forgot'])->middleware('throttle:5,1');
+Route::post('/contact', [\App\Http\Controllers\Api\ContactMessageController::class, 'store'])->middleware('throttle:5,1');
 Route::post('/reset-password', [\App\Http\Controllers\Api\PasswordResetController::class, 'reset'])->middleware('throttle:10,1');
 
 
@@ -89,6 +90,8 @@ Route::middleware(['auth:sanctum', NotSuspended::class])->group(function () {
         Route::post('/users/{id}/unsuspend', 'unsuspendUser');
         Route::get('/reports', 'reports');
         Route::post('/reports/{id}/resolve', 'resolveReport');
+        Route::get('/contact-messages', 'contactMessages');
+        Route::post('/contact-messages/{id}/resolve', 'resolveContactMessage');
         Route::get('/reviews', 'reviews');
         Route::delete('/reviews/{id}', 'deleteReview');
         Route::get('/actions', 'actions');

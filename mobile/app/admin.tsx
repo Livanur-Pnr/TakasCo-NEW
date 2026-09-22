@@ -11,10 +11,11 @@ import { api, getImageUrl } from '@/utils/api';
 import { Alert } from '@/utils/alert';
 import { timeAgo } from '@/utils/date';
 
-type Tab = 'overview' | 'products' | 'users' | 'reports' | 'reviews' | 'actions';
+type Tab = 'overview' | 'products' | 'users' | 'reports' | 'contact' | 'reviews' | 'actions';
 
-interface Overview { users: number; active_products: number; removed_products: number; active_trades: number; completed_trades: number; conversations: number; pending_reports: number }
+interface Overview { users: number; active_products: number; removed_products: number; active_trades: number; completed_trades: number; conversations: number; pending_reports: number; pending_contact_messages: number }
 interface AdminReport { id: number; target_type: 'product' | 'user'; target_id: number; target_label: string; reason: string; details: string | null; status: string; reporter: string | null; created_at: string }
+interface AdminContactMessage { id: number; name: string; email: string; subject: string; message: string; status: string; user: string | null; created_at: string }
 
 const REASON_LABEL: Record<string, string> = { spam: 'Spam / reklam', yaniltici: 'Yanıltıcı bilgi', uygunsuz: 'Uygunsuz içerik', sahte: 'Sahte / taklit', diger: 'Diğer' };
 interface AdminReview { id: number; rating: number; comment: string | null; reviewer: string; reviewee: string; created_at: string }
@@ -26,6 +27,7 @@ const ACTION_LABEL: Record<string, string> = {
   user_suspended: 'Hesabı askıya aldı',
   user_unsuspended: 'Askıyı kaldırdı',
   report_resolved: 'Şikayeti sonuçlandırdı',
+  contact_message_resolved: 'İletişim mesajını yanıtlandı olarak işaretledi',
   review_deleted: 'Değerlendirmeyi sildi',
 };
 
@@ -77,6 +79,7 @@ export default function AdminScreen() {
             <Pill label="İlanlar" active={tab === 'products'} onPress={() => setTab('products')} />
             <Pill label="Kullanıcılar" active={tab === 'users'} onPress={() => setTab('users')} />
             <Pill label="Şikayetler" active={tab === 'reports'} onPress={() => setTab('reports')} />
+            <Pill label="İletişim Mesajları" active={tab === 'contact'} onPress={() => setTab('contact')} />
             <Pill label="Değerlendirmeler" active={tab === 'reviews'} onPress={() => setTab('reviews')} />
             <Pill label="İşlem Kaydı" active={tab === 'actions'} onPress={() => setTab('actions')} />
           </View>
@@ -84,6 +87,7 @@ export default function AdminScreen() {
           {tab === 'products' && <ProductsTab onError={onError} />}
           {tab === 'users' && <UsersTab onError={onError} />}
           {tab === 'reports' && <ReportsTab onError={onError} />}
+          {tab === 'contact' && <ContactMessagesTab onError={onError} />}
           {tab === 'reviews' && <ReviewsTab onError={onError} />}
           {tab === 'actions' && <ActionsTab onError={onError} />}
         </>
@@ -110,6 +114,7 @@ function OverviewTab({ onError }: { onError: (e: any) => void }) {
     { label: 'Tamamlanan Takas', value: data.completed_trades },
     { label: 'Konuşma', value: data.conversations },
     { label: 'Bekleyen Şikayet', value: data.pending_reports },
+    { label: 'Bekleyen İletişim Mesajı', value: data.pending_contact_messages },
   ];
 
   return (
@@ -301,6 +306,74 @@ function ReportsTab({ onError }: { onError: (e: any) => void }) {
 
       {loading && <ActivityIndicator color={Brand.accent} />}
       {!loading && items.length === 0 && <ThemedText style={{ color: theme.textSecondary, textAlign: 'center' }}>Şikayet yok.</ThemedText>}
+      {!loading && page < lastPage && (
+        <TouchableOpacity onPress={() => load(page + 1)} accessibilityRole="button" style={{ alignSelf: 'center' }}>
+          <ThemedText style={{ color: Brand.accent, fontWeight: '700' }}>Daha fazla yükle</ThemedText>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
+
+function ContactMessagesTab({ onError }: { onError: (e: any) => void }) {
+  const theme = useTheme();
+  const [status, setStatus] = useState<'beklemede' | 'yanıtlandı'>('beklemede');
+  const [items, setItems] = useState<AdminContactMessage[]>([]);
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async (pageToLoad: number) => {
+    setLoading(true);
+    try {
+      const r = await api.get('/admin/contact-messages', { params: { page: pageToLoad, status } });
+      setItems((prev) => (pageToLoad === 1 ? r.data.data : [...prev, ...r.data.data]));
+      setPage(r.data.current_page);
+      setLastPage(r.data.last_page);
+    } catch (e) {
+      onError(e);
+    } finally {
+      setLoading(false);
+    }
+  }, [status, onError]);
+
+  useEffect(() => { load(1); }, [load]);
+
+  const resolve = async (m: AdminContactMessage) => {
+    try {
+      await api.post(`/admin/contact-messages/${m.id}/resolve`);
+      setItems((prev) => prev.filter((x) => x.id !== m.id));
+    } catch (e: any) {
+      Alert.alert('Hata', e.response?.data?.message || 'İşlem yapılamadı.');
+    }
+  };
+
+  return (
+    <View style={{ gap: Spacing.four }}>
+      <View style={styles.tabs}>
+        <Pill label="Bekleyen" active={status === 'beklemede'} onPress={() => setStatus('beklemede')} />
+        <Pill label="Yanıtlandı" active={status === 'yanıtlandı'} onPress={() => setStatus('yanıtlandı')} />
+      </View>
+
+      {items.map((m) => (
+        <View key={m.id} style={[styles.row, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
+          <View style={{ flex: 1, gap: 2 }}>
+            <ThemedText style={{ fontWeight: '700' }} numberOfLines={1}>{m.subject}</ThemedText>
+            <ThemedText style={{ color: theme.textSecondary, fontSize: 12 }}>
+              {m.name} · {m.email}{m.user ? ` · üye: ${m.user}` : ''} · {timeAgo(m.created_at)}
+            </ThemedText>
+            <ThemedText style={{ fontSize: 13 }}>{m.message}</ThemedText>
+          </View>
+          {status === 'beklemede' && (
+            <TouchableOpacity onPress={() => resolve(m)} accessibilityRole="button" style={[styles.action, { backgroundColor: Brand.accent }]}>
+              <ThemedText style={{ color: '#fff', fontWeight: '700', fontSize: 12 }}>Yanıtlandı</ThemedText>
+            </TouchableOpacity>
+          )}
+        </View>
+      ))}
+
+      {loading && <ActivityIndicator color={Brand.accent} />}
+      {!loading && items.length === 0 && <ThemedText style={{ color: theme.textSecondary, textAlign: 'center' }}>İletişim mesajı yok.</ThemedText>}
       {!loading && page < lastPage && (
         <TouchableOpacity onPress={() => load(page + 1)} accessibilityRole="button" style={{ alignSelf: 'center' }}>
           <ThemedText style={{ color: Brand.accent, fontWeight: '700' }}>Daha fazla yükle</ThemedText>

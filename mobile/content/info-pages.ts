@@ -1,9 +1,6 @@
 export interface InfoSection { title?: string; body: string }
 export interface InfoPageContent { title: string; description: string; sections: InfoSection[] }
 
-// İletişim e-postası yalnızca EXPO_PUBLIC_CONTACT_EMAIL tanımlıysa gösterilir (uydurma adres yazılmaz).
-export const CONTACT_EMAIL = process.env.EXPO_PUBLIC_CONTACT_EMAIL ?? '';
-
 export const INFO_PAGES: Record<string, InfoPageContent> = {
   hakkimizda: {
     title: 'Hakkımızda',
@@ -72,6 +69,7 @@ export const INFO_PAGES: Record<string, InfoPageContent> = {
     description: 'TakasCo ile iletişime geçme yolları.',
     sections: [
       { body: 'Bir ilan veya kullanıcıyla ilgili sorunlar için en hızlı yol, ilgili ilanda veya sohbette yer alan "Şikayet Et" düğmesidir; şikayetler yönetim ekibinin moderasyon kuyruğuna düşer.' },
+      { title: 'Diğer sorularınız için', body: 'Aşağıdaki formu doldurabilirsin, mesajın ekibimize ulaşır ve belirttiğin e-posta adresinden sana dönüş yaparız.' },
     ],
   },
 };

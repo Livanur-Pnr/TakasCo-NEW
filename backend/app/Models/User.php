@@ -18,6 +18,12 @@ class User extends Authenticatable implements MustVerifyEmail
     //hasApiTokens=API üzerinden güvenli bir şekilde kullanıcı girişi yapmasını sağlayan token üretme
     use HasApiTokens, HasFactory, Notifiable;
 
+    // Şifre sıfırlama e-postasını Laravel'in varsayılan İngilizce bildirimi yerine Türkçe/markalı olanla gönderir
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new \App\Notifications\ResetPasswordNotification($token));
+    }
+
     /**
      *hangi veri tipine dönüştürüleceğini belirleme
      * @return array<string, string>

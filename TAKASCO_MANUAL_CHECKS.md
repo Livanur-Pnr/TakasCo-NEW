@@ -86,3 +86,8 @@ Hazırlık: `cd backend && php artisan serve`, `cd mobile && npx expo start --we
 - [ ] Ana sayfa vitrini: 1. slayt koyu yeşil + animasyonlu uygulama sahnesi; ilan slaytlarında bulanık fotoğraf zemini ve süzülen fotoğraf kartı; oklar/noktalar/ilerleme çubuğu çalışır, fareyle durur; telefonda metin sıkışmaz.
 - [ ] Vitrinde takas oku: fareyi emblemin herhangi bir yerine götürünce iki ok yay çizerek yer değiştirir (üstteki alta, alttaki üste), ok grubu bir tam tur döner, daire büyür, halka yayılır, ürün kartları merkeze yaklaşır; fare çekilince kartlar geri döner. Her girişte oklar tekrar yer değiştirir. Ok emblemi yalnızca ilk (TakasCo) slaytta bulunur; ilan fotoğraflarının üstünde ok yoktur.
 - [ ] Edge'de sayfa ilk açılışında (özellikle giriş ekranı) koyu→açık flash olmaz. Edge Ayarlar > Görünüm'de "Web içeriği için otomatik koyu tema" açıkken de test edin.
+
+## İletişim formu (N6)
+- [ ] İletişim sayfasında formu doldurup gönder; "Mesajın bize ulaştı!" onayı görünür.
+- [ ] Admin panelinde "İletişim Mesajları" sekmesinde mesaj "Bekleyen" listesinde görünür; "Yanıtlandı" işaretleyince listeden kalkar ve "Yanıtlandı" sekmesinde görünür.
+- [ ] Giriş yapmış kullanıcı formu gönderince ad/e-posta otomatik doluyor ve admin panelinde "üye: ..." etiketiyle görünüyor.

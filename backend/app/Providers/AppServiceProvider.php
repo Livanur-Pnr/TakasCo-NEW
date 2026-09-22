@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -28,8 +27,6 @@ class AppServiceProvider extends ServiceProvider
             'hash' => sha1($user->getEmailForVerification()),
         ]));
 
-        // şifre sıfırlama e-postasındaki bağlantı ön yüzün (Expo web) sayfasına gider
-        ResetPassword::createUrlUsing(fn ($user, string $token) => rtrim((string) config('app.frontend_url'), '/')
-            . '/reset-password?token=' . $token . '&email=' . urlencode($user->getEmailForPasswordReset()));
+        // Şifre sıfırlama e-postası: bkz. User::sendPasswordResetNotification() (Türkçe, markalı; bağlantıyı kendisi kurar)
     }
 }

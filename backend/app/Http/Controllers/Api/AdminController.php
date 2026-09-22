@@ -28,6 +28,7 @@ class AdminController extends Controller
             'completed_trades' => Trade::where('status', TradeStatus::Accepted->value)->count(),
             'conversations' => \App\Models\Conversation::count(),
             'pending_reports' => \App\Models\Report::where('status', 'beklemede')->count(),
+            'pending_contact_messages' => \App\Models\ContactMessage::where('status', 'beklemede')->count(),
         ]);
     }
 
@@ -215,5 +216,35 @@ class AdminController extends Controller
         AdminAction::record($request->user(), 'report_resolved', 'report', $report->id, $data['status']);
 
         return response()->json(['message' => 'Şikayet güncellendi.']);
+    }
+
+    // iletişim formu kuyruğu
+    public function contactMessages(Request $request)
+    {
+        $query = \App\Models\ContactMessage::with('user:id,name')->latest();
+        $query->where('status', $request->input('status', 'beklemede'));
+
+        $page = $query->paginate(min((int) $request->input('per_page', 20), 50));
+
+        return response()->json($page->through(fn (\App\Models\ContactMessage $m) => [
+            'id' => $m->id,
+            'name' => $m->name,
+            'email' => $m->email,
+            'subject' => $m->subject,
+            'message' => $m->message,
+            'status' => $m->status,
+            'user' => $m->user?->name,
+            'created_at' => $m->created_at,
+        ]));
+    }
+
+    public function resolveContactMessage(Request $request, $id)
+    {
+        $message = \App\Models\ContactMessage::findOrFail($id);
+        $message->update(['status' => 'yanıtlandı', 'resolved_by' => $request->user()->id, 'resolved_at' => now()]);
+
+        AdminAction::record($request->user(), 'contact_message_resolved', 'contact_message', $message->id, $message->subject);
+
+        return response()->json(['message' => 'İletişim mesajı yanıtlandı olarak işaretlendi.']);
     }
 }
