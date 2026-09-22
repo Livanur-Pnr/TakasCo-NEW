@@ -91,3 +91,9 @@ Hazırlık: `cd backend && php artisan serve`, `cd mobile && npx expo start --we
 - [ ] İletişim sayfasında formu doldurup gönder; "Mesajın bize ulaştı!" onayı görünür.
 - [ ] Admin panelinde "İletişim Mesajları" sekmesinde mesaj "Bekleyen" listesinde görünür; "Yanıtlandı" işaretleyince listeden kalkar ve "Yanıtlandı" sekmesinde görünür.
 - [ ] Giriş yapmış kullanıcı formu gönderince ad/e-posta otomatik doluyor ve admin panelinde "üye: ..." etiketiyle görünüyor.
+
+## Karanlık mod (N7)
+- [ ] Ayarlar > Görünüm: Açık/Koyu/Sistem arasında geçiş anında uygulanır (yeniden başlatma gerekmez).
+- [ ] "Sistem" seçiliyken işletim sistemi/tarayıcı temasını değiştirince uygulama otomatik değişir.
+- [ ] Sayfa yenilenince (F5) seçim korunur (kaydedilmiş tercih varsa flash olmadan doğrudan o temada açılır).
+- [ ] Ana sayfa, arama/keşfet, ilan detayı, mesajlar, profil, admin paneli, giriş/kayıt ekranları koyu modda okunur ve tutarlı görünür (metin kontrastı, kenarlıklar, kart yüzeyleri).

@@ -33,6 +33,16 @@ export const Colors = {
     inputBg: '#ffffff',
     cardBg: '#ffffff',
   },
+  dark: {
+    text: '#f1f5f2',
+    background: '#0d1310',
+    backgroundElement: '#101715',
+    backgroundSelected: '#17251d',
+    textSecondary: '#93a39a',
+    border: '#26332c',
+    inputBg: '#141d18',
+    cardBg: '#141d18',
+  },
 } as const;
 
 
@@ -41,6 +51,7 @@ export const Colors = {
 // Kimlik doğrulama ekranlarının arka plan/CTA gradyanları. Native'de kullanılmaz (düz renge düşülür).
 export const Gradient = {
   authBackdrop: 'linear-gradient(160deg, #f7fcff 0%, #eef8f2 55%, #e2f3e9 100%)',
+  authBackdropDark: 'linear-gradient(160deg, #0d1310 0%, #0e1713 55%, #101a15 100%)',
   brandPanel: 'linear-gradient(150deg, #0d3b20 0%, #14532D 45%, #1B7A43 100%)',
   brandGlow: 'radial-gradient(closest-side, rgba(110, 231, 183, 0.28), rgba(110, 231, 183, 0))',
   blobMint: 'radial-gradient(closest-side, rgba(110, 231, 183, 0.32), rgba(110, 231, 183, 0))',

@@ -33,7 +33,7 @@ export const AuthField = forwardRef<RNTextInput, Props>(function AuthField({ lab
         {...({ dataSet: { field: 'true', state } } as any)}
         style={[
           styles.box,
-          { backgroundColor: theme.inputBg, borderColor: invalid ? Brand.danger : focused ? Brand.accent : '#d9e1dc' },
+          { backgroundColor: theme.inputBg, borderColor: invalid ? Brand.danger : focused ? Brand.accent : theme.border },
           web && focused ? ({ boxShadow: invalid ? Shadow.ringDanger : Shadow.ring } as any) : null,
         ]}
       >

@@ -5,11 +5,18 @@ import { useRouter } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Spacing, Radius } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { ThemePreference, useAppTheme } from '@/hooks/use-app-theme';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { SubPage } from '@/components/ui/sub-page';
 import { api } from '@/utils/api';
 import { Alert } from '@/utils/alert';
 import * as SecureStore from '@/utils/storage';
+
+const THEME_OPTIONS: { value: ThemePreference; label: string; icon: 'sun.max.fill' | 'moon.fill' | 'circle.lefthalf.filled' }[] = [
+  { value: 'light', label: 'Açık', icon: 'sun.max.fill' },
+  { value: 'dark', label: 'Koyu', icon: 'moon.fill' },
+  { value: 'system', label: 'Sistem', icon: 'circle.lefthalf.filled' },
+];
 
 const INFO_LINKS = [
   { label: 'Nasıl Çalışır?', href: '/nasil-calisir' },
@@ -24,6 +31,7 @@ const INFO_LINKS = [
 export default function SettingsScreen() {
   const router = useRouter();
   const theme = useTheme();
+  const { preference, setPreference } = useAppTheme();
   const [emailOn, setEmailOn] = useState(true);
   const [verified, setVerified] = useState<boolean | null>(null);
   const [sendingLink, setSendingLink] = useState(false);
@@ -57,6 +65,29 @@ export default function SettingsScreen() {
 
   return (
     <SubPage title="Ayarlar">
+      <View style={styles.section}>
+        <ThemedText style={styles.sectionTitle}>Görünüm</ThemedText>
+        <View style={[styles.card, { backgroundColor: theme.cardBg, borderColor: theme.border, padding: Spacing.three }]}>
+          <View style={styles.themeRow}>
+            {THEME_OPTIONS.map((opt) => {
+              const active = preference === opt.value;
+              return (
+                <TouchableOpacity
+                  key={opt.value}
+                  onPress={() => setPreference(opt.value)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  style={[styles.themeOption, { backgroundColor: active ? Brand.accent : theme.backgroundSelected }]}
+                >
+                  <IconSymbol name={opt.icon} size={18} color={active ? '#fff' : theme.textSecondary} />
+                  <ThemedText style={{ color: active ? '#fff' : theme.text, fontWeight: '600', fontSize: 13 }}>{opt.label}</ThemedText>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+      </View>
+
       <View style={styles.section}>
         <ThemedText style={styles.sectionTitle}>Tercihler</ThemedText>
         <View style={[styles.card, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
@@ -165,5 +196,7 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 14, fontWeight: '600', opacity: 0.7, paddingHorizontal: Spacing.two },
   card: { borderRadius: Radius.md, borderWidth: 1, overflow: 'hidden' },
   settingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: Spacing.four },
-  divider: { height: 1 }
+  divider: { height: 1 },
+  themeRow: { flexDirection: 'row', gap: Spacing.two },
+  themeOption: { flex: 1, alignItems: 'center', gap: 4, paddingVertical: Spacing.three, borderRadius: Radius.sm },
 });

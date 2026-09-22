@@ -53,6 +53,9 @@ const MAPPING = {
   'eye.slash.fill': 'visibility-off',
   'info.circle.fill': 'info',
   'checkmark.circle.fill': 'check-circle',
+  'sun.max.fill': 'wb-sunny',
+  'moon.fill': 'nights-stay',
+  'circle.lefthalf.filled': 'contrast',
   'bubble.left.fill': 'chat-bubble',
   'message.fill': 'chat',
 } as IconMapping;

@@ -7,6 +7,7 @@ import { TouchableOpacity } from '@/components/ui/touchable';
 import { Brand, Gradient, Radius, Spacing } from '@/constants/theme';
 import { Distance, Duration, Ease } from '@/constants/motion';
 import { useTheme } from '@/hooks/use-theme';
+import { useAppTheme } from '@/hooks/use-app-theme';
 
 // Form hata mesajı: görününce yumuşakça belirir ve yukarıdan kısa kayarak yerine oturur (sıçrama/sarsıntı yok).
 export function FormError({ message }: { message?: string | null }) {
@@ -46,11 +47,12 @@ export type ActionStatus = 'idle' | 'loading' | 'success';
 // `arrow`: sağda küçük ok; hover'da 3px sağa kayar. `loadingLabel`: yüklenirken iğnenin yanında gösterilen metin.
 export function ActionButton({ label, status = 'idle', onPress, disabled, variant = 'primary', style, icon, arrow, loadingLabel }: { label: string; status?: ActionStatus; onPress: () => void; disabled?: boolean; variant?: 'primary' | 'secondary' | 'danger' | 'outline'; style?: StyleProp<ViewStyle>; icon?: ReactNode; arrow?: boolean; loadingLabel?: string }) {
   const theme = useTheme();
+  const { scheme } = useAppTheme();
   const busy = status === 'loading';
   const done = status === 'success';
   const outline = variant === 'outline';
-  const bg = outline ? '#ffffff' : variant === 'primary' ? Brand.accent : variant === 'danger' ? Brand.danger : theme.backgroundSelected;
-  const fg = outline ? Brand.wordmark : variant === 'secondary' ? theme.text : '#fff';
+  const bg = outline ? theme.cardBg : variant === 'primary' ? Brand.accent : variant === 'danger' ? Brand.danger : theme.backgroundSelected;
+  const fg = outline ? (scheme === 'dark' ? '#a7f3d0' : Brand.wordmark) : variant === 'secondary' ? theme.text : '#fff';
   const gradient = Platform.OS === 'web' && variant === 'primary' && !done ? ({ backgroundImage: Gradient.cta } as any) : null;
 
   return (
@@ -63,7 +65,7 @@ export function ActionButton({ label, status = 'idle', onPress, disabled, varian
       onPress={onPress}
       style={[
         { backgroundColor: done ? Brand.success : bg, minHeight: 52, paddingHorizontal: Spacing.five, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center', opacity: disabled ? 0.5 : 1 },
-        outline ? { borderWidth: 1, borderColor: 'rgba(27, 122, 67, 0.28)' } : null,
+        outline ? { borderWidth: 1, borderColor: scheme === 'dark' ? 'rgba(167, 243, 208, 0.35)' : 'rgba(27, 122, 67, 0.28)' } : null,
         gradient,
         style,
       ]}

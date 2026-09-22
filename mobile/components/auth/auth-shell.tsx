@@ -8,6 +8,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { FadeInUp } from '@/components/ui/motion';
 import { TouchableOpacity } from '@/components/ui/touchable';
 import { Brand, Gradient, Radius, Spacing } from '@/constants/theme';
+import { useAppTheme } from '@/hooks/use-app-theme';
 import { Duration, Shadow } from '@/constants/motion';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -31,9 +32,10 @@ export function AuthItem({ i, children }: { i: number; children: ReactNode }) {
 
 // Ekran başlığı + açıklaması (Giriş, Kayıt, Şifre…): güçlü ama ekranı kaplamayan boyut
 export function AuthHeading({ title, subtitle }: { title: string; subtitle?: string }) {
+  const { scheme } = useAppTheme();
   return (
     <View style={{ gap: Spacing.two }}>
-      <ThemedText type="title" accessibilityRole="header" style={{ color: Brand.wordmark, fontSize: 28, lineHeight: 34, letterSpacing: -0.4 }}>{title}</ThemedText>
+      <ThemedText type="title" accessibilityRole="header" style={{ color: scheme === 'dark' ? '#a7f3d0' : Brand.wordmark, fontSize: 28, lineHeight: 34, letterSpacing: -0.4 }}>{title}</ThemedText>
       {!!subtitle && <ThemedText style={{ opacity: 0.68, lineHeight: 22 }}>{subtitle}</ThemedText>}
     </View>
   );
@@ -41,11 +43,12 @@ export function AuthHeading({ title, subtitle }: { title: string; subtitle?: str
 
 // "veya" ayırıcısı
 export function AuthDivider({ label }: { label: string }) {
+  const theme = useTheme();
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.three }}>
-      <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(16, 40, 28, 0.10)' }} />
+      <View style={{ flex: 1, height: 1, backgroundColor: theme.border }} />
       <ThemedText style={{ fontSize: 12, opacity: 0.55 }}>{label}</ThemedText>
-      <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(16, 40, 28, 0.10)' }} />
+      <View style={{ flex: 1, height: 1, backgroundColor: theme.border }} />
     </View>
   );
 }
@@ -82,6 +85,8 @@ function BrandPanel() {
 
 // Tablet/telefon üst marka alanı. `hero` (karşılama): büyük logo + ad + slogan + çipler; aksi hâlde kompakt logo + ad.
 function BrandHeader({ hero }: { hero: boolean }) {
+  const { scheme } = useAppTheme();
+  const wordmark = scheme === 'dark' ? '#a7f3d0' : Brand.wordmark;
   if (hero) {
     return (
       <View style={styles.heroBlock}>
@@ -89,7 +94,7 @@ function BrandHeader({ hero }: { hero: boolean }) {
           <Image source={require('@/assets/images/takasco-logo.png')} style={styles.heroLogo} accessibilityLabel="TakasCo logosu" />
         </FadeInUp>
         <FadeInUp delay={60}>
-          <ThemedText type="title" style={styles.heroName}>TakasCo</ThemedText>
+          <ThemedText type="title" style={[styles.heroName, { color: wordmark }]}>TakasCo</ThemedText>
         </FadeInUp>
         <FadeInUp delay={110}>
           <ThemedText style={styles.heroSlogan}>{AUTH_SLOGAN}</ThemedText>
@@ -103,7 +108,7 @@ function BrandHeader({ hero }: { hero: boolean }) {
   return (
     <FadeInUp scaleFrom={0.97} distance={6} style={styles.compactBrand}>
       <Image source={require('@/assets/images/takasco-logo.png')} style={styles.compactLogo} accessibilityLabel="TakasCo logosu" />
-      <ThemedText type="title" style={styles.compactName}>TakasCo</ThemedText>
+      <ThemedText type="title" style={[styles.compactName, { color: wordmark }]}>TakasCo</ThemedText>
     </FadeInUp>
   );
 }
@@ -112,6 +117,7 @@ function BrandHeader({ hero }: { hero: boolean }) {
 export function AuthShell({ children, hero = false, onBack }: { children: ReactNode; hero?: boolean; onBack?: () => void }) {
   const layout = useAuthLayout();
   const theme = useTheme();
+  const { scheme } = useAppTheme();
   const insets = useSafeAreaInsets();
   const desktop = layout === 'desktop';
   const mobile = layout === 'mobile';
@@ -121,7 +127,7 @@ export function AuthShell({ children, hero = false, onBack }: { children: ReactN
       duration={Duration.slow}
       style={[
         styles.card,
-        !mobile && styles.cardRaised,
+        !mobile && [styles.cardRaised, { borderColor: theme.border }],
         !mobile && webOnly({ boxShadow: Shadow.authCard }),
         !mobile && { backgroundColor: theme.cardBg },
         desktop && { padding: 40 },
@@ -139,7 +145,7 @@ export function AuthShell({ children, hero = false, onBack }: { children: ReactN
   ) : null;
 
   return (
-    <View style={[styles.root, { backgroundColor: theme.background }, webOnly({ backgroundImage: Gradient.authBackdrop })]}>
+    <View style={[styles.root, { backgroundColor: theme.background }, webOnly({ backgroundImage: scheme === 'dark' ? Gradient.authBackdropDark : Gradient.authBackdrop })]}>
       {/* düşük opaklıklı yumuşak lekeler: form alanının önüne geçmez, çok yavaş süzülür */}
       {web && (
         <>
@@ -177,7 +183,7 @@ const styles = StyleSheet.create({
   scroll: { flexGrow: 1, justifyContent: 'center' },
   column: { width: '100%', maxWidth: 440, alignSelf: 'center', gap: Spacing.two },
   card: { gap: Spacing.five },
-  cardRaised: { borderRadius: Radius.modal, borderWidth: 1, borderColor: 'rgba(16, 40, 28, 0.07)', padding: 32 },
+  cardRaised: { borderRadius: Radius.modal, borderWidth: 1, padding: 32 },
   back: { flexDirection: 'row', alignItems: 'center', gap: 2, alignSelf: 'flex-start', paddingVertical: Spacing.two, paddingRight: Spacing.three, borderRadius: Radius.sm, minHeight: 44 },
   blob: { position: 'absolute', borderRadius: 999, opacity: 0.9 },
 

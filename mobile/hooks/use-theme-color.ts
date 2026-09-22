@@ -4,16 +4,18 @@
  */
 
 import { Colors } from '@/constants/theme';
+import { useAppTheme } from './use-app-theme';
 
 export function useThemeColor(
   props: { light?: string; dark?: string },
   colorName: keyof typeof Colors.light
 ) {
-  const colorFromProps = props.light;
+  const { scheme } = useAppTheme();
+  const colorFromProps = props[scheme];
 
   if (colorFromProps) {
     return colorFromProps;
   } else {
-    return Colors.light[colorName];
+    return Colors[scheme][colorName];
   }
 }
