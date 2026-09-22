@@ -48,6 +48,7 @@ export function TakascoMark({
   const mintV = useRef(new Animated.Value(animate === 'entrance' && !reduced ? 0 : 1)).current;
   const popV = useRef(new Animated.Value(animate === 'entrance' && !reduced ? 0 : 1)).current;
   const pulseV = useRef(new Animated.Value(0)).current;
+  const spinV = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (animate !== 'entrance' || reduced) return;
@@ -75,11 +76,24 @@ export function TakascoMark({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [animate, reduced]);
 
+  // Sürekli, çok yavaş dönüş: mount'ta bir kere oynayıp duran giriş animasyonunun aksine,
+  // logo "animate" istendiği sürece durmadan (25 sn'de bir tur) hafifçe dönmeye devam eder.
+  useEffect(() => {
+    if (animate === 'none' || reduced) return;
+    const loop = Animated.loop(
+      Animated.timing(spinV, { toValue: 1, duration: 25000, easing: Easing.linear, useNativeDriver: true })
+    );
+    loop.start();
+    return () => loop.stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [animate, reduced]);
+
   const darkOffset = darkV.interpolate({ inputRange: [0, 1], outputRange: [CIRC, 0] });
   const mintOffset = mintV.interpolate({ inputRange: [0, 1], outputRange: [CIRC, 0] });
   const pulseScale = pulseV.interpolate({ inputRange: [0, 1], outputRange: [1, 1.14] });
   const ringOpacity = pulseV.interpolate({ inputRange: [0, 0.4, 1], outputRange: [0, 0.55, 0] });
   const ringScale = pulseV.interpolate({ inputRange: [0, 1], outputRange: [1, 1.55] });
+  const spinDeg = spinV.interpolate({ inputRange: [0, 1], outputRange: [0, 360] });
 
   return (
     <Svg width={size} height={size} viewBox={`0 0 ${VB} ${VB}`}>
@@ -97,27 +111,29 @@ export function TakascoMark({
           originY={CY}
         />
       )}
-      <G rotation={-74} originX={CX} originY={CY}>
-        <AnimatedCircle
-          cx={CX} cy={CY} r={RING_R} fill="none" stroke={palette.dark} strokeWidth={RING_W}
-          strokeLinecap="round" strokeDasharray={DASH} strokeDashoffset={darkOffset as unknown as number}
-        />
-      </G>
-      <G rotation={106} originX={CX} originY={CY}>
-        <AnimatedCircle
-          cx={CX} cy={CY} r={RING_R} fill="none" stroke={palette.mint} strokeWidth={RING_W}
-          strokeLinecap="round" strokeDasharray={DASH} strokeDashoffset={mintOffset as unknown as number}
-        />
-      </G>
-      <Polygon points={DARK_ARROW} fill={palette.dark} />
-      <Polygon points={MINT_ARROW} fill={palette.mint} />
-      <AnimatedG
-        originX={CX}
-        originY={CY}
-        scale={(animate === 'success' ? pulseScale : popV) as unknown as number}
-      >
-        <Circle cx={CX} cy={CY} r={24} fill={palette.center} />
-        <Circle cx={CX} cy={CY} r={8.5} fill={palette.dot} />
+      <AnimatedG originX={CX} originY={CY} rotation={(animate === 'none' || reduced ? 0 : spinDeg) as unknown as number}>
+        <G rotation={-74} originX={CX} originY={CY}>
+          <AnimatedCircle
+            cx={CX} cy={CY} r={RING_R} fill="none" stroke={palette.dark} strokeWidth={RING_W}
+            strokeLinecap="round" strokeDasharray={DASH} strokeDashoffset={darkOffset as unknown as number}
+          />
+        </G>
+        <G rotation={106} originX={CX} originY={CY}>
+          <AnimatedCircle
+            cx={CX} cy={CY} r={RING_R} fill="none" stroke={palette.mint} strokeWidth={RING_W}
+            strokeLinecap="round" strokeDasharray={DASH} strokeDashoffset={mintOffset as unknown as number}
+          />
+        </G>
+        <Polygon points={DARK_ARROW} fill={palette.dark} />
+        <Polygon points={MINT_ARROW} fill={palette.mint} />
+        <AnimatedG
+          originX={CX}
+          originY={CY}
+          scale={(animate === 'success' ? pulseScale : popV) as unknown as number}
+        >
+          <Circle cx={CX} cy={CY} r={24} fill={palette.center} />
+          <Circle cx={CX} cy={CY} r={8.5} fill={palette.dot} />
+        </AnimatedG>
       </AnimatedG>
     </Svg>
   );
