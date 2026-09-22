@@ -5,20 +5,20 @@ import { useReducedMotion } from '@/components/ui/motion';
 
 // TakasCo sembolünün rafine edilmiş vektör hâli. Geometri, mevcut PNG logodan piksel piksel örneklenen
 // değerlere dayanır (bkz. "TakasCo Marka Kimliği Evrimi" sunumu): dış/iç yarıçap 190/128, halka orta yarıçapı
-// 159, iki yay simetrik 158° + 22° boşluk, merkez r=24/8.5. Yeni bir sembol değil, aynı sembolün daha hassas çizimi.
+// 159, iki yay simetrik 138° + 42° boşluk, merkez r=24/8.5. Yeni bir sembol değil, aynı sembolün daha hassas çizimi.
 const VB = 512;
 const CX = 256;
 const CY = 256;
 const RING_R = 159;
 const RING_W = 60;
 const CIRC = 2 * Math.PI * RING_R; // ~999.03
-const SWEEP = 158;
-const ARC_LEN = (SWEEP / 360) * CIRC; // ~438.46
-const GAP_LEN = CIRC - ARC_LEN; // ~560.56
+const SWEEP = 138;
+const ARC_LEN = (SWEEP / 360) * CIRC; // ~382.96
+const GAP_LEN = CIRC - ARC_LEN; // ~616.07
 const DASH = `${ARC_LEN} ${GAP_LEN}`;
 // ok başı üçgenleri: yay ucundan teğet yönünde hesaplanmış sabit noktalar (bkz. sunum "Geometri notları")
-const DARK_ARROW = '284.04,416.16 326.90,351.39 359.86,432.98';
-const MINT_ARROW = '227.96,95.84 185.10,160.61 152.14,79.02';
+const DARK_ARROW = '311.43,408.86 342.39,337.63 389.01,412.26';
+const MINT_ARROW = '200.57,103.14 169.61,174.37 122.99,99.74';
 
 const PALETTES = {
   light: { dark: '#1B7A43', mint: '#5FD9A4', center: '#141E28', dot: '#ffffff' },
@@ -97,13 +97,13 @@ export function TakascoMark({
           originY={CY}
         />
       )}
-      <G rotation={-84} originX={CX} originY={CY}>
+      <G rotation={-74} originX={CX} originY={CY}>
         <AnimatedCircle
           cx={CX} cy={CY} r={RING_R} fill="none" stroke={palette.dark} strokeWidth={RING_W}
           strokeLinecap="round" strokeDasharray={DASH} strokeDashoffset={darkOffset as unknown as number}
         />
       </G>
-      <G rotation={96} originX={CX} originY={CY}>
+      <G rotation={106} originX={CX} originY={CY}>
         <AnimatedCircle
           cx={CX} cy={CY} r={RING_R} fill="none" stroke={palette.mint} strokeWidth={RING_W}
           strokeLinecap="round" strokeDasharray={DASH} strokeDashoffset={mintOffset as unknown as number}
