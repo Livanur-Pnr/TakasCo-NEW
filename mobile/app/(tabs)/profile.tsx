@@ -95,6 +95,8 @@ export default function ProfileScreen() {
       { label: 'Profil Ayarlarım', href: '/profile-settings' },
       { label: 'İlanlarım', href: '/my-listings' },
       { label: 'Takaslarım', href: '/my-trades' },
+      { label: 'Kargolarım', href: '/kargolarim' },
+      { label: 'Siparişlerim', href: '/siparislerim' },
       { label: 'Favorilerim', href: '/favorites' },
       { label: 'Mesajlarım', href: '/messages' },
       { label: 'Bildirimlerim', href: '/notifications' },
@@ -230,14 +232,28 @@ export default function ProfileScreen() {
             <ThemedText>İlanlarım</ThemedText>
             <IconSymbol name="chevron.right" size={20} color={theme.textSecondary} />
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.menuItem, { backgroundColor: theme.cardBg, borderBottomColor: theme.border }]}
             onPress={() => router.push('/my-trades')}
           >
             <ThemedText>Takaslarım</ThemedText>
             <IconSymbol name="chevron.right" size={20} color={theme.textSecondary} />
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
+            style={[styles.menuItem, { backgroundColor: theme.cardBg, borderBottomColor: theme.border }]}
+            onPress={() => router.push('/kargolarim')}
+          >
+            <ThemedText>Kargolarım</ThemedText>
+            <IconSymbol name="chevron.right" size={20} color={theme.textSecondary} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.menuItem, { backgroundColor: theme.cardBg, borderBottomColor: theme.border }]}
+            onPress={() => router.push('/siparislerim')}
+          >
+            <ThemedText>Siparişlerim</ThemedText>
+            <IconSymbol name="chevron.right" size={20} color={theme.textSecondary} />
+          </TouchableOpacity>
+          <TouchableOpacity
             style={[styles.menuItem, { backgroundColor: theme.cardBg, borderBottomColor: theme.border }]}
             onPress={() => router.push('/favorites')}
           >

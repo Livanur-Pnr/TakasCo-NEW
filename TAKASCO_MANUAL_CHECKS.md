@@ -105,3 +105,9 @@ Hazırlık: `cd backend && php artisan serve`, `cd mobile && npx expo start --we
 - [ ] "Teslim Edildi Olarak İşaretle" onay istiyor; onaylayınca yeşil "Teslim edildi" durumuna geçer ve düğme kaybolur.
 - [ ] Kargo durumu geri alınamaz (ör. teslim edildikten sonra tekrar "kargoda"ya dönülemez).
 - [ ] Kargo bildirimleri ("Ürünün kargoya verildi" / "Ürün teslim edildi") alıcıya zil/uygulama içi bildirim olarak düşer.
+
+## Kargolarım / Siparişlerim (N9)
+- [ ] Profil menüsünde "Kargolarım" ve "Siparişlerim" bağlantıları görünüyor (mobil liste + masaüstü kenar menüsü).
+- [ ] "Kargolarım": yalnızca SİZİN göndermeniz gereken (kargo seçenekli, onaylanmış) takaslar listelenir; "Kargoya Ver" ve "Teslim Edildi" düğmeleri çalışır.
+- [ ] "Siparişlerim": yalnızca SİZE gönderilen takaslar listelenir, salt okunur (düğme yok), durum ve takip no doğru görünür.
+- [ ] Tekliflerim ekranındaki kargo kutusu hâlâ aynı şekilde çalışıyor (ortak bileşene taşındı, davranış değişmedi).
