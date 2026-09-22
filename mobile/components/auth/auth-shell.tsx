@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
-import { Image, Platform, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { TakascoMark } from '@/components/brand/takasco-mark';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BrandBackdrop, BrandScene } from '@/components/auth/brand-scene';
 import { FeatureChips } from '@/components/auth/feature-chips';
@@ -56,7 +57,7 @@ export function AuthDivider({ label }: { label: string }) {
 function LogoTile({ size }: { size: number }) {
   return (
     <View style={[styles.tile, { width: size + 20, height: size + 20, borderRadius: (size + 20) / 3.2 }]}>
-      <Image source={require('@/assets/images/takasco-logo.png')} style={{ width: size, height: size }} accessibilityLabel="TakasCo logosu" />
+      <TakascoMark size={size} variant="light" animate="entrance" />
     </View>
   );
 }
@@ -91,7 +92,7 @@ function BrandHeader({ hero }: { hero: boolean }) {
     return (
       <View style={styles.heroBlock}>
         <FadeInUp scaleFrom={0.96} distance={6}>
-          <Image source={require('@/assets/images/takasco-logo.png')} style={styles.heroLogo} accessibilityLabel="TakasCo logosu" />
+          <TakascoMark size={88} variant={scheme === 'dark' ? 'dark' : 'light'} animate="entrance" />
         </FadeInUp>
         <FadeInUp delay={60}>
           <ThemedText type="title" style={[styles.heroName, { color: wordmark }]}>TakasCo</ThemedText>
@@ -107,7 +108,7 @@ function BrandHeader({ hero }: { hero: boolean }) {
   }
   return (
     <FadeInUp scaleFrom={0.97} distance={6} style={styles.compactBrand}>
-      <Image source={require('@/assets/images/takasco-logo.png')} style={styles.compactLogo} accessibilityLabel="TakasCo logosu" />
+      <TakascoMark size={40} variant={scheme === 'dark' ? 'dark' : 'light'} animate="entrance" />
       <ThemedText type="title" style={[styles.compactName, { color: wordmark }]}>TakasCo</ThemedText>
     </FadeInUp>
   );
@@ -195,10 +196,8 @@ const styles = StyleSheet.create({
   panelSlogan: { color: '#ffffff', fontSize: 26, lineHeight: 36, fontWeight: '700', letterSpacing: -0.3, maxWidth: 460 },
 
   heroBlock: { alignItems: 'center', gap: Spacing.three },
-  heroLogo: { width: 88, height: 88 },
   heroName: { color: Brand.wordmark, fontSize: 38, lineHeight: 44, letterSpacing: -0.5, textAlign: 'center' },
   heroSlogan: { textAlign: 'center', opacity: 0.72, lineHeight: 24, maxWidth: 380, marginBottom: Spacing.two },
   compactBrand: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.three },
-  compactLogo: { width: 40, height: 40 },
   compactName: { color: Brand.wordmark, fontSize: 26, lineHeight: 32, letterSpacing: -0.3 },
 });
