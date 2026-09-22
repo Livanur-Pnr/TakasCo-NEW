@@ -109,5 +109,5 @@ Hazırlık: `cd backend && php artisan serve`, `cd mobile && npx expo start --we
 ## Kargolarım / Siparişlerim (N9)
 - [ ] Profil menüsünde "Kargolarım" ve "Siparişlerim" bağlantıları görünüyor (mobil liste + masaüstü kenar menüsü).
 - [ ] "Kargolarım": yalnızca SİZİN göndermeniz gereken (kargo seçenekli, onaylanmış) takaslar listelenir; "Kargoya Ver" ve "Teslim Edildi" düğmeleri çalışır.
-- [ ] "Siparişlerim": yalnızca SİZE gönderilen takaslar listelenir, salt okunur (düğme yok), durum ve takip no doğru görünür.
+- [ ] "Siparişlerim": verdiğiniz TÜM teklifler görünür (bekleyen, karşı teklif, reddedilen, iptal edilen, onaylanan — geçmiş dahil), her biri doğru durum rozeti ve açıklama metniyle ("Siparişiniz Alındı", "Reddedildi" vb.); onaylanan + kargolu olanlarda ayrıca kargo alt durumu (hazırlanıyor/kargoda/teslim edildi) görünür, salt okunur (düğme yok).
 - [ ] Tekliflerim ekranındaki kargo kutusu hâlâ aynı şekilde çalışıyor (ortak bileşene taşındı, davranış değişmedi).

@@ -32,7 +32,17 @@ interface Trade extends ShippableTrade {
   requested_product: Product;
 }
 
-// Siparişlerim: onaylanmış takaslarda SİZİN beklediğiniz ürünler (karşı taraf gönderiyor; siz yalnızca durumu görürsünüz)
+// Sipariş durumu: takasın kendi durumu + (onaylandıysa) kargo alt durumu birlikte, sipariş takibi diliyle
+const ORDER_STATUS: Record<string, { label: string; description: string; color: (t: typeof Brand) => string }> = {
+  'beklemede': { label: 'Siparişiniz Alındı', description: 'Satıcının onayını bekliyor.', color: (b) => b.warning },
+  'karşı teklif': { label: 'Karşı Teklif Geldi', description: 'Satıcı karşı teklif gönderdi. Yanıtlamak için Tekliflerim\'e gidin.', color: (b) => b.accent },
+  'reddedildi': { label: 'Reddedildi', description: 'Bu teklif satıcı tarafından reddedildi.', color: (b) => b.danger },
+  'iptal edildi': { label: 'İptal Edildi', description: 'Bu teklifi iptal ettiniz.', color: (b) => b.danger },
+  'onaylandı': { label: 'Onaylandı', description: 'Teklifiniz onaylandı, iletişim bilgileri paylaşıldı.', color: (b) => b.success },
+};
+
+// Siparişlerim: verdiğiniz TÜM teklifler (takas + satılık, bekleyen/onaylanan/reddedilen/iptal — geçmiş dahil).
+// Her biri durumuyla birlikte görünür; onaylanmış ve kargo seçenekli olanlarda ayrıca kargo alt durumu (hazırlanıyor/kargoda/teslim edildi) gösterilir.
 export default function SiparislerimScreen() {
   const router = useRouter();
   const theme = useTheme();
@@ -53,8 +63,7 @@ export default function SiparislerimScreen() {
     setError(false);
     try {
       const response = await api.get('/trades');
-      const outgoing: Trade[] = response.data.outgoing || [];
-      setTrades(outgoing.filter((t) => t.status === 'onaylandı' && !!t.shipping_status));
+      setTrades(response.data.outgoing || []);
     } catch (e) {
       console.error('Siparişler yüklenirken hata:', e);
       setError(true);
@@ -69,49 +78,59 @@ export default function SiparislerimScreen() {
     return <Image source={{ uri: getImageUrl(parsedPath) || undefined }} style={{ width: '100%', height: '100%' }} />;
   };
 
-  const renderTradeCard = (trade: Trade) => (
-    <View key={trade.id} style={[styles.tradeCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
-      <View style={styles.tradeHeader}>
-        <ThemedText style={{ fontWeight: 'bold' }}>{trade.receiver?.name} size gönderiyor</ThemedText>
-      </View>
+  const renderTradeCard = (trade: Trade) => {
+    const info = ORDER_STATUS[trade.status] ?? ORDER_STATUS['beklemede'];
+    const color = info.color(Brand);
 
-      <View style={styles.tradeBody}>
-        <View style={styles.tradeItem}>
-          <ThemedText style={styles.tradeItemLabel}>Karşılığında Verdiğiniz</ThemedText>
-          <View style={styles.productRow}>
-            <View style={[styles.imagePlaceholder, { backgroundColor: theme.backgroundSelected }]}>
-              {renderProductImage(trade.offered_product?.image_path)}
-            </View>
-            <ThemedText style={styles.productTitle} numberOfLines={2}>{trade.offered_product?.title}</ThemedText>
+    return (
+      <View key={trade.id} style={[styles.tradeCard, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
+        <View style={styles.tradeHeader}>
+          <ThemedText style={{ fontWeight: 'bold', flex: 1 }}>{trade.receiver?.name} kişisinden</ThemedText>
+          <View style={[styles.statusBadge, { backgroundColor: color + '20' }]}>
+            <ThemedText style={{ fontSize: 10, color, fontWeight: 'bold' }}>{info.label.toLocaleUpperCase('tr-TR')}</ThemedText>
           </View>
         </View>
 
-        <IconSymbol name="arrow.left.arrow.right" size={24} color={theme.textSecondary} style={{ marginHorizontal: Spacing.two }} />
+        <ThemedText style={{ fontSize: 13, color: theme.textSecondary }}>{info.description}</ThemedText>
 
-        <View style={styles.tradeItem}>
-          <ThemedText style={styles.tradeItemLabel}>Sipariş Ettiğiniz</ThemedText>
-          <View style={styles.productRow}>
-            <View style={[styles.imagePlaceholder, { backgroundColor: theme.backgroundSelected }]}>
-              {renderProductImage(trade.requested_product?.image_path)}
+        <View style={styles.tradeBody}>
+          <View style={styles.tradeItem}>
+            <ThemedText style={styles.tradeItemLabel}>Karşılığında Verdiğiniz</ThemedText>
+            <View style={styles.productRow}>
+              <View style={[styles.imagePlaceholder, { backgroundColor: theme.backgroundSelected }]}>
+                {renderProductImage(trade.offered_product?.image_path)}
+              </View>
+              <ThemedText style={styles.productTitle} numberOfLines={2}>{trade.offered_product?.title}</ThemedText>
             </View>
-            <ThemedText style={styles.productTitle} numberOfLines={2}>{trade.requested_product?.title}</ThemedText>
+          </View>
+
+          <IconSymbol name="arrow.left.arrow.right" size={24} color={theme.textSecondary} style={{ marginHorizontal: Spacing.two }} />
+
+          <View style={styles.tradeItem}>
+            <ThemedText style={styles.tradeItemLabel}>Sipariş Ettiğiniz</ThemedText>
+            <View style={styles.productRow}>
+              <View style={[styles.imagePlaceholder, { backgroundColor: theme.backgroundSelected }]}>
+                {renderProductImage(trade.requested_product?.image_path)}
+              </View>
+              <ThemedText style={styles.productTitle} numberOfLines={2}>{trade.requested_product?.title}</ThemedText>
+            </View>
           </View>
         </View>
+
+        {!!cashSummary(trade, true) && (
+          <ThemedText style={{ fontSize: 13, fontWeight: '600', color: Brand.accent }}>+ {cashSummary(trade, true)}</ThemedText>
+        )}
+
+        {trade.status === 'onaylandı' && <ShippingBox trade={trade} canManage={false} />}
       </View>
-
-      {!!cashSummary(trade, true) && (
-        <ThemedText style={{ fontSize: 13, fontWeight: '600', color: Brand.accent }}>+ {cashSummary(trade, true)}</ThemedText>
-      )}
-
-      <ShippingBox trade={trade} canManage={false} />
-    </View>
-  );
+    );
+  };
 
   const empty = (
     <>
       <IconSymbol name="shippingbox.fill" size={isDesktopWeb ? 56 : 64} color={theme.textSecondary} />
       <ThemedText style={{ marginTop: Spacing.four, textAlign: 'center', color: theme.textSecondary }}>
-        Şu anda yolda olan bir siparişiniz bulunmuyor.
+        Henüz verdiğiniz bir sipariş/teklif bulunmuyor.
       </ThemedText>
     </>
   );
@@ -174,7 +193,8 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { padding: Spacing.four, paddingTop: Spacing.eight, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   tradeCard: { borderRadius: Radius.md, borderWidth: 1, padding: Spacing.four, gap: Spacing.three },
-  tradeHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.two },
+  tradeHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  statusBadge: { paddingHorizontal: Spacing.two, paddingVertical: 2, borderRadius: Radius.full },
   tradeBody: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   tradeItem: { flex: 1, gap: Spacing.two },
   tradeItemLabel: { fontSize: 12, opacity: 0.7 },
