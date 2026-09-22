@@ -16,11 +16,18 @@ class Trade extends Model
         'cash_amount',
         'cash_direction',
         'parent_trade_id',
+        'shipping_status',
+        'shipping_carrier',
+        'tracking_number',
+        'shipped_at',
+        'delivered_at',
     ];
 
     protected $casts = [
         'status' => TradeStatus::class,
         'cash_amount' => 'float',
+        'shipped_at' => 'datetime',
+        'delivered_at' => 'datetime',
     ];
 // birincil ürüne ek olarak teklif edilen diğer ürünler (çoklu ürün teklifi)
     public function extraProducts()

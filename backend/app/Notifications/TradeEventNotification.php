@@ -15,6 +15,8 @@ class TradeEventNotification extends Notification
     public const OFFER_REJECTED = 'offer_rejected';
     public const OFFER_CANCELLED = 'offer_cancelled';
     public const OFFER_COUNTERED = 'offer_countered';
+    public const OFFER_SHIPPED = 'offer_shipped';
+    public const OFFER_DELIVERED = 'offer_delivered';
 
     public function __construct(public string $event, public Trade $trade)
     {
@@ -23,7 +25,7 @@ class TradeEventNotification extends Notification
     // e-posta yalnızca teklif geldi / kabul edildi olaylarında ve kullanıcı kapatmadıysa gider
     public function via(object $notifiable): array
     {
-        $mailEvents = [self::OFFER_RECEIVED, self::OFFER_ACCEPTED, self::OFFER_COUNTERED];
+        $mailEvents = [self::OFFER_RECEIVED, self::OFFER_ACCEPTED, self::OFFER_COUNTERED, self::OFFER_SHIPPED, self::OFFER_DELIVERED];
 
         return in_array($this->event, $mailEvents, true) && ($notifiable->email_notifications ?? true) && $notifiable->email
             ? ['database', 'broadcast', 'mail']
@@ -75,6 +77,8 @@ class TradeEventNotification extends Notification
             self::OFFER_ACCEPTED => ['Teklifin kabul edildi', "{$receiver}, \"{$requested}\" için gönderdiğin teklifi kabul etti. İletişim bilgileri paylaşıldı."],
             self::OFFER_REJECTED => ['Teklifin reddedildi', "{$receiver}, \"{$requested}\" için gönderdiğin teklifi reddetti."],
             self::OFFER_CANCELLED => ['Teklif geri çekildi', "{$sender}, \"{$requested}\" ilanın için gönderdiği teklifi geri çekti."],
+            self::OFFER_SHIPPED => ['Ürünün kargoya verildi', "{$receiver}, \"{$requested}\" ürününü kargoya verdi" . ($trade->shipping_carrier ? " ({$trade->shipping_carrier}" . ($trade->tracking_number ? ", takip no: {$trade->tracking_number}" : '') . ')' : '') . '.'],
+            self::OFFER_DELIVERED => ['Ürün teslim edildi', "\"{$requested}\" ürünün teslim edildi olarak işaretlendi."],
         };
 
         return [

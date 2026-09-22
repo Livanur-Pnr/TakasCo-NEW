@@ -20,6 +20,7 @@ import { ReviewModal } from '@/components/review-modal';
 import { AnimatedModal } from '@/components/ui/animated-modal';
 import { MatchesSection } from '@/components/matches-section';
 import { CashAdjustment, CashValue, NO_CASH, cashError, cashPayload, cashSummary } from '@/components/cash-adjustment';
+import { TextInput } from '@/components/ui/text-input';
 
 interface Product {
   id: number;
@@ -40,6 +41,81 @@ interface Trade {
   receiver?: { id: number; name: string };
   offered_product: Product;
   requested_product: Product;
+  shipping_status?: 'hazırlanıyor' | 'kargoda' | 'teslim edildi' | null;
+  shipping_carrier?: string | null;
+  tracking_number?: string | null;
+}
+
+const SHIP_STEP: Record<string, { label: string; icon: 'shippingbox.fill' | 'checkmark.circle.fill' }> = {
+  'hazırlanıyor': { label: 'Kargo hazırlanıyor', icon: 'shippingbox.fill' },
+  'kargoda': { label: 'Kargoda', icon: 'shippingbox.fill' },
+  'teslim edildi': { label: 'Teslim edildi', icon: 'checkmark.circle.fill' },
+};
+
+// Kargoya ver: kargo firması + takip numarası girilir (ödeme yok, yalnızca durum takibi)
+function ShippingModal({ trade, onClose, onDone }: { trade: Trade; onClose: () => void; onDone: () => void }) {
+  const theme = useTheme();
+  const [carrier, setCarrier] = useState('');
+  const [tracking, setTracking] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const submit = async () => {
+    if (!carrier.trim() || !tracking.trim()) {
+      Alert.alert('Uyarı', 'Kargo firması ve takip numarasını gir.');
+      return;
+    }
+    setBusy(true);
+    try {
+      await api.post(`/trades/${trade.id}/shipping`, { status: 'kargoda', carrier: carrier.trim(), tracking_number: tracking.trim() });
+      onDone();
+    } catch (e: any) {
+      Alert.alert('Hata', e.response?.data?.message || 'Kargo bilgisi kaydedilemedi.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <AnimatedModal onClose={onClose}>
+      {(dismiss) => (
+        <View style={[styles.sheet, { backgroundColor: theme.backgroundElement, borderColor: theme.border }]}>
+          <View style={{ gap: Spacing.four }}>
+            <ThemedText type="defaultSemiBold" style={{ fontSize: 17 }}>Kargoya Ver</ThemedText>
+            <ThemedText style={{ color: theme.textSecondary, fontSize: 13 }}>{trade.requested_product?.title} için kargo bilgilerini gir; {trade.sender?.name} bu bilgiyi görecek.</ThemedText>
+            <View style={{ gap: Spacing.one }}>
+              <ThemedText style={{ fontSize: 13, fontWeight: '600' }}>Kargo Firması</ThemedText>
+              <TextInput
+                style={[styles.input, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }]}
+                placeholder="Örn. Aras Kargo"
+                placeholderTextColor={theme.textSecondary}
+                value={carrier}
+                onChangeText={setCarrier}
+              />
+            </View>
+            <View style={{ gap: Spacing.one }}>
+              <ThemedText style={{ fontSize: 13, fontWeight: '600' }}>Takip Numarası</ThemedText>
+              <TextInput
+                style={[styles.input, { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }]}
+                placeholder="Takip numarası"
+                placeholderTextColor={theme.textSecondary}
+                autoCapitalize="characters"
+                value={tracking}
+                onChangeText={setTracking}
+              />
+            </View>
+            <View style={{ flexDirection: 'row', gap: Spacing.three, justifyContent: 'flex-end' }}>
+              <TouchableOpacity onPress={dismiss} accessibilityRole="button" style={[styles.button, { backgroundColor: theme.backgroundSelected }]}>
+                <ThemedText style={{ fontWeight: '600' }}>Vazgeç</ThemedText>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={submit} disabled={busy} accessibilityRole="button" style={[styles.button, { backgroundColor: Brand.accent, opacity: busy ? 0.6 : 1 }]}>
+                {busy ? <ActivityIndicator color="#fff" /> : <ThemedText style={styles.buttonText}>Kargoya Verildi</ThemedText>}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
+    </AnimatedModal>
+  );
 }
 
 // Alıcı, gelen teklife karşı teklif verir: karşı tarafın hangi ürününü istediğini ve para farkını değiştirebilir
@@ -133,6 +209,7 @@ export default function OffersScreen() {
   const [error, setError] = useState(false);
   const [counterFor, setCounterFor] = useState<Trade | null>(null);
   const [reviewFor, setReviewFor] = useState<{ trade: Trade; partner?: string } | null>(null);
+  const [shippingFor, setShippingFor] = useState<Trade | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -200,6 +277,23 @@ export default function OffersScreen() {
           } catch (error: any) {
             console.error('İptal etme hatası:', error.response?.data);
             Alert.alert('Hata', error.response?.data?.message || 'Bir hata oluştu.');
+          }
+        },
+      },
+    ]);
+  };
+
+  const markDelivered = (trade: Trade) => {
+    Alert.alert('Teslim Edildi', `"${trade.requested_product?.title}" teslim edildi olarak işaretlensin mi?`, [
+      { text: 'Vazgeç', style: 'cancel' },
+      {
+        text: 'Onayla',
+        onPress: async () => {
+          try {
+            await api.post(`/trades/${trade.id}/shipping`, { status: 'teslim edildi' });
+            fetchTrades();
+          } catch (e: any) {
+            Alert.alert('Hata', e.response?.data?.message || 'Güncellenemedi.');
           }
         },
       },
@@ -292,6 +386,28 @@ export default function OffersScreen() {
             <ThemedText style={{ color: Brand.accent, fontWeight: '700', fontSize: 13 }}>★ Karşı tarafı değerlendir</ThemedText>
           </TouchableOpacity>
         ))}
+
+        {trade.status === 'onaylandı' && !!trade.shipping_status && (
+          <View style={[styles.shipBox, { backgroundColor: theme.backgroundSelected }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.two }}>
+              <IconSymbol name={SHIP_STEP[trade.shipping_status].icon} size={16} color={trade.shipping_status === 'teslim edildi' ? Brand.success : Brand.accent} />
+              <ThemedText style={{ fontWeight: '700', fontSize: 13 }}>{SHIP_STEP[trade.shipping_status].label}</ThemedText>
+            </View>
+            {trade.shipping_status !== 'hazırlanıyor' && !!trade.shipping_carrier && (
+              <ThemedText style={{ fontSize: 12, color: theme.textSecondary }}>{trade.shipping_carrier} · Takip no: {trade.tracking_number}</ThemedText>
+            )}
+            {isIncoming && trade.shipping_status === 'hazırlanıyor' && (
+              <TouchableOpacity onPress={() => setShippingFor(trade)} accessibilityRole="button" style={[styles.button, { backgroundColor: Brand.accent, alignSelf: 'flex-start', paddingHorizontal: Spacing.four }]}>
+                <ThemedText style={styles.buttonText}>Kargoya Ver</ThemedText>
+              </TouchableOpacity>
+            )}
+            {isIncoming && trade.shipping_status === 'kargoda' && (
+              <TouchableOpacity onPress={() => markDelivered(trade)} accessibilityRole="button" style={[styles.button, { backgroundColor: Brand.success, alignSelf: 'flex-start', paddingHorizontal: Spacing.four }]}>
+                <ThemedText style={styles.buttonText}>Teslim Edildi Olarak İşaretle</ThemedText>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
 
         {isIncoming && trade.status === 'beklemede' && (
           <View style={styles.actionButtons}>
@@ -422,6 +538,16 @@ export default function OffersScreen() {
           }}
         />
       )}
+      {shippingFor && (
+        <ShippingModal
+          trade={shippingFor}
+          onClose={() => setShippingFor(null)}
+          onDone={() => {
+            setShippingFor(null);
+            fetchTrades();
+          }}
+        />
+      )}
     </ThemedView>
   );
 }
@@ -447,4 +573,6 @@ const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center', padding: Spacing.four },
   sheet: { width: '100%', maxWidth: 480, maxHeight: '90%', borderRadius: Radius.md, borderWidth: 1, padding: Spacing.four },
   pick: { padding: Spacing.three, borderRadius: Radius.sm },
+  input: { borderWidth: 1, padding: Spacing.three, borderRadius: Radius.sm, fontSize: 15 },
+  shipBox: { borderRadius: Radius.sm, padding: Spacing.three, gap: Spacing.two },
 });

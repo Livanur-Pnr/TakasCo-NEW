@@ -97,3 +97,10 @@ Hazırlık: `cd backend && php artisan serve`, `cd mobile && npx expo start --we
 - [ ] "Sistem" seçiliyken işletim sistemi/tarayıcı temasını değiştirince uygulama otomatik değişir.
 - [ ] Sayfa yenilenince (F5) seçim korunur (kaydedilmiş tercih varsa flash olmadan doğrudan o temada açılır).
 - [ ] Ana sayfa, arama/keşfet, ilan detayı, mesajlar, profil, admin paneli, giriş/kayıt ekranları koyu modda okunur ve tutarlı görünür (metin kontrastı, kenarlıklar, kart yüzeyleri).
+
+## Kargo takibi (N8)
+- [ ] "Kargo" seçeneğiyle yayınlanmış bir ilanın teklifi kabul edilince Tekliflerim'de "Kargo hazırlanıyor" kutusu çıkar.
+- [ ] İlan sahibi "Kargoya Ver"e tıklayıp firma+takip no girince durum "Kargoda" olur, alıcı tarafında da aynı bilgi görünür.
+- [ ] "Teslim Edildi Olarak İşaretle" onay istiyor; onaylayınca yeşil "Teslim edildi" durumuna geçer ve düğme kaybolur.
+- [ ] Kargo durumu geri alınamaz (ör. teslim edildikten sonra tekrar "kargoda"ya dönülemez).
+- [ ] Kargo bildirimleri ("Ürünün kargoya verildi" / "Ürün teslim edildi") alıcıya zil/uygulama içi bildirim olarak düşer.

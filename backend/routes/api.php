@@ -131,6 +131,7 @@ Route::middleware(['auth:sanctum', NotSuspended::class])->group(function () {
         Route::post('/{id}/counter', 'counter');          // POST /trades/{id}/counter
         Route::post('/{id}/reject', 'reject');            // POST /trades/{id}/reject
         Route::post('/{id}/cancel', 'cancel');            // POST /trades/{id}/cancel
+        Route::post('/{id}/shipping', 'updateShipping');  // POST /trades/{id}/shipping (kargo durumu)
     });
 
 });

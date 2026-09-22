@@ -175,7 +175,9 @@ class TradeController extends Controller
                     }
                 }
 
-                $trade->update(['status' => TradeStatus::Accepted]);
+                // kargoyla gönderilebilecek bir ürün varsa kargo takibi "hazırlanıyor" ile başlar (ürün sahibi/receiver gönderir)
+                $shippingStatus = $requestedProduct->shipping_enabled ? 'hazırlanıyor' : null;
+                $trade->update(['status' => TradeStatus::Accepted, 'shipping_status' => $shippingStatus]);
 
                 // tüm ürünleri Takaslandı (3) yap
                 $allIds = $trade->allProductIds();
@@ -334,6 +336,59 @@ class TradeController extends Controller
             $this->notifyUser($trade->receiver, TradeEventNotification::OFFER_CANCELLED, $trade);
 
             return response()->json(['message' => 'Teklif iptal edildi.', 'trade' => $trade]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['message' => 'Teklif bulunamadı.'], 404);
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getStatusCode());
+        }
+    }
+
+    // Kargo durumu: yalnızca ürünü gönderen taraf (receiver) günceller; geriye gidemez, ödeme/gerçek kargo entegrasyonu yoktur
+    public function updateShipping(Request $request, $id)
+    {
+        $data = $request->validate([
+            'status' => 'required|in:kargoda,teslim edildi',
+            'carrier' => 'required_if:status,kargoda|nullable|string|max:100',
+            'tracking_number' => 'required_if:status,kargoda|nullable|string|max:100',
+        ]);
+
+        try {
+            $trade = DB::transaction(function () use ($request, $id, $data) {
+                $trade = Trade::lockForUpdate()->findOrFail($id);
+
+                if ((int) $trade->receiver_id !== (int) $request->user()->id) {
+                    abort(403, 'Kargo durumunu yalnızca ürünü gönderen taraf güncelleyebilir.');
+                }
+                if ($trade->status !== TradeStatus::Accepted) {
+                    abort(409, 'Yalnızca onaylanmış takaslarda kargo durumu güncellenebilir.');
+                }
+
+                $order = ['hazırlanıyor' => 0, 'kargoda' => 1, 'teslim edildi' => 2];
+                $current = $order[$trade->shipping_status] ?? 0;
+                if ($order[$data['status']] <= $current) {
+                    abort(409, 'Kargo durumu geriye alınamaz.');
+                }
+
+                $update = ['shipping_status' => $data['status']];
+                if ($data['status'] === 'kargoda') {
+                    $update['shipping_carrier'] = $data['carrier'];
+                    $update['tracking_number'] = $data['tracking_number'];
+                    $update['shipped_at'] = now();
+                } else {
+                    $update['delivered_at'] = now();
+                }
+                $trade->update($update);
+
+                return $trade;
+            });
+
+            $this->notifyUser(
+                $trade->sender,
+                $data['status'] === 'kargoda' ? TradeEventNotification::OFFER_SHIPPED : TradeEventNotification::OFFER_DELIVERED,
+                $trade->fresh(['sender', 'receiver', 'offeredProduct', 'requestedProduct'])
+            );
+
+            return response()->json(['message' => 'Kargo durumu güncellendi.', 'trade' => $trade]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['message' => 'Teklif bulunamadı.'], 404);
         } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {

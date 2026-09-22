@@ -44,6 +44,7 @@ const MAPPING = {
   'arrow.clockwise': 'refresh',
   'square.and.arrow.up': 'share',
   'bell.fill': 'notifications',
+  'shippingbox.fill': 'local-shipping',
   'arrow.right': 'arrow-forward',
   'arrow.left': 'arrow-back',
   'envelope.fill': 'mail',
