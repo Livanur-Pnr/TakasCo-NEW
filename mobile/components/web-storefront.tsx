@@ -112,7 +112,7 @@ export function WebHeader() {
   return (
     <View style={[webStyles.headerBar, { backgroundColor: theme.backgroundElement, borderBottomColor: theme.border }]}>
       <TouchableOpacity style={webStyles.logoRow} onPress={() => router.push('/(tabs)')} accessibilityRole="link" accessibilityLabel="TakasCo ana sayfa">
-        <TakascoMark size={32} variant="light" />
+        <TakascoMark size={32} variant="light" animate="entrance" />
         <ThemedText style={[webStyles.brand, { color: Brand.wordmark }]}>TakasCo</ThemedText>
       </TouchableOpacity>
 
@@ -586,7 +586,7 @@ export function SiteFooter() {
       <View style={footerStyles.row}>
         <View style={footerStyles.brandCol}>
           <View style={webStyles.logoRow}>
-            <TakascoMark size={32} variant="light" />
+            <TakascoMark size={32} variant="light" animate="entrance" />
             <ThemedText style={[webStyles.brand, { color: Brand.wordmark }]}>TakasCo</ThemedText>
           </View>
           <ThemedText style={{ fontWeight: '700', color: Brand.wordmark }}>Değiştir. Keşfet. Yeniden değerlendir.</ThemedText>
