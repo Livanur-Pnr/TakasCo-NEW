@@ -1,6 +1,7 @@
 // Sadece genis web tarayicisinda (Dolap tarzi masaustu magaza gorunumu) kullanilan bilesenler.
 // Telefon/Expo Go uzerindeki gercek mobil deneyimi etkilemez.
 import { TakascoMark } from '@/components/brand/takasco-mark';
+import { TakascoWordmark } from '@/components/brand/takasco-wordmark';
 import { StyleSheet, View, Image, ScrollView } from 'react-native';
 import { TextInput } from '@/components/ui/text-input';
 import { TouchableOpacity } from '@/components/ui/touchable';
@@ -113,7 +114,7 @@ export function WebHeader() {
     <View style={[webStyles.headerBar, { backgroundColor: theme.backgroundElement, borderBottomColor: theme.border }]}>
       <TouchableOpacity style={webStyles.logoRow} onPress={() => router.push('/(tabs)')} accessibilityRole="link" accessibilityLabel="TakasCo ana sayfa">
         <TakascoMark size={32} variant="light" animate="entrance" />
-        <ThemedText style={[webStyles.brand, { color: Brand.wordmark }]}>TakasCo</ThemedText>
+        <TakascoWordmark size={22} />
       </TouchableOpacity>
 
       <View style={webStyles.searchWrap}>
@@ -587,7 +588,7 @@ export function SiteFooter() {
         <View style={footerStyles.brandCol}>
           <View style={webStyles.logoRow}>
             <TakascoMark size={32} variant="light" animate="entrance" />
-            <ThemedText style={[webStyles.brand, { color: Brand.wordmark }]}>TakasCo</ThemedText>
+            <TakascoWordmark size={22} />
           </View>
           <ThemedText style={{ fontWeight: '700', color: Brand.wordmark }}>Değiştir. Keşfet. Yeniden değerlendir.</ThemedText>
           <ThemedText style={{ color: theme.textSecondary, fontSize: 13, lineHeight: 20 }}>
@@ -629,7 +630,6 @@ export const webStyles = StyleSheet.create({
     zIndex: 30, // arama önerileri altındaki sayfa içeriğinin üstünde görünsün
   },
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, cursor: 'pointer' as any },
-  brand: { fontSize: 20, fontWeight: '800' },
   suggestBox: { position: 'absolute' as any, top: 48, left: 0, right: 0, borderWidth: 1, borderRadius: Radius.md, paddingVertical: Spacing.one, zIndex: 50, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 4 } },
   suggestRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three, paddingHorizontal: Spacing.four, paddingVertical: Spacing.two + 2, cursor: 'pointer' as any },
   suggestHeader: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: Spacing.four, paddingVertical: Spacing.two },

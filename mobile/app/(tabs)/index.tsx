@@ -1,3 +1,4 @@
+import { TakascoWordmark } from '@/components/brand/takasco-wordmark';
 import { StyleSheet, FlatList, ScrollView, View, ActivityIndicator, useWindowDimensions } from 'react-native';
 import { TouchableOpacity } from '@/components/ui/touchable';
 import { useRouter } from 'expo-router';
@@ -138,7 +139,7 @@ export default function HomeScreen() {
     <ThemedView style={styles.container}>
       {!isDesktopWeb && (
         <View style={[styles.header, { backgroundColor: theme.backgroundElement }]}>
-          <ThemedText type="title" style={{ fontSize: 24, color: Brand.wordmark }}>TakasCo</ThemedText>
+          <TakascoWordmark size={26} />
           <TouchableOpacity onPress={() => router.push('/favorites')} accessibilityRole="button" accessibilityLabel="Favorilerim">
             <IconSymbol name="heart.fill" size={24} color={Brand.danger} />
           </TouchableOpacity>

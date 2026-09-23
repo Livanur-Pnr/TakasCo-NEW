@@ -1,3 +1,4 @@
+import { TakascoWordmark } from '@/components/brand/takasco-wordmark';
 import { FadeInUp } from '@/components/ui/motion';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
@@ -5,7 +6,7 @@ import { TextInput } from '@/components/ui/text-input';
 import { useRouter } from 'expo-router';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
-import { Brand, Radius, Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { TakascoMark } from '@/components/brand/takasco-mark';
 import { api } from '@/utils/api';
@@ -92,7 +93,7 @@ export default function VerifyEmailScreen() {
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.brandRow}>
             <TakascoMark size={36} variant="light" />
-            <ThemedText type="title" style={{ color: Brand.wordmark, fontSize: 26 }}>TakasCo</ThemedText>
+            <TakascoWordmark size={28} />
           </View>
 
           <ThemedText type="title" style={{ fontSize: 24 }}>E-postanı doğrula</ThemedText>

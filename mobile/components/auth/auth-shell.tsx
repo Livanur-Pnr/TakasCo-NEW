@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Platform, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { TakascoMark } from '@/components/brand/takasco-mark';
+import { TakascoWordmark } from '@/components/brand/takasco-wordmark';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BrandBackdrop, BrandScene } from '@/components/auth/brand-scene';
 import { FeatureChips } from '@/components/auth/feature-chips';
@@ -69,7 +70,7 @@ function BrandPanel() {
       <BrandBackdrop />
       <FadeInUp distance={0} duration={Duration.slow} delay={80} style={styles.panelTop}>
         <LogoTile size={40} />
-        <ThemedText style={styles.panelName}>TakasCo</ThemedText>
+        <TakascoWordmark size={28} variant="brand" />
       </FadeInUp>
 
       <FadeInUp distance={0} duration={Duration.slow} delay={220} style={styles.stage}>
@@ -87,7 +88,6 @@ function BrandPanel() {
 // Tablet/telefon üst marka alanı. `hero` (karşılama): büyük logo + ad + slogan + çipler; aksi hâlde kompakt logo + ad.
 function BrandHeader({ hero }: { hero: boolean }) {
   const { scheme } = useAppTheme();
-  const wordmark = scheme === 'dark' ? '#a7f3d0' : Brand.wordmark;
   if (hero) {
     return (
       <View style={styles.heroBlock}>
@@ -95,7 +95,7 @@ function BrandHeader({ hero }: { hero: boolean }) {
           <TakascoMark size={88} variant={scheme === 'dark' ? 'dark' : 'light'} animate="entrance" />
         </FadeInUp>
         <FadeInUp delay={60}>
-          <ThemedText type="title" style={[styles.heroName, { color: wordmark }]}>TakasCo</ThemedText>
+          <TakascoWordmark size={42} />
         </FadeInUp>
         <FadeInUp delay={110}>
           <ThemedText style={styles.heroSlogan}>{AUTH_SLOGAN}</ThemedText>
@@ -109,7 +109,7 @@ function BrandHeader({ hero }: { hero: boolean }) {
   return (
     <FadeInUp scaleFrom={0.97} distance={6} style={styles.compactBrand}>
       <TakascoMark size={40} variant={scheme === 'dark' ? 'dark' : 'light'} animate="entrance" />
-      <ThemedText type="title" style={[styles.compactName, { color: wordmark }]}>TakasCo</ThemedText>
+      <TakascoWordmark size={28} />
     </FadeInUp>
   );
 }
@@ -191,13 +191,10 @@ const styles = StyleSheet.create({
   tile: { backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.6)' },
   panel: { flex: 1, maxWidth: 640, minWidth: 460, backgroundColor: '#14532D', padding: 48, justifyContent: 'space-between', overflow: 'hidden' },
   panelTop: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
-  panelName: { color: '#ffffff', fontSize: 26, fontWeight: '800', letterSpacing: -0.3 },
   stage: { flex: 1, minHeight: 300, marginVertical: Spacing.four },
   panelSlogan: { color: '#ffffff', fontSize: 26, lineHeight: 36, fontWeight: '700', letterSpacing: -0.3, maxWidth: 460 },
 
   heroBlock: { alignItems: 'center', gap: Spacing.three },
-  heroName: { color: Brand.wordmark, fontSize: 38, lineHeight: 44, letterSpacing: -0.5, textAlign: 'center' },
   heroSlogan: { textAlign: 'center', opacity: 0.72, lineHeight: 24, maxWidth: 380, marginBottom: Spacing.two },
   compactBrand: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.three },
-  compactName: { color: Brand.wordmark, fontSize: 26, lineHeight: 32, letterSpacing: -0.3 },
 });

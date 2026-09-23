@@ -1,3 +1,4 @@
+import { TakascoWordmark } from '@/components/brand/takasco-wordmark';
 import { memo, useState } from 'react';
 import { Image, Platform, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
@@ -30,7 +31,7 @@ function AppScreen() {
       <View style={s.appHeader}>
         <View style={s.appBrand}>
           <Image source={require('@/assets/images/takasco-logo.png')} style={{ width: 18, height: 18 }} />
-          <ThemedText style={s.appBrandText}>TakasCo</ThemedText>
+          <TakascoWordmark size={13} variant="light" animate={false} />
         </View>
         <IconSymbol name="bell.fill" size={14} color="#6b7280" />
       </View>
@@ -202,7 +203,6 @@ const s = StyleSheet.create({
   phone: { width: 190, height: 396, borderRadius: 30, backgroundColor: '#f7fcff', borderWidth: 6, borderColor: 'rgba(255, 255, 255, 0.28)', padding: 10, gap: 9, overflow: 'hidden', ...(web ? ({ boxShadow: '0 30px 60px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255,255,255,0.4)' } as any) : { elevation: 8 }) },
   appHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 4 },
   appBrand: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  appBrandText: { color: Brand.wordmark, fontSize: 12, fontWeight: '800', lineHeight: 16 },
   search: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 28, borderRadius: 14, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#e5e7eb', paddingHorizontal: 10 },
   pillRow: { flexDirection: 'row', gap: 6 },
   pill: { height: 16, borderRadius: 8, backgroundColor: '#e5e7eb' },

@@ -1,3 +1,4 @@
+import { TakascoWordmark } from '@/components/brand/takasco-wordmark';
 import { FadeInUp } from '@/components/ui/motion';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, StyleSheet, View } from 'react-native';
@@ -55,7 +56,7 @@ export default function OnboardingScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.brandRow}>
           <Image source={require('@/assets/images/takasco-logo.png')} style={{ width: 36, height: 36 }} />
-          <ThemedText type="title" style={{ color: Brand.wordmark, fontSize: 26 }}>TakasCo</ThemedText>
+          <TakascoWordmark size={28} />
         </View>
         <ThemedText type="title" style={{ fontSize: 24 }}>Hoş geldin!</ThemedText>
         <ThemedText style={{ color: theme.textSecondary }}>Sana uygun ilanları öne çıkarabilmemiz için ilgi alanlarını seç. İstediğin zaman atlayabilirsin.</ThemedText>
