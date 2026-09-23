@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
@@ -62,6 +63,10 @@ public function login(Request $request)
         return response()->json($validator->errors(), 422);
     }
 
+    if (!$this->verifyRecaptcha($request->input('recaptcha_token'))) {
+        return response()->json(['message' => 'Robot olmadığınızı doğrulayamadık. Lütfen tekrar deneyin.'], 422);
+    }
+
     // kullanıcıyı bul
     $user = User::where('email', $request->email)->first();
 
@@ -85,6 +90,32 @@ public function login(Request $request)
         'token_type' => 'Bearer',
         'user' => $user // app için kullanıcı bilgilerini de gönderelim
     ]);
+}
+
+// RECAPTCHA_SECRET_KEY tanımlı değilse (ör. yerel geliştirme) doğrulama hiç istenmez.
+// Tanımlıysa token zorunludur ve Google'ın siteverify uctan gerçekten doğrulanır — istemci
+// tarafındaki widget'ı atlayıp doğrudan API'ye istek atan botlara karşı asıl koruma budur.
+private function verifyRecaptcha(?string $token): bool
+{
+    $secret = config('services.recaptcha.secret_key');
+    if (!$secret) {
+        return true;
+    }
+    if (!$token) {
+        return false;
+    }
+
+    try {
+        $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+            'secret' => $secret,
+            'response' => $token,
+        ]);
+
+        return (bool) ($response->json('success') ?? false);
+    } catch (\Throwable $e) {
+        report($e);
+        return false;
+    }
 }
 
 // Galeri/kamera kullanmak istemeyen kullanıcılar için hazır anonim avatarlar

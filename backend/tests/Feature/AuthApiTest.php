@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class AuthApiTest extends TestCase
@@ -51,6 +52,22 @@ class AuthApiTest extends TestCase
         $this->postJson('/api/login', ['email' => 'mert@example.com', 'password' => 'dogru-sifre'])
             ->assertOk()
             ->assertJsonStructure(['access_token']);
+    }
+
+    public function test_login_requires_a_valid_recaptcha_token_when_configured(): void
+    {
+        config(['services.recaptcha.secret_key' => 'test-secret']);
+        User::factory()->create(['email' => 'mert@example.com', 'password' => bcrypt('dogru-sifre')]);
+        Http::fake([
+            'www.google.com/recaptcha/api/siteverify' => fn ($req) => Http::response(['success' => $req['response'] === 'gecerli-token']),
+        ]);
+        $creds = ['email' => 'mert@example.com', 'password' => 'dogru-sifre'];
+
+        $this->postJson('/api/login', $creds)->assertStatus(422);
+        $this->postJson('/api/login', $creds + ['recaptcha_token' => 'sahte'])->assertStatus(422);
+        $this->postJson('/api/login', $creds + ['recaptcha_token' => 'gecerli-token'])->assertOk()->assertJsonStructure(['access_token']);
+
+        Http::assertSent(fn ($req) => $req['secret'] === 'test-secret');
     }
 
     public function test_login_fails_with_wrong_password(): void

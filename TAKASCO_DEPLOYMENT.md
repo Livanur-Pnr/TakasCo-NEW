@@ -92,6 +92,7 @@ Notlar:
 - [ ] `CORS_ALLOWED_ORIGINS` yalnızca kendi alan adın
 - [ ] HTTPS her yerde (API, web, `wss://`)
 - [ ] SMTP ile doğrulama ve şifre sıfırlama e-postası gerçekten geliyor (gelen kutusu + spam)
+- [ ] Google reCAPTCHA yönetim panelinde (google.com/recaptcha/admin) "Alan adları" listesine gerçek alan adını (`takasco.com`, `www.takasco.com`) ekle — şu an yalnızca `localhost` kayıtlı, eklenmezse canlıda "Ben robot değilim" kutusu hata verir ve kimse giriş yapamaz. Sunucu `.env`'ine `RECAPTCHA_SECRET_KEY`, web derlemesine `EXPO_PUBLIC_RECAPTCHA_SITE_KEY` verilmeli.
 - [ ] Alan adı Resend'de doğrulanınca `MAIL_FROM_ADDRESS`'i `onboarding@resend.dev`'den kendi adresine (`bildirim@takasco.com` gibi) geçir. İstersen (Gmail'de gönderen profil resmi olarak TakasCo logosunun görünmesi için) o zaman BIMI kurulumuna da bakılabilir: kendi alan adı + DMARC enforcement (`p=quarantine`/`p=reject`) + DNS'e BIMI TXT kaydı + SVG Tiny PS formatında logo (bazı istemcilerde ayrıca ücretli VMC sertifikası gerekebilir) — alan adı olmadan yapılamaz, bu yüzden şimdilik ertelendi.
 - [ ] Yüklenen görseller `storage:link` ile görünüyor, disk yedeği var
 - [ ] Veritabanı ve `storage/app/public` için otomatik yedek (günlük) ve **geri yükleme denemesi**

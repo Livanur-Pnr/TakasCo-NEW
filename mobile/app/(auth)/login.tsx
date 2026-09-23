@@ -7,6 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Brand, Spacing } from '@/constants/theme';
 import { api } from '@/utils/api';
 import { GoogleSignIn } from '@/components/google-sign-in';
+import { ReCaptcha, ReCaptchaHandle, RECAPTCHA_ENABLED } from '@/components/recaptcha';
 import { usePageTitle } from '@/utils/use-page-title';
 import { AuthDivider, AuthHeading, AuthItem, AuthShell } from '@/components/auth/auth-shell';
 import { AuthField } from '@/components/auth/auth-field';
@@ -17,8 +18,10 @@ export default function LoginScreen() {
   usePageTitle('Giriş Yap');
 
   const passwordRef = useRef<RNTextInput>(null);
+  const captchaRef = useRef<ReCaptchaHandle>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [status, setStatus] = useState<ActionStatus>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [invalid, setInvalid] = useState<string[]>([]);
@@ -35,6 +38,10 @@ export default function LoginScreen() {
       setInvalid([!email ? 'email' : '', !password ? 'password' : ''].filter(Boolean));
       return;
     }
+    if (RECAPTCHA_ENABLED && !captchaToken) {
+      setErrorMsg('Lütfen robot olmadığınızı doğrulayın.');
+      return;
+    }
 
     setErrorMsg(null);
     setInvalid([]);
@@ -42,7 +49,8 @@ export default function LoginScreen() {
     try {
       const response = await api.post('/login', {
         email,
-        password
+        password,
+        ...(captchaToken ? { recaptcha_token: captchaToken } : {}),
       });
 
       // Backend'den hem token hem de user verisinin geldiğini varsayıyoruz
@@ -61,6 +69,8 @@ export default function LoginScreen() {
       setErrorMsg(error.response?.data?.message || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.');
       setInvalid(['email', 'password']);
       setStatus('idle');
+      captchaRef.current?.reset();
+      setCaptchaToken(null); // reCAPTCHA token'ları tek kullanımlıktır
     }
   };
 
@@ -113,6 +123,7 @@ export default function LoginScreen() {
 
       <AuthItem i={3}>
         <View style={{ gap: Spacing.three }}>
+          <ReCaptcha ref={captchaRef} onChange={setCaptchaToken} />
           <FormError message={errorMsg} />
           <ActionButton label="Giriş Yap" loadingLabel="Giriş yapılıyor…" status={status} onPress={handleLogin} arrow />
         </View>
