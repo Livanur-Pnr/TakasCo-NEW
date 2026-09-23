@@ -92,6 +92,7 @@ Notlar:
 - [ ] `CORS_ALLOWED_ORIGINS` yalnızca kendi alan adın
 - [ ] HTTPS her yerde (API, web, `wss://`)
 - [ ] SMTP ile doğrulama ve şifre sıfırlama e-postası gerçekten geliyor (gelen kutusu + spam)
+- [ ] Alan adı Resend'de doğrulanınca `MAIL_FROM_ADDRESS`'i `onboarding@resend.dev`'den kendi adresine (`bildirim@takasco.com` gibi) geçir. İstersen (Gmail'de gönderen profil resmi olarak TakasCo logosunun görünmesi için) o zaman BIMI kurulumuna da bakılabilir: kendi alan adı + DMARC enforcement (`p=quarantine`/`p=reject`) + DNS'e BIMI TXT kaydı + SVG Tiny PS formatında logo (bazı istemcilerde ayrıca ücretli VMC sertifikası gerekebilir) — alan adı olmadan yapılamaz, bu yüzden şimdilik ertelendi.
 - [ ] Yüklenen görseller `storage:link` ile görünüyor, disk yedeği var
 - [ ] Veritabanı ve `storage/app/public` için otomatik yedek (günlük) ve **geri yükleme denemesi**
 - [ ] Hata izleme (ör. Sentry) ve uptime izleme (ör. UptimeRobot); `storage/logs` döndürülüyor
