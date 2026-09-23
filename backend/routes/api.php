@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\SavedSearchController;
 use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Middleware\NotSuspended;
+use App\Http\Middleware\EnsureEmailVerifiedApi;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Broadcast;
@@ -43,12 +44,14 @@ Route::post('/reset-password', [\App\Http\Controllers\Api\PasswordResetControlle
 // WebSocket özel kanal yetkisi (Bearer token ile): POST /api/broadcasting/auth
 Broadcast::routes(['middleware' => ['auth:sanctum', NotSuspended::class]]);
 
-Route::middleware(['auth:sanctum', NotSuspended::class])->group(function () {
+Route::middleware(['auth:sanctum', NotSuspended::class, EnsureEmailVerifiedApi::class])->group(function () {
     Route::post('/user/profile', [AuthController::class, 'updateProfile']);
     Route::post('/user/password', [AuthController::class, 'updatePassword']);
     Route::post('/user/address', [AuthController::class, 'updateAddress']);
     Route::post('/user/preferences', [AuthController::class, 'updatePreferences']);
     Route::post('/user/onboarding', [AccountController::class, 'onboarding']);
+    Route::post('/user/verify-email-code', [AuthController::class, 'verifyEmailCode']);
+    Route::post('/user/resend-verification-code', [AuthController::class, 'resendVerificationCode'])->middleware('throttle:3,1');
     Route::post('/email/verification-notification', [\App\Http\Controllers\EmailVerificationController::class, 'resend'])->middleware('throttle:3,1');
     Route::delete('/products/images/{imageId}', [ProductController::class, 'deleteImage']);
 

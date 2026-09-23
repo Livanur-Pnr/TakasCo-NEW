@@ -83,6 +83,8 @@ function normalizeErrorMessage(error: any) {
   error.userMessage = error.response?.data?.message;
 }
 
+let verifyRedirectInFlight = false;
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -96,6 +98,15 @@ api.interceptors.response.use(
       await SecureStore.deleteItemAsync('auth_token');
       await SecureStore.deleteItemAsync('user');
       router.replace('/(auth)/welcome');
+    }
+
+    // Doğrulanmamış bir hesapla kısıtlı bir uca istek atıldıysa (bkz. EnsureEmailVerifiedApi),
+    // kullanıcıyı nerede olursa olsun doğrulama kodu ekranına yönlendir. Sayfa ilk açıldığında
+    // birden fazla istek aynı anda 403 dönebileceğinden, kısa bir süre için tekrar tetiklenmesi engellenir.
+    if (error.response?.status === 403 && error.response?.data?.email_verified === false && !verifyRedirectInFlight) {
+      verifyRedirectInFlight = true;
+      router.replace('/verify-email');
+      setTimeout(() => { verifyRedirectInFlight = false; }, 1500);
     }
     return Promise.reject(error);
   }

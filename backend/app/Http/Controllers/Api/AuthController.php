@@ -34,9 +34,9 @@ class AuthController extends Controller
         'password' => Hash::make($request->password), // şifreyi hashledik
         'is_admin' => false,
     ]);
-    // e-posta doğrulama bağlantısı; posta hatası kaydı engellemez
+    // e-posta doğrulama kodu; posta hatası kaydı engellemez
     try {
-        $user->sendEmailVerificationNotification();
+        $user->sendEmailVerificationCode();
     } catch (\Throwable $e) {
         report($e);
     }
@@ -158,7 +158,7 @@ public function updateProfile(Request $request)
 
     if ($emailChanged) {
         try {
-            $user->sendEmailVerificationNotification();
+            $user->sendEmailVerificationCode();
         } catch (\Throwable $e) {
             report($e);
         }
@@ -168,6 +168,51 @@ public function updateProfile(Request $request)
         'message' => 'Profil başarıyla güncellendi.',
         'user' => $user
     ]);
+}
+
+// Kayıt sırasında (ya da e-posta değiştiğinde) gönderilen 6 haneli kodu doğrular
+public function verifyEmailCode(Request $request)
+{
+    $request->validate([
+        'code' => 'required|string|size:6',
+    ]);
+
+    $user = $request->user();
+
+    if ($user->hasVerifiedEmail()) {
+        return response()->json(['message' => 'E-posta zaten doğrulanmış.', 'user' => $user]);
+    }
+
+    if (
+        !$user->email_verification_code
+        || !hash_equals($user->email_verification_code, $request->code)
+        || !$user->email_verification_code_expires_at
+        || $user->email_verification_code_expires_at->isPast()
+    ) {
+        return response()->json(['message' => 'Kod hatalı veya süresi dolmuş.'], 422);
+    }
+
+    $user->forceFill([
+        'email_verified_at' => now(),
+        'email_verification_code' => null,
+        'email_verification_code_expires_at' => null,
+    ])->save();
+
+    return response()->json(['message' => 'E-posta doğrulandı.', 'user' => $user]);
+}
+
+// Kodun süresi dolduysa ya da e-posta gelmediyse yeni kod ister
+public function resendVerificationCode(Request $request)
+{
+    $user = $request->user();
+
+    if ($user->hasVerifiedEmail()) {
+        return response()->json(['message' => 'E-posta zaten doğrulanmış.', 'user' => $user]);
+    }
+
+    $user->sendEmailVerificationCode();
+
+    return response()->json(['message' => 'Doğrulama kodu yeniden gönderildi.']);
 }
 
 public function updatePassword(Request $request)

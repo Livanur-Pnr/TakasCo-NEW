@@ -68,7 +68,7 @@ export default function RegisterScreen() {
       await SecureStore.setItemAsync('user', JSON.stringify(user));
 
       setStatus('success');
-      setTimeout(() => router.replace('/onboarding'), 350); // yeni üyeye tek seferlik ilgi alanı/şehir sorusu (atlanabilir)
+      setTimeout(() => router.replace('/verify-email'), 350); // kayıt sonrası e-posta doğrulama kodu zorunlu, sonrasında onboarding'e geçilir
     } catch (error: any) {
       console.error(error.response?.data);
       let errorMessage = 'Kayıt başarısız.';
