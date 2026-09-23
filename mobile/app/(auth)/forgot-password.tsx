@@ -28,6 +28,7 @@ export default function ForgotPasswordScreen() {
     try {
       await api.post('/forgot-password', { email: email.trim() });
       setSent(true);
+      setTimeout(() => router.replace({ pathname: '/(auth)/reset-password', params: { email: email.trim() } }), 900);
     } catch (e: any) {
       const errors = e.response?.data?.errors;
       Alert.alert('Hata', errors ? Object.values(errors).flat().join(' ') : e.response?.data?.message || 'İstek gönderilemedi.');
@@ -39,18 +40,15 @@ export default function ForgotPasswordScreen() {
   return (
     <AuthShell onBack={() => (router.canGoBack() ? router.back() : router.replace('/(auth)/login'))}>
       <AuthItem i={0}>
-        <AuthHeading title="Şifremi Unuttum" subtitle={sent ? undefined : 'Hesabına bağlı e-posta adresini gir, sana şifreni yenilemen için bir bağlantı gönderelim.'} />
+        <AuthHeading title="Şifremi Unuttum" subtitle={sent ? undefined : 'Hesabına bağlı e-posta adresini gir, sana şifreni yenilemen için 6 haneli bir kod gönderelim.'} />
       </AuthItem>
 
       {sent ? (
         <>
           <AuthItem i={1}>
             <ThemedText style={{ color: theme.textSecondary, lineHeight: 22 }}>
-              Bu e-posta adresi kayıtlıysa şifre sıfırlama bağlantısı gönderildi. Bağlantı kısa süre içinde geçerliliğini yitirir; e-postayı görmezsen gereksiz klasörünü de kontrol et.
+              Bu e-posta adresi kayıtlıysa 6 haneli bir doğrulama kodu gönderildi. Kod kısa süre içinde geçerliliğini yitirir; e-postayı görmezsen gereksiz klasörünü de kontrol et.
             </ThemedText>
-          </AuthItem>
-          <AuthItem i={2}>
-            <ActionButton label="Giriş Sayfasına Dön" onPress={() => router.replace('/(auth)/login')} arrow />
           </AuthItem>
         </>
       ) : (
@@ -72,7 +70,7 @@ export default function ForgotPasswordScreen() {
             />
           </AuthItem>
           <AuthItem i={2}>
-            <ActionButton label="Bağlantı Gönder" loadingLabel="Gönderiliyor…" status={loading ? 'loading' : 'idle'} onPress={submit} arrow />
+            <ActionButton label="Kod Gönder" loadingLabel="Gönderiliyor…" status={loading ? 'loading' : 'idle'} onPress={submit} arrow />
           </AuthItem>
         </>
       )}
