@@ -188,16 +188,6 @@ export function WebHeader() {
         >
           <IconSymbol name="arrow.left.arrow.right" size={22} color={isOffersActive ? Brand.accent : theme.text} />
         </TouchableOpacity>
-        {!!user?.is_admin && (
-          <TouchableOpacity
-            onPress={() => router.push('/admin')}
-            accessibilityRole="link"
-            accessibilityLabel="Yönetim paneli"
-            style={[webStyles.headerIconBtn, { paddingHorizontal: Spacing.two }, pathname === '/admin' && { backgroundColor: Brand.accent + '15' }]}
-          >
-            <ThemedText style={{ fontSize: 13, fontWeight: '700', color: Brand.accent }}>Yönetim</ThemedText>
-          </TouchableOpacity>
-        )}
         {!!user && (
           <TouchableOpacity
             onPress={() => router.push('/messages')}
@@ -245,6 +235,16 @@ export function WebHeader() {
             </ThemedText>
           )}
         </TouchableOpacity>
+        {!!user?.is_admin && (
+          <TouchableOpacity
+            onPress={() => router.push('/admin')}
+            accessibilityRole="link"
+            accessibilityLabel="Yönetim paneli"
+            style={[webStyles.headerIconBtn, { paddingHorizontal: Spacing.three, borderWidth: 1, borderColor: Brand.accent + '30' }, pathname === '/admin' && { backgroundColor: Brand.accent + '15' }]}
+          >
+            <ThemedText style={{ fontSize: 13, fontWeight: '700', color: Brand.accent }}>Yönetim</ThemedText>
+          </TouchableOpacity>
+        )}
       </View>
 
       <AnimatedModal visible={bellOpen} onClose={() => setBellOpen(false)} variant="dropdown">

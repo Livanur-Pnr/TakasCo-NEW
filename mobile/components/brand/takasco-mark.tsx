@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Animated, Easing } from 'react-native';
+import { Animated, Easing, Platform } from 'react-native';
 import Svg, { Circle, G, Polygon } from 'react-native-svg';
 import { useReducedMotion } from '@/components/ui/motion';
 
@@ -56,8 +56,8 @@ export function TakascoMark({
     Animated.timing(mintV, { toValue: 1, duration: 1050, delay: 150, easing: Easing.bezier(0.2, 0, 0, 1), useNativeDriver: false }).start();
     Animated.sequence([
       Animated.delay(850),
-      Animated.timing(popV, { toValue: 1.08, duration: 250, easing: Easing.bezier(0.2, 0, 0, 1), useNativeDriver: true }),
-      Animated.timing(popV, { toValue: 1, duration: 200, easing: Easing.bezier(0.2, 0, 0, 1), useNativeDriver: true }),
+      Animated.timing(popV, { toValue: 1.08, duration: 250, easing: Easing.bezier(0.2, 0, 0, 1), useNativeDriver: false }),
+      Animated.timing(popV, { toValue: 1, duration: 200, easing: Easing.bezier(0.2, 0, 0, 1), useNativeDriver: false }),
     ]).start();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [animate, reduced]);
@@ -67,8 +67,8 @@ export function TakascoMark({
     const loop = Animated.loop(
       Animated.sequence([
         Animated.delay(4140), // 4.5s döngünün ~%92'sine kadar bekler (uzun, sakin aralık)
-        Animated.timing(pulseV, { toValue: 1, duration: 180, easing: Easing.out(Easing.quad), useNativeDriver: true }),
-        Animated.timing(pulseV, { toValue: 0, duration: 180, easing: Easing.in(Easing.quad), useNativeDriver: true }),
+        Animated.timing(pulseV, { toValue: 1, duration: 180, easing: Easing.out(Easing.quad), useNativeDriver: false }),
+        Animated.timing(pulseV, { toValue: 0, duration: 180, easing: Easing.in(Easing.quad), useNativeDriver: false }),
       ])
     );
     loop.start();
@@ -81,7 +81,7 @@ export function TakascoMark({
   useEffect(() => {
     if (animate === 'none' || reduced) return;
     const loop = Animated.loop(
-      Animated.timing(spinV, { toValue: 1, duration: 25000, easing: Easing.linear, useNativeDriver: true })
+      Animated.timing(spinV, { toValue: 1, duration: 25000, easing: Easing.linear, useNativeDriver: Platform.OS !== 'web' })
     );
     loop.start();
     return () => loop.stop();
@@ -93,9 +93,13 @@ export function TakascoMark({
   const pulseScale = pulseV.interpolate({ inputRange: [0, 1], outputRange: [1, 1.14] });
   const ringOpacity = pulseV.interpolate({ inputRange: [0, 0.4, 1], outputRange: [0, 0.55, 0] });
   const ringScale = pulseV.interpolate({ inputRange: [0, 1], outputRange: [1, 1.55] });
-  const spinDeg = spinV.interpolate({ inputRange: [0, 1], outputRange: [0, 360] });
+  const spinDeg = spinV.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
 
+  // Sürekli dönüş SVG özelliği yerine sarmalayan görünümün transform'uyla yapılır: iOS/Android'de native sürücüyle
+  // (JS thread'i meşgul etmeden) çalışır. SVG özelliklerini süren diğer animasyonlar native sürücüyü desteklemez.
+  const spinning = animate !== 'none' && !reduced;
   return (
+    <Animated.View style={{ width: size, height: size, transform: spinning ? [{ rotate: spinDeg }] : [] }}>
     <Svg width={size} height={size} viewBox={`0 0 ${VB} ${VB}`}>
       {animate === 'success' && (
         <AnimatedCircle
@@ -111,7 +115,7 @@ export function TakascoMark({
           originY={CY}
         />
       )}
-      <AnimatedG originX={CX} originY={CY} rotation={(animate === 'none' || reduced ? 0 : spinDeg) as unknown as number}>
+      <G>
         <G rotation={-74} originX={CX} originY={CY}>
           <AnimatedCircle
             cx={CX} cy={CY} r={RING_R} fill="none" stroke={palette.dark} strokeWidth={RING_W}
@@ -134,7 +138,8 @@ export function TakascoMark({
           <Circle cx={CX} cy={CY} r={24} fill={palette.center} />
           <Circle cx={CX} cy={CY} r={8.5} fill={palette.dot} />
         </AnimatedG>
-      </AnimatedG>
+      </G>
     </Svg>
+    </Animated.View>
   );
 }

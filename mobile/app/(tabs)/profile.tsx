@@ -288,9 +288,37 @@ export default function ProfileScreen() {
             <ThemedText>Ayarlar</ThemedText>
             <IconSymbol name="chevron.right" size={20} color={theme.textSecondary} />
           </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[styles.menuItem, { backgroundColor: theme.cardBg, borderBottomColor: 'transparent', marginTop: Spacing.four }]}
+          {user?.is_admin && (
+            <TouchableOpacity
+              style={[styles.menuItem, { backgroundColor: theme.cardBg, borderBottomColor: theme.border }]}
+              onPress={() => router.push('/admin')}
+            >
+              <ThemedText style={{ fontWeight: 'bold', color: Brand.accent }}>Yönetim Paneli</ThemedText>
+              <IconSymbol name="chevron.right" size={20} color={theme.textSecondary} />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Masaüstünde alt bilgide duran bilgi sayfaları; mobilde başka bir yerden erişilemiyordu */}
+        <View style={{ gap: Spacing.two }}>
+          <ThemedText style={{ fontSize: 13, fontWeight: '700', color: theme.textSecondary, marginLeft: Spacing.one }}>YARDIM VE BİLGİ</ThemedText>
+          <View style={styles.section}>
+            {INFO_LINKS.map((item) => (
+              <TouchableOpacity
+                key={item.href}
+                style={[styles.menuItem, { backgroundColor: theme.cardBg, borderBottomColor: theme.border }]}
+                onPress={() => router.push(item.href)}
+              >
+                <ThemedText>{item.label}</ThemedText>
+                <IconSymbol name="chevron.right" size={20} color={theme.textSecondary} />
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <TouchableOpacity
+            style={[styles.menuItem, { backgroundColor: theme.cardBg, borderBottomColor: 'transparent' }]}
             onPress={handleLogout}
           >
             <ThemedText style={{ color: Brand.danger, fontWeight: 'bold' }}>Çıkış Yap</ThemedText>
@@ -300,6 +328,16 @@ export default function ProfileScreen() {
     </ThemedView>
   );
 }
+
+const INFO_LINKS = [
+  { label: 'Nasıl Çalışır?', href: '/nasil-calisir' },
+  { label: 'Güvenli Takas', href: '/guvenli-takas' },
+  { label: 'Sıkça Sorulan Sorular', href: '/sss' },
+  { label: 'Topluluk Kuralları', href: '/topluluk-kurallari' },
+  { label: 'Hakkımızda', href: '/hakkimizda' },
+  { label: 'İletişim', href: '/iletisim' },
+  { label: 'KVKK Aydınlatma Metni', href: '/kvkk' },
+] as const;
 
 const styles = StyleSheet.create({
   container: { flex: 1 },

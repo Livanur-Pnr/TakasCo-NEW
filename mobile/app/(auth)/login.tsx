@@ -11,6 +11,7 @@ import { ReCaptcha, ReCaptchaHandle, RECAPTCHA_ENABLED } from '@/components/reca
 import { usePageTitle } from '@/utils/use-page-title';
 import { AuthDivider, AuthHeading, AuthItem, AuthShell } from '@/components/auth/auth-shell';
 import { AuthField } from '@/components/auth/auth-field';
+import { ConsentCheckbox } from '@/components/auth/consent-checkbox';
 import { ActionButton, ActionStatus, FormError } from '@/components/ui/form';
 
 export default function LoginScreen() {
@@ -25,6 +26,8 @@ export default function LoginScreen() {
   const [status, setStatus] = useState<ActionStatus>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [invalid, setInvalid] = useState<string[]>([]);
+  const [consent, setConsent] = useState(false);
+  const [consentError, setConsentError] = useState(false);
 
   const clear = (field: string) => {
     setErrorMsg(null);
@@ -36,6 +39,11 @@ export default function LoginScreen() {
     if (!email || !password) {
       setErrorMsg('Lütfen e-posta ve şifrenizi girin.');
       setInvalid([!email ? 'email' : '', !password ? 'password' : ''].filter(Boolean));
+      return;
+    }
+    if (!consent) {
+      setErrorMsg('Devam etmek için KVKK Aydınlatma Metni\'ni ve Kullanım Koşulları\'nı kabul etmelisiniz.');
+      setConsentError(true);
       return;
     }
     if (RECAPTCHA_ENABLED && !captchaToken) {
@@ -123,6 +131,7 @@ export default function LoginScreen() {
 
       <AuthItem i={3}>
         <View style={{ gap: Spacing.three }}>
+          <ConsentCheckbox checked={consent} onChange={(v) => { setConsent(v); setConsentError(false); if (v) setErrorMsg(null); }} error={consentError} />
           <ReCaptcha ref={captchaRef} onChange={setCaptchaToken} />
           <FormError message={errorMsg} />
           <ActionButton label="Giriş Yap" loadingLabel="Giriş yapılıyor…" status={status} onPress={handleLogin} arrow />

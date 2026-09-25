@@ -8,6 +8,7 @@ import { GoogleSignIn } from '@/components/google-sign-in';
 import { usePageTitle } from '@/utils/use-page-title';
 import { AuthDivider, AuthHeading, AuthItem, AuthShell } from '@/components/auth/auth-shell';
 import { AuthField } from '@/components/auth/auth-field';
+import { ConsentCheckbox } from '@/components/auth/consent-checkbox';
 import { ActionButton, ActionStatus, FormError } from '@/components/ui/form';
 
 export default function RegisterScreen() {
@@ -27,6 +28,8 @@ export default function RegisterScreen() {
   const [status, setStatus] = useState<ActionStatus>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [invalid, setInvalid] = useState<string[]>([]);
+  const [consent, setConsent] = useState(false);
+  const [consentError, setConsentError] = useState(false);
 
   const clear = (field: string) => {
     setErrorMsg(null);
@@ -47,6 +50,11 @@ export default function RegisterScreen() {
     if (password !== passwordConfirmation) {
       setErrorMsg('Şifreler eşleşmiyor.');
       setInvalid(['password', 'confirm']);
+      return;
+    }
+    if (!consent) {
+      setErrorMsg('Devam etmek için KVKK Aydınlatma Metni\'ni ve Kullanım Koşulları\'nı kabul etmelisiniz.');
+      setConsentError(true);
       return;
     }
 
@@ -178,6 +186,7 @@ export default function RegisterScreen() {
 
       <AuthItem i={3}>
         <View style={{ gap: Spacing.three }}>
+          <ConsentCheckbox checked={consent} onChange={(v) => { setConsent(v); setConsentError(false); if (v) setErrorMsg(null); }} error={consentError} />
           <FormError message={errorMsg} />
           <ActionButton label="Kayıt Ol" loadingLabel="Hesap oluşturuluyor…" status={status} onPress={handleRegister} arrow />
         </View>
