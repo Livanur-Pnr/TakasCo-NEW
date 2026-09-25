@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
@@ -240,6 +241,16 @@ public function resendVerificationCode(Request $request)
     if ($user->hasVerifiedEmail()) {
         return response()->json(['message' => 'E-posta zaten doğrulanmış.', 'user' => $user]);
     }
+
+    // dakikalık throttle (routes/api.php) dışında, hesap sahibi olmayan bir e-postaya
+    // sınırsız kod maili düşürülmesini önlemek için saatlik toplam üst sınır
+    $key = 'resend-verification:' . $user->id;
+    if (RateLimiter::tooManyAttempts($key, 5)) {
+        return response()->json([
+            'message' => 'Çok fazla deneme yaptınız. Lütfen bir süre sonra tekrar deneyin.',
+        ], 429);
+    }
+    RateLimiter::hit($key, 3600);
 
     $user->sendEmailVerificationCode();
 

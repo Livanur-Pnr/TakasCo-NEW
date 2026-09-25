@@ -119,6 +119,24 @@ class EmailVerificationTest extends TestCase
         $this->postJson('/api/email/verification-notification')->assertStatus(401);
     }
 
+    public function test_resend_verification_code_endpoint_is_capped_at_five_per_hour(): void
+    {
+        Notification::fake();
+        $user = User::factory()->unverified()->create();
+
+        // dakikalık istek sınırı (routes/api.php: throttle:3,1) ayrı bir katman; her denemede
+        // 61 saniye ileri sararak onu sıfırlıyoruz ki asıl test ettiğimiz saatlik üst sınır (5) ortaya çıksın.
+        for ($i = 0; $i < 5; $i++) {
+            $this->travel(61)->seconds();
+            $this->actingAs($user, 'sanctum')->postJson('/api/user/resend-verification-code')->assertOk();
+        }
+
+        $this->travel(61)->seconds();
+        $this->actingAs($user, 'sanctum')->postJson('/api/user/resend-verification-code')->assertStatus(429);
+
+        Notification::assertSentToTimes($user, EmailVerificationCodeNotification::class, 5);
+    }
+
     public function test_changing_the_email_resets_verification_and_sends_a_new_code(): void
     {
         Notification::fake();
