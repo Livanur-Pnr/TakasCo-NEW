@@ -3,13 +3,18 @@
 namespace App\Notifications;
 
 use App\Models\ContactMessage;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 // İletişim formu gönderilince tüm admin kullanıcılara (is_admin=true) giden e-posta bildirimi.
 // "Yanıtla" tuşuna basınca mesajı gönderen kişinin e-postasına gider (replyTo).
-class ContactMessageNotification extends Notification
+// Kuyruğa alınır: gönderen kullanıcı bu e-postayı beklemiyor, admin'e ulaşması birkaç saniye gecikse sorun olmaz.
+class ContactMessageNotification extends Notification implements ShouldQueue
 {
+    use Queueable;
+
     public function __construct(public ContactMessage $message)
     {
     }

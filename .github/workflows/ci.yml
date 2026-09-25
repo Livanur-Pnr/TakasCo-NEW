@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend (PHP testleri)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: PHP kurulumu
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, sqlite3, gd
+          coverage: none
+
+      - name: Composer bağımlılıklarını önbellekten al
+        uses: actions/cache@v4
+        with:
+          path: backend/vendor
+          key: composer-${{ hashFiles('backend/composer.lock') }}
+
+      - name: Composer install
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: .env hazırla
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Testleri çalıştır
+        run: php artisan test
+
+  mobile:
+    name: Mobil (tip kontrolü + lint)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Node kurulumu
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: npm install
+        run: npm ci
+
+      - name: TypeScript tip kontrolü
+        run: npx tsc --noEmit
+
+      - name: ESLint
+        run: npm run lint

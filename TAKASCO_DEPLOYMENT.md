@@ -63,7 +63,7 @@ EXPO_PUBLIC_GOOGLE_CLIENT_ID=<aynı istemci kimliği>
 
 Notlar:
 - `REVERB_APP_SECRET`, veritabanı ve SMTP parolaları **asla** git'e, web derlemesine ya da sohbete konmaz.
-- `QUEUE_CONNECTION=sync`: şu an kuyruğa atılan iş yok (bildirim/e-posta/yayın eşzamanlı). Kuyruk kullanılacaksa Supervisor ile `php artisan queue:work` eklenmeli.
+- `QUEUE_CONNECTION=database` (`jobs` tablosu hazır). Sadece `ContactMessageNotification` (iletişim formu → admin e-postası) kuyruğa alınır — kritik olmayan tek bildirim bu. E-posta doğrulama kodu, şifre sıfırlama kodu/bağlantısı ve takas/kayıtlı arama bildirimleri (zil ikonunun anlık güncellenmesi için) bilinçli olarak eşzamanlı kalır: kullanıcı ekranda kodu bekliyor ya da bildirim anında görünmeli, kuyruk işçisi çalışmazsa/gecikirse bu akışlar kırılır. **Canlıda mutlaka Supervisor ile `php artisan queue:work` çalıştırılmalı**, yoksa iletişim formu e-postaları hiç gitmez (kuyrukta bekler).
 
 ## 3. Sunucu kurulumu (özet)
 
