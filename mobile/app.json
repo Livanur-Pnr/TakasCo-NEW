@@ -47,7 +47,11 @@
           "photosPermission": "TakasCo, ilan ve profil fotoğrafı eklemen için galerine erişmek istiyor.",
           "cameraPermission": "TakasCo, ilan ve profil fotoğrafı çekmen için kameranı kullanmak istiyor."
         }
-      ]
+      ],
+      "expo-font",
+      "expo-image",
+      "expo-status-bar",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -30,7 +30,8 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
+# local env files (backend'deki .env/.env.example ayrımıyla aynı: .env.example hariç hepsi yerel/gizli)
+.env
 .env*.local
 
 # typescript
