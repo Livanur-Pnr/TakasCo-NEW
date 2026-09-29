@@ -83,7 +83,7 @@ function SlideView({ slide, active, hovered, height, compact }: { slide: Slide; 
       {...({ 'aria-hidden': !active } as any)}
       style={[StyleSheet.absoluteFill, { opacity: fade, zIndex: active ? 2 : 1 }, css({ willChange: 'opacity' })]}
     >
-      <View style={[styles.slide, compact && styles.slideCompact, { height, backgroundColor: brand ? '#14532D' : theme.backgroundSelected }, css(brand ? { backgroundImage: Gradient.brandPanel } : {})]}>
+      <View style={[styles.slide, compact && styles.slideCompact, { height, backgroundColor: brand ? Brand.wordmark : theme.backgroundSelected }, css(brand ? { backgroundImage: Gradient.brandPanel } : {})]}>
         {/* ---- zemin katmanları ---- */}
         {brand ? (
           <BrandBackdrop />
@@ -108,8 +108,8 @@ function SlideView({ slide, active, hovered, height, compact }: { slide: Slide; 
         <View style={[styles.textCol, compact && { flex: undefined, paddingHorizontal: 0 }]}>
           <Animated.View style={textStyle}>
             <View style={[styles.badge, brand ? styles.badgeDark : styles.badgeLight]}>
-              <View style={[styles.badgeDot, { backgroundColor: brand ? '#6ee7b7' : Brand.accent }]} {...data('scene', 'twinkle')} />
-              <ThemedText style={[styles.badgeText, { color: brand ? '#d1fae5' : Brand.wordmark }]}>{brand ? 'GÜVENLİ VE ÜCRETSİZ' : 'ÖNE ÇIKAN İLAN'}</ThemedText>
+              <View style={[styles.badgeDot, { backgroundColor: brand ? Brand.mintStrong : Brand.accent }]} {...data('scene', 'twinkle')} />
+              <ThemedText style={[styles.badgeText, { color: brand ? Brand.accentLight : Brand.wordmark }]}>{brand ? 'GÜVENLİ VE ÜCRETSİZ' : 'ÖNE ÇIKAN İLAN'}</ThemedText>
             </View>
             <ThemedText style={[compact ? styles.titleCompact : styles.title, { color: titleColor }]} numberOfLines={3}>
               {brand ? "TakasCo'da takasla, kullanmadıkların birinin favorisi olsun" : p.title}
@@ -265,7 +265,7 @@ export function HeroCarousel() {
       <Pressable
         onHoverIn={() => setHovered(true)}
         onHoverOut={() => setHovered(false)}
-        style={[styles.frame, { height, backgroundColor: '#14532D', cursor: 'default' as any }, css({ boxShadow: '0 22px 48px rgba(15, 60, 35, 0.18), 0 2px 6px rgba(15, 60, 35, 0.08)' })]}
+        style={[styles.frame, { height, backgroundColor: Brand.wordmark, cursor: 'default' as any }, css({ boxShadow: '0 22px 48px rgba(15, 60, 35, 0.18), 0 2px 6px rgba(15, 60, 35, 0.08)' })]}
       >
         {slides.map((s, i) => (
           <SlideView key={s.key} slide={s} active={i === index} hovered={hovered} height={height} compact={!desktop} />

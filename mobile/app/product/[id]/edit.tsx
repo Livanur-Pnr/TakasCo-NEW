@@ -205,7 +205,7 @@ export default function EditListingScreen() {
                       </View>
                     )}
                     {photos.length > 1 && (
-                      <TouchableOpacity onPress={() => removePhoto(ph)} accessibilityRole="button" accessibilityLabel="Fotoğrafı sil" style={styles.removeBtn}>
+                      <TouchableOpacity onPress={() => removePhoto(ph)} accessibilityRole="button" accessibilityLabel="Fotoğrafı sil" style={styles.removeBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                         <IconSymbol name="xmark.circle.fill" size={22} color={Brand.danger} />
                       </TouchableOpacity>
                     )}

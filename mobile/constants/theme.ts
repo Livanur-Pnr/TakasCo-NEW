@@ -13,6 +13,8 @@ export const Brand = {
   primaryDark: '#0d1016',   // tab bar, deepest dark
   accent: '#1B7A43',        // TakasCo yeşili — success, active, CTA
   accentLight: '#d1fae5',   // light green background
+  mint: '#a7f3d0',          // orta ton yeşil — marka paneli/dekoratif vurgular
+  mintStrong: '#6ee7b7',    // mint'ten biraz daha doygun — aynı ailenin ikinci tonu
   wordmark: '#14532D',      // "TakasCo" logo yazısı için koyu yeşil
   danger: '#ef4444',        // red — errors, risk
   warning: '#f59e0b',       // amber — pending, warning

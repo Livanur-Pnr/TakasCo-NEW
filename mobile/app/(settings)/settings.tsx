@@ -35,9 +35,17 @@ export default function SettingsScreen() {
   const [emailOn, setEmailOn] = useState(true);
   const [verified, setVerified] = useState<boolean | null>(null);
   const [sendingLink, setSendingLink] = useState(false);
+  const [prefsError, setPrefsError] = useState(false);
+
+  const loadPrefs = () => {
+    setPrefsError(false);
+    api.get('/user')
+      .then((r) => { setEmailOn(r.data.email_notifications !== false); setVerified(!!r.data.email_verified_at); })
+      .catch(() => setPrefsError(true));
+  };
 
   useEffect(() => {
-    api.get('/user').then((r) => { setEmailOn(r.data.email_notifications !== false); setVerified(!!r.data.email_verified_at); }).catch(() => {});
+    loadPrefs();
   }, []);
 
   const sendVerification = async () => {
@@ -90,6 +98,14 @@ export default function SettingsScreen() {
 
       <View style={styles.section}>
         <ThemedText style={styles.sectionTitle}>Tercihler</ThemedText>
+        {prefsError && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.two, marginBottom: Spacing.two }}>
+            <ThemedText style={{ color: theme.textSecondary, fontSize: 12 }}>Tercihlerin yüklenemedi, gösterilenler güncel olmayabilir.</ThemedText>
+            <TouchableOpacity onPress={loadPrefs} accessibilityRole="button" accessibilityLabel="Tercihleri yeniden yükle">
+              <ThemedText style={{ color: Brand.accent, fontWeight: '700', fontSize: 12 }}>Tekrar dene</ThemedText>
+            </TouchableOpacity>
+          </View>
+        )}
         <View style={[styles.card, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
           <TouchableOpacity style={styles.settingRow} onPress={() => router.push('/notifications')}>
             <ThemedText>Bildirimlerim</ThemedText>

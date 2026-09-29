@@ -23,7 +23,7 @@ export function FeatureChips({ tone = 'light', align = 'center' }: { tone?: 'lig
           style={[styles.chip, dark ? styles.dark : styles.light]}
         >
           <View {...({ dataSet: { chipicon: 'true' } } as any)}>
-            <IconSymbol name={p.icon} size={14} color={dark ? '#a7f3d0' : Brand.accent} />
+            <IconSymbol name={p.icon} size={14} color={dark ? Brand.mint : Brand.accent} />
           </View>
           <ThemedText style={[styles.label, { color: dark ? '#ffffff' : Brand.wordmark }]}>{p.label}</ThemedText>
         </View>

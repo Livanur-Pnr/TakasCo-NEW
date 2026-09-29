@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { memo, useRef, useState } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import { Duration, Ease } from '@/constants/motion';
 import { useReducedMotion } from '@/components/ui/motion';
@@ -30,7 +30,9 @@ export interface ProductCardItem {
 }
 
 // Ana sayfa ve keşfet ızgarasında ortak kullanılan ürün kartı
-export function ProductCard({ item, isFavorite, onToggleFavorite }: { item: ProductCardItem; isFavorite: boolean; onToggleFavorite: () => void }) {
+// memo: liste render'ında `onToggleFavorite` artık sabit referanslı (bkz. çağıranlar), bu yüzden
+// yalnızca gerçekten değişen kartlar yeniden render edilir.
+export const ProductCard = memo(function ProductCard({ item, isFavorite, onToggleFavorite }: { item: ProductCardItem; isFavorite: boolean; onToggleFavorite: (id: number) => void }) {
   const router = useRouter();
   const theme = useTheme();
   const [imageFailed, setImageFailed] = useState(false);
@@ -72,7 +74,7 @@ export function ProductCard({ item, isFavorite, onToggleFavorite }: { item: Prod
         </View>
         <TouchableOpacity
           style={[styles.favorite, { backgroundColor: theme.backgroundElement }]}
-          onPress={(e) => { e.stopPropagation(); onToggleFavorite(); }}
+          onPress={(e) => { e.stopPropagation(); onToggleFavorite(item.id); }}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           accessibilityRole="button"
           accessibilityLabel={isFavorite ? 'Favorilerden çıkar' : 'Favorilere ekle'}
@@ -90,7 +92,7 @@ export function ProductCard({ item, isFavorite, onToggleFavorite }: { item: Prod
       </View>
     </TouchableOpacity>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: { flex: 1, borderRadius: Radius.md, borderWidth: 1, overflow: 'hidden' },

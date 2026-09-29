@@ -19,7 +19,7 @@ const css = (style: object) => (web ? (style as any) : null);
 const data = (key: string, value: string) => ({ dataSet: { [key]: value } } as any);
 
 const TILES = [
-  { icon: 'tshirt.fill', bg: '#d1fae5', fg: '#047857' },
+  { icon: 'tshirt.fill', bg: Brand.accentLight, fg: '#047857' },
   { icon: 'book.fill', bg: '#fef3c7', fg: '#b45309' },
   { icon: 'desktopcomputer', bg: '#e0f2fe', fg: '#0369a1' },
   { icon: 'sofa.fill', bg: '#ffe4e6', fg: '#be123c' },
@@ -196,8 +196,8 @@ export const BrandBackdrop = memo(BrandBackdropView);
 const s = StyleSheet.create({
   ring: { position: 'absolute', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.10)' },
   dashed: { borderStyle: 'dashed', borderColor: 'rgba(167, 243, 208, 0.28)' },
-  orbitDot: { position: 'absolute', width: 10, height: 10, borderRadius: 5, backgroundColor: '#6ee7b7' },
-  spark: { position: 'absolute', width: 4, height: 4, borderRadius: 2, backgroundColor: '#a7f3d0', opacity: 0.3 },
+  orbitDot: { position: 'absolute', width: 10, height: 10, borderRadius: 5, backgroundColor: Brand.mintStrong },
+  spark: { position: 'absolute', width: 4, height: 4, borderRadius: 2, backgroundColor: Brand.mint, opacity: 0.3 },
   glowBig: { position: 'absolute', width: 640, height: 640 },
 
   phone: { width: 190, height: 396, borderRadius: 30, backgroundColor: '#f7fcff', borderWidth: 6, borderColor: 'rgba(255, 255, 255, 0.28)', padding: 10, gap: 9, overflow: 'hidden', ...(web ? ({ boxShadow: '0 30px 60px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255,255,255,0.4)' } as any) : { elevation: 8 }) },

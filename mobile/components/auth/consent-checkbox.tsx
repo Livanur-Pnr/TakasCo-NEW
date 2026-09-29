@@ -21,6 +21,7 @@ export function ConsentCheckbox({ checked, onChange, error }: { checked: boolean
         accessibilityState={{ checked }}
         accessibilityLabel="KVKK Aydınlatma Metni'ni ve Kullanım Koşulları'nı okudum, kabul ediyorum"
         style={{ padding: 2 }}
+        hitSlop={{ top: 11, bottom: 11, left: 11, right: 11 }}
       >
         {checked ? (
           <IconSymbol name="checkmark.circle.fill" size={22} color={Brand.accent} />

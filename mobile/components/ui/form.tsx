@@ -52,7 +52,7 @@ export function ActionButton({ label, status = 'idle', onPress, disabled, varian
   const done = status === 'success';
   const outline = variant === 'outline';
   const bg = outline ? theme.cardBg : variant === 'primary' ? Brand.accent : variant === 'danger' ? Brand.danger : theme.backgroundSelected;
-  const fg = outline ? (scheme === 'dark' ? '#a7f3d0' : Brand.wordmark) : variant === 'secondary' ? theme.text : '#fff';
+  const fg = outline ? (scheme === 'dark' ? Brand.mint : Brand.wordmark) : variant === 'secondary' ? theme.text : '#fff';
   const gradient = Platform.OS === 'web' && variant === 'primary' && !done ? ({ backgroundImage: Gradient.cta } as any) : null;
 
   return (

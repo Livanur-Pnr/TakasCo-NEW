@@ -104,7 +104,7 @@ function ExchangeEmblemView() {
         </View>
       </View>
 
-      <Satellite icon="tshirt.fill" tint="#047857" bg="#d1fae5" left={8} top={22} rotate="-6deg" motion="a" slot="tl" />
+      <Satellite icon="tshirt.fill" tint="#047857" bg={Brand.accentLight} left={8} top={22} rotate="-6deg" motion="a" slot="tl" />
       <Satellite icon="book.fill" tint="#b45309" bg="#fef3c7" left={296} top={34} rotate="5deg" motion="b" slot="tr" />
       <Satellite icon="desktopcomputer" tint="#0369a1" bg="#e0f2fe" left={276} top={210} rotate="-4deg" motion="c" slot="br" />
       <Satellite icon="sportscourt.fill" tint="#be123c" bg="#ffe4e6" left={28} top={214} rotate="4deg" motion="a" slot="bl" />
@@ -118,10 +118,10 @@ export const ExchangeEmblem = memo(ExchangeEmblemView);
 const styles = StyleSheet.create({
   stage: { width: 380, height: 300 },
   circle: { position: 'absolute', width: 184, height: 184, borderRadius: 92, alignItems: 'center', justifyContent: 'center', borderWidth: 5, borderColor: 'rgba(255, 255, 255, 0.28)', backgroundColor: Brand.accent },
-  flash: { position: 'absolute', width: 184, height: 184, borderRadius: 92, borderWidth: 3, borderColor: '#a7f3d0' },
+  flash: { position: 'absolute', width: 184, height: 184, borderRadius: 92, borderWidth: 3, borderColor: Brand.mint },
   ring: { position: 'absolute', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.12)' },
   dashed: { borderStyle: 'dashed', borderColor: 'rgba(167, 243, 208, 0.32)' },
-  dot: { position: 'absolute', width: 10, height: 10, borderRadius: 5, backgroundColor: '#6ee7b7' },
+  dot: { position: 'absolute', width: 10, height: 10, borderRadius: 5, backgroundColor: Brand.mintStrong },
   ripple: { position: 'absolute', borderWidth: 2, borderColor: 'rgba(110, 231, 183, 0.55)' },
   satellite: { width: 76, padding: 8, gap: 7, borderRadius: Radius.lg, backgroundColor: 'rgba(255, 255, 255, 0.97)' },
   satelliteIcon: { height: 42, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },

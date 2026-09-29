@@ -37,7 +37,7 @@ export function AuthHeading({ title, subtitle }: { title: string; subtitle?: str
   const { scheme } = useAppTheme();
   return (
     <View style={{ gap: Spacing.two }}>
-      <ThemedText type="title" accessibilityRole="header" style={{ color: scheme === 'dark' ? '#a7f3d0' : Brand.wordmark, fontSize: 28, lineHeight: 34, letterSpacing: -0.4 }}>{title}</ThemedText>
+      <ThemedText type="title" accessibilityRole="header" style={{ color: scheme === 'dark' ? Brand.mint : Brand.wordmark, fontSize: 28, lineHeight: 34, letterSpacing: -0.4 }}>{title}</ThemedText>
       {!!subtitle && <ThemedText style={{ opacity: 0.68, lineHeight: 22 }}>{subtitle}</ThemedText>}
     </View>
   );
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
   blob: { position: 'absolute', borderRadius: 999, opacity: 0.9 },
 
   tile: { backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.6)' },
-  panel: { flex: 1, maxWidth: 640, minWidth: 460, backgroundColor: '#14532D', padding: 48, justifyContent: 'space-between', overflow: 'hidden' },
+  panel: { flex: 1, maxWidth: 640, minWidth: 460, backgroundColor: Brand.wordmark, padding: 48, justifyContent: 'space-between', overflow: 'hidden' },
   panelTop: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
   stage: { flex: 1, minHeight: 300, marginVertical: Spacing.four },
   panelSlogan: { color: '#ffffff', fontSize: 26, lineHeight: 36, fontWeight: '700', letterSpacing: -0.3, maxWidth: 460 },

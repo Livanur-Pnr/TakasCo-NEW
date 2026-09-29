@@ -35,6 +35,8 @@ export default function AddScreen() {
   const isDesktopWeb = useIsDesktopWeb();
 
   const [categories, setCategories] = useState<Category[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [categoriesError, setCategoriesError] = useState(false);
   const [images, setImages] = useState<any[]>([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -104,11 +106,16 @@ export default function AddScreen() {
     });
 
   const fetchCategories = async () => {
+    setCategoriesLoading(true);
+    setCategoriesError(false);
     try {
       const response = await api.get('/categories');
       setCategories(response.data);
     } catch (error) {
       console.error('Kategoriler alınamadı:', error);
+      setCategoriesError(true);
+    } finally {
+      setCategoriesLoading(false);
     }
   };
 
@@ -240,6 +247,7 @@ export default function AddScreen() {
             onPress={() => setImages(images.filter((_, i) => i !== index))}
             accessibilityRole="button"
             accessibilityLabel="Fotoğrafı kaldır"
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <IconSymbol name="xmark.circle.fill" size={24} color={Brand.danger} />
           </TouchableOpacity>
@@ -273,17 +281,28 @@ export default function AddScreen() {
   const renderCategoryField = () => (
     <View style={styles.inputGroup}>
       <ThemedText style={styles.label}>Kategori *</ThemedText>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: Spacing.two }}>
-        {categories.map((cat) => (
-          <TouchableOpacity
-            key={cat.id}
-            style={[styles.categoryPill, { backgroundColor: selectedCategory === cat.id ? Brand.accent : theme.backgroundSelected }]}
-            onPress={() => setSelectedCategory(cat.id)}
-          >
-            <ThemedText style={{ color: selectedCategory === cat.id ? '#fff' : theme.text }}>{cat.name}</ThemedText>
+      {categoriesLoading ? (
+        <ActivityIndicator color={Brand.accent} style={{ alignSelf: 'flex-start' }} />
+      ) : categoriesError ? (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.two }}>
+          <ThemedText style={{ color: theme.textSecondary, fontSize: 13 }}>Kategoriler yüklenemedi.</ThemedText>
+          <TouchableOpacity onPress={fetchCategories} accessibilityRole="button" accessibilityLabel="Kategorileri yeniden yükle">
+            <ThemedText style={{ color: Brand.accent, fontWeight: '700', fontSize: 13 }}>Tekrar dene</ThemedText>
           </TouchableOpacity>
-        ))}
-      </ScrollView>
+        </View>
+      ) : (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: Spacing.two }}>
+          {categories.map((cat) => (
+            <TouchableOpacity
+              key={cat.id}
+              style={[styles.categoryPill, { backgroundColor: selectedCategory === cat.id ? Brand.accent : theme.backgroundSelected }]}
+              onPress={() => setSelectedCategory(cat.id)}
+            >
+              <ThemedText style={{ color: selectedCategory === cat.id ? '#fff' : theme.text }}>{cat.name}</ThemedText>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
     </View>
   );
 
